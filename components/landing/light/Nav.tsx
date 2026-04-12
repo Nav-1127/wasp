@@ -9,7 +9,7 @@ export default function NavLight() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#D5CFC3] bg-[#F5F0E8]/90 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/light" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           <span
             className="text-2xl font-black tracking-tighter text-[#1A1A1A] group-hover:text-[#5C6B00] transition-colors duration-200"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
