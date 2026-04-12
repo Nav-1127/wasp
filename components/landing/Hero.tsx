@@ -49,7 +49,7 @@ export default function Hero() {
   return (
     <section
       id="waitlist"
-      className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-16 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16 overflow-hidden"
     >
       {/* Background grid */}
       <div
@@ -78,7 +78,7 @@ export default function Hero() {
 
         {/* Headline */}
         <h1
-          className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight text-white mb-6"
+          className="text-[2.1rem] sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] sm:leading-[0.95] tracking-tight text-white mb-5 sm:mb-6"
           style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
         >
           Put Your Instagram{" "}
@@ -87,14 +87,14 @@ export default function Hero() {
         </h1>
 
         {/* Subline */}
-        <p className="max-w-2xl mx-auto text-lg md:text-xl text-[#6B6B6B] mb-10 leading-relaxed">
+        <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-[#6B6B6B] mb-8 sm:mb-10 leading-relaxed">
           Not a chatbot. Not a flow builder.{" "}
           <span className="text-[#F5F5F5]">An AI agent that learns your voice</span>,
           replies like you, and never sleeps.
         </p>
 
         {/* Email form */}
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto mb-6">
+        <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto mb-5 sm:mb-6">
           {status === "success" ? (
             <div className="border border-[#D4FF00]/30 bg-[#D4FF00]/10 rounded-2xl px-6 py-5 text-center">
               <p className="text-[#D4FF00] font-bold text-lg mb-1">You're in. 🐝</p>
@@ -106,19 +106,19 @@ export default function Hero() {
               )}
             </div>
           ) : (
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col gap-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="flex-1 bg-[#111111] border border-[#2A2A2A] rounded-xl px-5 py-3.5 text-white placeholder-[#4A4A4A] text-sm focus:outline-none focus:border-[#D4FF00] transition-colors"
+                className="w-full bg-[#111111] border border-[#2A2A2A] rounded-xl px-5 py-3.5 text-white placeholder-[#4A4A4A] text-sm focus:outline-none focus:border-[#D4FF00] transition-colors"
               />
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="bg-[#D4FF00] text-[#0A0A0A] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-white transition-colors disabled:opacity-60 whitespace-nowrap"
+                className="w-full bg-[#D4FF00] text-[#0A0A0A] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-white transition-colors disabled:opacity-60"
               >
                 {status === "loading" ? "Joining..." : "Join the Waitlist"}
               </button>
@@ -142,19 +142,19 @@ export default function Hero() {
         )}
 
         {/* Visual mockup */}
-        <div className="mt-16 max-w-2xl mx-auto">
+        <div className="mt-12 sm:mt-16 max-w-2xl mx-auto w-full">
           <div className="border border-[#2A2A2A] rounded-2xl bg-[#111111] overflow-hidden">
             {/* Top bar */}
-            <div className="border-b border-[#1A1A1A] px-5 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#D4FF00]" />
-                <span className="text-xs text-[#6B6B6B] font-medium">WASP Agent — Active</span>
+            <div className="border-b border-[#1A1A1A] px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#D4FF00] flex-shrink-0" />
+                <span className="text-xs text-[#6B6B6B] font-medium truncate">WASP Agent — Active</span>
               </div>
-              <span className="text-xs text-[#4A4A4A]">2 replies sent · 0 pending</span>
+              <span className="text-xs text-[#4A4A4A] flex-shrink-0">2 sent · 0 pending</span>
             </div>
 
             {/* Mock messages */}
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4">
               {[
                 {
                   user: "@sneakerhead_mike",

@@ -40,14 +40,14 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 px-6 border-t border-[#1A1A1A]">
+    <section className="py-16 sm:py-24 px-5 sm:px-6 border-t border-[#1A1A1A]">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-16 max-w-2xl">
+        <div className="mb-10 sm:mb-16 max-w-2xl">
           <span className="text-xs text-[#D4FF00] font-semibold tracking-widest uppercase mb-4 block">
             How It Works
           </span>
           <h2
-            className="text-4xl md:text-5xl font-black text-white leading-tight"
+            className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
           >
             Up and running{" "}
@@ -55,11 +55,11 @@ export default function HowItWorks() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
           {steps.map((step, i) => (
             <div
               key={i}
-              className="relative border border-[#2A2A2A] bg-[#111111] rounded-2xl p-8 group hover:border-[#D4FF00]/30 transition-colors duration-300"
+              className="relative border border-[#2A2A2A] bg-[#111111] rounded-2xl p-6 sm:p-8 group hover:border-[#D4FF00]/30 transition-colors duration-300"
             >
               {/* Number */}
               <div className="text-7xl font-black text-[#1A1A1A] absolute top-6 right-8 select-none"
