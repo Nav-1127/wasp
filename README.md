@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WASP — Your Brand's AI Personality on Instagram
+
+WASP is an AI-powered Instagram engagement agent that learns your brand's voice and handles comments, DMs, and story replies 24/7.
+
+**Domain:** joinwasp.com  
+**Tagline:** "Put your Instagram's Engagement on Auto-Pilot with Wasp's AI Agent"
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router) with TypeScript
+- **Styling:** Tailwind CSS v4
+- **Auth & Database:** Supabase (Auth, Postgres, RLS, Real-time)
+- **AI:** Anthropic Claude API (Haiku 4.5 for responses, Sonnet 4.6 for analysis)
+- **Instagram:** Meta Instagram Graph API + Messaging API + Webhooks
+- **Deployment:** Vercel → joinwasp.com
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- [Supabase](https://supabase.com) account (free tier works)
+- Meta Developer account with an Instagram app (Phase 2)
+- Anthropic API key (Phase 2)
+
+### Setup
+
+1. **Clone and install**
+   ```bash
+   git clone <repo-url>
+   cd wasp
+   npm install
+   ```
+
+2. **Environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Fill in `.env.local` with your Supabase URL and keys.
+
+3. **Supabase — run migrations**
+
+   Go to your Supabase project → SQL Editor and run:
+   - `supabase/migrations/001_waitlist.sql` — Phase 1 (waitlist table + RLS)
+   - `supabase/migrations/002_full_schema.sql` — Phase 2+ (full schema)
+
+4. **Start dev server**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Environment Variables
+
+See `.env.example` for all required variables.
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Phase 1 | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Phase 1 | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Phase 1 | Supabase service role key (server-only) |
+| `META_APP_ID` | Phase 2 | Meta app ID |
+| `META_APP_SECRET` | Phase 2 | Meta app secret |
+| `WEBHOOK_VERIFY_TOKEN` | Phase 2 | Random string for Meta webhook verification |
+| `ANTHROPIC_API_KEY` | Phase 2 | Anthropic API key |
+| `NEXT_PUBLIC_APP_URL` | Both | App URL (`https://joinwasp.com` in production) |
+
+---
+
+## Project Structure
+
+```
+/app
+  /(marketing)
+    /page.tsx              — Landing page
+    /pricing/page.tsx      — Pricing page
+    /privacy/page.tsx      — Privacy policy (placeholder)
+    /terms/page.tsx        — Terms of service (placeholder)
+  /api
+    /waitlist/route.ts     — Waitlist signup + count endpoint
+/components
+  /landing                 — Landing page sections
+    Nav.tsx
+    Hero.tsx               — Email waitlist form
+    HowItWorks.tsx
+    Problem.tsx
+    BeforeAfter.tsx
+    PricingPreview.tsx
+    Footer.tsx
+/lib
+  /supabase.ts             — Supabase client (browser + server + admin)
+/supabase
+  /migrations
+    001_waitlist.sql       — Phase 1: waitlist table
+    002_full_schema.sql    — Phase 2+: full schema
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Vercel (recommended)
 
-## Learn More
+1. Push to GitHub
+2. Import project at [vercel.com/new](https://vercel.com/new)
+3. Add all environment variables from `.env.example`
+4. Deploy — Vercel auto-deploys on every push to `main`
 
-To learn more about Next.js, take a look at the following resources:
+### Domain
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Point `joinwasp.com` to Vercel via your DNS provider:
+- Add a CNAME record: `www` → `cname.vercel-dns.com`
+- Add an A record: `@` → Vercel's IP (shown in Vercel project settings)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Build Phases
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Phase | Status | Description |
+|---|---|---|
+| **Phase 1** | ✅ Done | Landing page, waitlist, pricing, privacy/terms, Vercel deploy |
+| **Phase 2** | 🔜 Next | Auth, Instagram OAuth, brand analysis, onboarding, webhook, dashboard |
+| **Phase 3** | ⏳ Later | Analytics, auto mode, settings, conversation threads |
+| **Phase 4** | ⏳ Later | Stripe billing, multi-account, team invites, Shopify |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Security
+
+- All Instagram tokens encrypted at rest (AES-256) — Phase 2
+- Row Level Security on all Supabase tables
+- Webhook signature verification for Meta events — Phase 2
+- Server-side only API calls (no tokens in browser)
+- `httpOnly` cookies via Supabase Auth — Phase 2
+
+---
+
+## Contributing
+
+This is a private project. Not open for external contributions at this time.
