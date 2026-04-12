@@ -32,7 +32,7 @@ const plans = [
     name: "Pro",
     price: "$29",
     period: "/month",
-    description: "For brands that want 24/7 engagement on auto-pilot.",
+    description: "For creators & brands that want 24/7 engagement on auto-pilot.",
     badge: "Most Popular",
     features: [
       { text: "1 Instagram account", included: true },
@@ -53,7 +53,7 @@ const plans = [
     name: "Agency",
     price: "$99",
     period: "/month",
-    description: "For agencies managing multiple brands at scale.",
+    description: "For agencies managing multiple accounts at scale.",
     features: [
       { text: "Up to 5 Instagram accounts", included: true },
       { text: "Draft Mode + Auto Mode", included: true },

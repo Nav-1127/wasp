@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function PricingPreview() {
+export default function PricingPreviewLight() {
   const plans = [
     {
       name: "Free",
@@ -15,7 +15,6 @@ export default function PricingPreview() {
         "Basic analytics",
       ],
       cta: "Start Free",
-      href: "/pricing",
       highlighted: false,
     },
     {
@@ -32,7 +31,6 @@ export default function PricingPreview() {
         "Priority response queue",
       ],
       cta: "Start Free Trial",
-      href: "/pricing",
       highlighted: true,
       badge: "Most Popular",
     },
@@ -49,26 +47,25 @@ export default function PricingPreview() {
         "Priority support",
       ],
       cta: "Contact Us",
-      href: "/pricing",
       highlighted: false,
     },
   ];
 
   return (
-    <section className="py-16 sm:py-24 px-5 sm:px-6 bg-[#0D0D0D] border-t border-[#1A1A1A]">
+    <section className="py-16 sm:py-24 px-5 sm:px-6 bg-[#EDE8DE] border-t border-[#D5CFC3]">
       <div className="max-w-6xl mx-auto">
         <div className="mb-10 sm:mb-16 text-center">
-          <span className="text-xs text-[#D4FF00] font-semibold tracking-widest uppercase mb-4 block">
+          <span className="text-xs text-[#5C6B00] font-semibold tracking-widest uppercase mb-4 block">
             Pricing
           </span>
           <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight"
+            className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
           >
             Simple pricing,{" "}
-            <span className="text-[#D4FF00]">serious results</span>
+            <span className="text-[#5C6B00]">serious results</span>
           </h2>
-          <p className="text-[#6B6B6B] mt-4 text-base sm:text-lg max-w-xl mx-auto">
+          <p className="text-[#6B6058] mt-4 text-base sm:text-lg max-w-xl mx-auto">
             Start free. Upgrade when you're hooked.
           </p>
         </div>
@@ -79,50 +76,40 @@ export default function PricingPreview() {
               key={i}
               className={`relative border rounded-2xl p-6 sm:p-8 flex flex-col ${
                 plan.highlighted
-                  ? "border-[#D4FF00]/40 bg-[#111111] shadow-[0_0_60px_rgba(212,255,0,0.05)]"
-                  : "border-[#2A2A2A] bg-[#111111]"
+                  ? "border-[#5C6B00]/40 bg-[#F5F0E8] shadow-md"
+                  : "border-[#D5CFC3] bg-[#F5F0E8]"
               }`}
             >
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#D4FF00] text-[#0A0A0A] text-xs font-black px-4 py-1 rounded-full tracking-wide">
+                  <span className="bg-[#1A1A1A] text-[#F5F0E8] text-xs font-black px-4 py-1 rounded-full tracking-wide">
                     {plan.badge}
                   </span>
                 </div>
               )}
 
               <div className="mb-6">
-                <p className="text-sm text-[#6B6B6B] font-medium mb-1">{plan.name}</p>
+                <p className={`text-sm font-medium mb-1 ${plan.highlighted ? "text-[#5C6B00]" : "text-[#6B6058]"}`}>
+                  {plan.name}
+                </p>
                 <div className="flex items-end gap-1 mb-2">
                   <span
-                    className="text-4xl font-black text-white"
+                    className="text-4xl font-black text-[#1A1A1A]"
                     style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
                   >
                     {plan.price}
                   </span>
-                  <span className="text-[#4A4A4A] text-sm mb-1">{plan.period}</span>
+                  <span className="text-[#9A9080] text-sm mb-1">{plan.period}</span>
                 </div>
-                <p className="text-sm text-[#4A4A4A]">{plan.description}</p>
+                <p className="text-sm text-[#9A9080]">{plan.description}</p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-start gap-3 text-sm text-[#F5F5F5]">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      className="text-[#D4FF00] mt-0.5 flex-shrink-0"
-                    >
+                  <li key={j} className="flex items-start gap-3 text-sm text-[#1A1A1A]">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#5C6B00] mt-0.5 flex-shrink-0">
                       <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                      <path
-                        d="M5 8l2 2 4-4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                      <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     {f}
                   </li>
@@ -130,11 +117,11 @@ export default function PricingPreview() {
               </ul>
 
               <Link
-                href={plan.href}
+                href="/#waitlist"
                 className={`block text-center font-bold py-3 rounded-xl text-sm transition-colors duration-200 ${
                   plan.highlighted
-                    ? "bg-[#D4FF00] text-[#0A0A0A] hover:bg-white"
-                    : "border border-[#2A2A2A] text-[#F5F5F5] hover:border-[#D4FF00]/50 hover:text-[#D4FF00]"
+                    ? "bg-[#1A1A1A] text-[#F5F0E8] hover:bg-[#D4FF00] hover:text-[#1A1A1A]"
+                    : "border border-[#D5CFC3] text-[#1A1A1A] hover:border-[#5C6B00] hover:text-[#5C6B00]"
                 }`}
               >
                 {plan.cta}
@@ -144,10 +131,7 @@ export default function PricingPreview() {
         </div>
 
         <div className="text-center mt-8">
-          <Link
-            href="/pricing"
-            className="text-sm text-[#6B6B6B] hover:text-[#D4FF00] transition-colors"
-          >
+          <Link href="/pricing" className="text-sm text-[#6B6058] hover:text-[#5C6B00] transition-colors">
             View full pricing details →
           </Link>
         </div>

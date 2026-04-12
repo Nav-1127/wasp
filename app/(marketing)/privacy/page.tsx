@@ -49,7 +49,7 @@ export default function PrivacyPage() {
             </h2>
             <p>
               WASP ("we," "our," or "us") is an AI-powered Instagram engagement tool operated
-              by its founders. Our product helps brands automate Instagram engagement using
+              by its founders. Our product helps creators and brands automate Instagram engagement using
               artificial intelligence. This privacy policy describes how we collect, use,
               and protect your information.
             </p>
