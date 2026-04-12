@@ -1,5 +1,5 @@
-import Nav from "@/components/landing/Nav";
-import Footer from "@/components/landing/Footer";
+import NavLight from "@/components/landing/light/Nav";
+import FooterLight from "@/components/landing/light/Footer";
 
 export default function MarketingLayout({
   children,
@@ -7,10 +7,10 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Nav />
+    <div style={{ backgroundColor: "#F5F0E8", minHeight: "100vh" }}>
+      <NavLight />
       <main className="flex-1">{children}</main>
-      <Footer />
-    </>
+      <FooterLight />
+    </div>
   );
 }
