@@ -49,11 +49,12 @@ export default function Hero() {
   return (
     <section
       id="waitlist"
-      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16"
+      style={{ overflowX: "hidden" }}
     >
       {/* Background grid */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
           backgroundImage:
             "linear-gradient(#D4FF00 1px, transparent 1px), linear-gradient(90deg, #D4FF00 1px, transparent 1px)",
@@ -61,15 +62,17 @@ export default function Hero() {
         }}
       />
 
-      {/* Glow orb */}
-      <div
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.06] blur-3xl pointer-events-none"
-        style={{ background: "#D4FF00" }}
-      />
+      {/* Glow orb — clipped in a contained wrapper so iOS Safari doesn't shift layout */}
+      <div className="absolute inset-0 pointer-events-none" style={{ overflow: "hidden" }}>
+        <div
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] rounded-full opacity-[0.06] blur-3xl"
+          style={{ background: "#D4FF00" }}
+        />
+      </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto text-center">
+      <div className="relative z-10 w-full max-w-5xl mx-auto text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 border border-[#2A2A2A] bg-[#111111] rounded-full px-4 py-1.5 mb-8">
+        <div className="inline-flex items-center gap-2 border border-[#2A2A2A] bg-[#111111] rounded-full px-4 py-1.5 mb-5 sm:mb-8">
           <span className="w-2 h-2 rounded-full bg-[#D4FF00] animate-pulse" />
           <span className="text-xs text-[#6B6B6B] tracking-widest uppercase">
             AI Instagram Agent
@@ -78,7 +81,7 @@ export default function Hero() {
 
         {/* Headline */}
         <h1
-          className="text-[2.1rem] sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] sm:leading-[0.95] tracking-tight text-white mb-5 sm:mb-6"
+          className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-tight sm:leading-[0.95] tracking-tight text-white mb-4 sm:mb-6"
           style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
         >
           Put Your Instagram{" "}
@@ -87,7 +90,7 @@ export default function Hero() {
         </h1>
 
         {/* Subline */}
-        <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-[#6B6B6B] mb-8 sm:mb-10 leading-relaxed">
+        <p className="w-full max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-[#6B6B6B] mb-8 sm:mb-10 leading-relaxed">
           Not a chatbot. Not a flow builder.{" "}
           <span className="text-[#F5F5F5]">An AI agent that learns your voice</span>,
           replies like you, and never sleeps.
