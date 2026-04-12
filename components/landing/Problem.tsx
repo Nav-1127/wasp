@@ -7,7 +7,7 @@ export default function Problem() {
     },
     {
       stat: "6hrs",
-      label: "average reply time for brands",
+      label: "average reply time for creators & brands",
       callout: "By then, the moment's dead.",
     },
     {
@@ -58,7 +58,7 @@ export default function Problem() {
               className="text-2xl md:text-3xl font-bold text-white leading-snug mb-4"
               style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
             >
-              "The algorithm rewards brands that engage. You're leaving reach on the table."
+              "The algorithm rewards those who engage. You're leaving reach on the table."
             </p>
             <p className="text-[#6B6B6B] text-base">
               WASP makes your reply rate{" "}

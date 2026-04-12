@@ -22,7 +22,7 @@ export default function PricingPreview() {
       name: "Pro",
       price: "$29",
       period: "/month",
-      description: "For brands serious about engagement.",
+      description: "For creators & brands serious about engagement.",
       features: [
         "Everything in Free",
         "Unlimited AI responses",
@@ -40,7 +40,7 @@ export default function PricingPreview() {
       name: "Agency",
       price: "$99",
       period: "/month",
-      description: "Manage multiple brands from one dashboard.",
+      description: "Manage multiple accounts from one dashboard.",
       features: [
         "Everything in Pro",
         "Up to 5 Instagram accounts",
