@@ -108,8 +108,11 @@ export default function HeroLight() {
                 disabled={status === "loading"}
                 className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-60"
               >
-                {status === "loading" ? "Joining..." : "Join the Waitlist"}
+                {status === "loading" ? "Joining..." : "Get Early Access, It's Free"}
               </button>
+              <p className="text-xs text-[#9A9080] text-center">
+                Sign up now and get your first month of Pro free when we launch. No spam, ever.
+              </p>
             </div>
           )}
 
