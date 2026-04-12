@@ -1,19 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Hero() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate">("idle");
   const [message, setMessage] = useState("");
-  const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetch("/api/waitlist")
-      .then((r) => r.json())
-      .then((d) => setWaitlistCount(d.count))
-      .catch(() => {});
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +23,6 @@ export default function Hero() {
       if (res.status === 201) {
         setStatus("success");
         setMessage(data.message);
-        if (data.count) setWaitlistCount(data.count);
         setEmail("");
       } else if (res.status === 409) {
         setStatus("duplicate");
@@ -102,11 +93,6 @@ export default function Hero() {
             <div className="border border-[#D4FF00]/30 bg-[#D4FF00]/10 rounded-2xl px-6 py-5 text-center">
               <p className="text-[#D4FF00] font-bold text-lg mb-1">You're in. 🐝</p>
               <p className="text-[#6B6B6B] text-sm">{message}</p>
-              {waitlistCount && (
-                <p className="text-white text-sm mt-2 font-medium">
-                  #{waitlistCount} on the list
-                </p>
-              )}
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -134,15 +120,6 @@ export default function Hero() {
             </p>
           )}
         </form>
-
-        {/* Social proof */}
-        {waitlistCount !== null && waitlistCount > 0 && status !== "success" && (
-          <p className="text-sm text-[#4A4A4A]">
-            Join{" "}
-            <span className="text-[#D4FF00] font-semibold">{waitlistCount.toLocaleString()}</span>{" "}
-            brands already on the waitlist
-          </p>
-        )}
 
         {/* Visual mockup */}
         <div className="mt-12 sm:mt-16 max-w-2xl mx-auto w-full">
