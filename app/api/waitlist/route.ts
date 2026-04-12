@@ -52,7 +52,9 @@ When we launch, you'll get your first month of Pro completely free.
 We'll reach out the moment it's ready.
 
 The WASP Team
-joinwasp.com`,
+joinwasp.com
+
+This is an automated email, please do not reply.`,
     }).catch((err) => console.error("Resend error:", err));
 
     const { count } = await supabase
