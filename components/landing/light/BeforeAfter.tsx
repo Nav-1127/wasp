@@ -1,8 +1,8 @@
 export default function BeforeAfterLight() {
   const metrics = [
-    { label: "Reply Rate", before: "12%", after: "97%" },
-    { label: "Avg. Reply Time", before: "6 hours", after: "2 minutes" },
-    { label: "Comments Answered / Day", before: "23", after: "200+" },
+    { label: "Reply Rate", before: "<20%", after: "97%" },
+    { label: "Avg. Reply Time", before: "10+ hours", after: "2 minutes" },
+    { label: "Comments Answered / Day", before: "A handful", after: "200+" },
     { label: "Social Team Needed", before: "Yes", after: "Nope" },
   ];
 
@@ -88,6 +88,7 @@ export default function BeforeAfterLight() {
 
         {/* Visual bars */}
         <div className="mt-8 sm:mt-12 grid md:grid-cols-2 gap-4 sm:gap-8">
+          {/* Reply rate */}
           <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-[#6B6058]">Reply Rate</span>
@@ -96,10 +97,10 @@ export default function BeforeAfterLight() {
             <div className="mb-3">
               <div className="flex justify-between mb-1.5">
                 <span className="text-xs text-[#9A9080]">Before</span>
-                <span className="text-xs text-[#9A9080] font-medium">12%</span>
+                <span className="text-xs text-[#9A9080] font-medium">&lt;20%</span>
               </div>
               <div className="h-2.5 bg-[#D5CFC3] rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-[#C5BFB3]" style={{ width: "12%" }} />
+                <div className="h-full rounded-full bg-[#C5BFB3]" style={{ width: "20%" }} />
               </div>
             </div>
             <div>
@@ -113,6 +114,7 @@ export default function BeforeAfterLight() {
             </div>
           </div>
 
+          {/* Response time */}
           <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-[#6B6058]">Response Time</span>
@@ -121,7 +123,7 @@ export default function BeforeAfterLight() {
             <div className="mb-3">
               <div className="flex justify-between mb-1.5">
                 <span className="text-xs text-[#9A9080]">Before</span>
-                <span className="text-xs text-[#9A9080] font-medium">6 hours</span>
+                <span className="text-xs text-[#9A9080] font-medium">10+ hours</span>
               </div>
               <div className="h-2.5 bg-[#D5CFC3] rounded-full overflow-hidden">
                 <div className="h-full rounded-full bg-[#C5BFB3]" style={{ width: "100%" }} />
@@ -138,6 +140,11 @@ export default function BeforeAfterLight() {
             </div>
           </div>
         </div>
+
+        {/* Footnote */}
+        <p className="text-xs text-[#9A9080] mt-6">
+          * Sources: Sprout Social 2024 Instagram Benchmark Report; Spur.us Instagram Response Time Study 2026
+        </p>
       </div>
     </section>
   );

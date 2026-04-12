@@ -1,19 +1,19 @@
 export default function ProblemLight() {
   const stats = [
     {
-      stat: "15%",
-      label: "of comments get a reply",
-      callout: "Instagram notices the silence.",
+      stat: "fewer than 1 in 5",
+      label: "comments ever get a reply from the account that posted",
+      callout: "",
     },
     {
-      stat: "6hrs",
-      label: "average reply time for creators & brands",
-      callout: "By then, the moment's dead.",
+      stat: "10+ hrs",
+      label: "average Instagram response time for businesses*",
+      callout: "",
     },
     {
-      stat: "97%",
-      label: "of DMs go unanswered",
-      callout: "That's revenue walking away.",
+      stat: "4–6 hrs",
+      label: "how long the average creator takes to reply to DMs. By then, they've moved on.*",
+      callout: "",
     },
   ];
 
@@ -33,23 +33,27 @@ export default function ProblemLight() {
           </h2>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-16">
+        <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
           {stats.map((item, i) => (
             <div
               key={i}
               className="border border-[#D5CFC3] bg-[#F5F0E8] rounded-2xl p-6 sm:p-8"
             >
               <div
-                className="text-5xl font-black text-[#5C6B00] mb-2"
+                className="text-3xl sm:text-4xl font-black text-[#5C6B00] mb-3 leading-tight"
                 style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
               >
                 {item.stat}
               </div>
-              <p className="text-[#1A1A1A] font-medium mb-2">{item.label}</p>
-              <p className="text-[#6B6058] text-sm">{item.callout}</p>
+              <p className="text-[#1A1A1A] font-medium text-sm leading-relaxed">{item.label}</p>
             </div>
           ))}
         </div>
+
+        {/* Footnote */}
+        <p className="text-xs text-[#9A9080] mb-10 sm:mb-16">
+          * Sources: Sprout Social 2024 Instagram Benchmark Report; Spur.us Instagram Response Time Study 2026
+        </p>
 
         <div className="border border-[#5C6B00]/20 bg-[#D4FF00]/15 rounded-2xl p-8 md:p-10">
           <div className="max-w-3xl">
