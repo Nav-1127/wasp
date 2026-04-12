@@ -59,30 +59,30 @@ export default function HowItWorksLight() {
           {steps.map((step, i) => (
             <div
               key={i}
-              className="relative border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-6 sm:p-8 group hover:border-[#5C6B00]/40 transition-colors duration-300"
+              className="relative border border-[#3D4A1A] bg-[#2D3A10] rounded-2xl p-6 sm:p-8 group hover:border-[#5C6B00] transition-colors duration-300"
             >
               <div
-                className="text-7xl font-black text-[#D5CFC3] absolute top-6 right-8 select-none"
+                className="text-7xl font-black text-[#3D4A1A] absolute top-6 right-8 select-none"
                 style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
               >
                 {step.number}
               </div>
 
-              <div className="text-[#5C6B00] mb-6 relative z-10">{step.icon}</div>
+              <div className="text-[#D4FF00] mb-6 relative z-10">{step.icon}</div>
 
               <h3
-                className="text-2xl font-bold text-[#1A1A1A] mb-3 relative z-10"
+                className="text-2xl font-bold text-[#F5F0E8] mb-3 relative z-10"
                 style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
               >
                 {step.title}
               </h3>
-              <p className="text-[#6B6058] text-sm leading-relaxed relative z-10">
+              <p className="text-[#A8B880] text-sm leading-relaxed relative z-10">
                 {step.description}
               </p>
 
               {i < steps.length - 1 && (
                 <div className="hidden md:block absolute -right-4 top-1/2 -translate-y-1/2 z-20">
-                  <div className="w-8 h-[1px] bg-[#D5CFC3]" />
+                  <div className="w-8 h-[1px] bg-[#3D4A1A]" />
                 </div>
               )}
             </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function FooterLight() {
   return (
-    <footer className="border-t border-[#D5CFC3] bg-[#EDE8DE] py-10 sm:py-12 px-5 sm:px-6">
+    <footer className="border-t border-[#D5CFC3] bg-[#F5F0E8] py-10 sm:py-12 px-5 sm:px-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 sm:gap-10">
           <div>
@@ -36,7 +36,7 @@ export default function FooterLight() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-[#D5CFC3] flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-10 pt-6 border-t border-[#E5DFD5] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[#9A9080] text-xs">© {new Date().getFullYear()} WASP. All rights reserved.</p>
           <p className="text-[#9A9080] text-xs">
             Built by{" "}
