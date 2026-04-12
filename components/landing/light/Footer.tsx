@@ -15,7 +15,7 @@ export default function FooterLight() {
               </span>
               <span className="text-lg leading-none">⚡</span>
             </div>
-            <p className="text-[#9A9080] text-xs max-w-[200px]">AI Instagram Engagement Agent</p>
+            <p className="text-[#9A9080] text-xs max-w-[200px]">AI Agent for Instagram Engagement</p>
           </div>
 
           <div className="flex flex-wrap gap-x-8 gap-y-6 text-sm">

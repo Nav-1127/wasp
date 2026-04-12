@@ -122,13 +122,13 @@ export default function HeroLight() {
 
         {/* Visual mockup — dark themed for contrast */}
         <div className="mt-12 sm:mt-16 max-w-2xl mx-auto w-full">
-          <div className="border border-[#2A2A2A] rounded-2xl bg-[#111111] overflow-hidden shadow-lg">
-            <div className="border-b border-[#1A1A1A] px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+          <div className="border border-[#3A3A3A] rounded-2xl bg-[#222222] overflow-hidden shadow-lg">
+            <div className="border-b border-[#2A2A2A] px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#D4FF00] flex-shrink-0" />
-                <span className="text-xs text-[#6B6B6B] font-medium truncate">WASP Agent — Active</span>
+                <span className="text-xs text-[#8A8A8A] font-medium truncate">WASP Agent — Active</span>
               </div>
-              <span className="text-xs text-[#4A4A4A] flex-shrink-0">2 sent · 0 pending</span>
+              <span className="text-xs text-[#666666] flex-shrink-0">2 sent · 0 pending</span>
             </div>
 
             <div className="p-4 sm:p-5 space-y-4">
@@ -148,21 +148,21 @@ export default function HeroLight() {
               ].map((item, i) => (
                 <div key={i} className="space-y-2">
                   <div className="flex gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[#2A2A2A] flex-shrink-0 flex items-center justify-center text-xs text-[#6B6B6B]">
+                    <div className="w-7 h-7 rounded-full bg-[#333333] flex-shrink-0 flex items-center justify-center text-xs text-[#8A8A8A]">
                       {item.user[1].toUpperCase()}
                     </div>
-                    <div className="bg-[#1A1A1A] rounded-xl rounded-tl-none px-4 py-2.5 max-w-xs">
-                      <p className="text-xs text-[#6B6B6B] mb-1">{item.user}</p>
-                      <p className="text-sm text-[#F5F5F5]">{item.msg}</p>
+                    <div className="bg-[#2A2A2A] rounded-xl rounded-tl-none px-4 py-2.5 max-w-xs">
+                      <p className="text-xs text-[#8A8A8A] mb-1">{item.user}</p>
+                      <p className="text-sm text-[#E8E8E8]">{item.msg}</p>
                     </div>
                   </div>
                   <div className="flex gap-3 justify-end">
-                    <div className="bg-[#D4FF00]/10 border border-[#D4FF00]/20 rounded-xl rounded-tr-none px-4 py-2.5 max-w-xs">
+                    <div className="bg-[#D4FF00]/15 border border-[#D4FF00]/25 rounded-xl rounded-tr-none px-4 py-2.5 max-w-xs">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="text-[8px] font-black text-[#D4FF00]">WASP</span>
-                        <span className="text-[10px] text-[#D4FF00]/60">{item.delay}</span>
+                        <span className="text-[10px] text-[#D4FF00]/50">{item.delay}</span>
                       </div>
-                      <p className="text-sm text-[#F5F5F5]">{item.reply}</p>
+                      <p className="text-sm text-[#E8E8E8]">{item.reply}</p>
                     </div>
                   </div>
                 </div>

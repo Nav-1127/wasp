@@ -59,10 +59,10 @@ export default function HowItWorksLight() {
           {steps.map((step, i) => (
             <div
               key={i}
-              className="relative border border-[#3D4A1A] bg-[#2D3A10] rounded-2xl p-6 sm:p-8 group hover:border-[#5C6B00] transition-colors duration-300"
+              className="relative border border-[#6B8030] bg-[#4A5E20] rounded-2xl p-6 sm:p-8 group hover:border-[#8A9A40] transition-colors duration-300"
             >
               <div
-                className="text-7xl font-black text-[#3D4A1A] absolute top-6 right-8 select-none"
+                className="text-7xl font-black text-[#5A7025] absolute top-6 right-8 select-none"
                 style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
               >
                 {step.number}
@@ -76,7 +76,7 @@ export default function HowItWorksLight() {
               >
                 {step.title}
               </h3>
-              <p className="text-[#A8B880] text-sm leading-relaxed relative z-10">
+              <p className="text-[#C8D8A0] text-sm leading-relaxed relative z-10">
                 {step.description}
               </p>
 
