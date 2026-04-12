@@ -26,14 +26,14 @@ export default async function DashboardPage() {
         className="border-b px-6 py-4 flex items-center justify-between"
         style={{ borderColor: "#D5CFC3", backgroundColor: "#EDE8DE" }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <span
-            className="text-xl font-black tracking-tighter text-[#1A1A1A]"
+            className="text-2xl font-black tracking-tighter text-[#1A1A1A]"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
           >
             WASP
           </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF00]" />
+          <span className="text-lg leading-none">⚡</span>
         </div>
 
         <div className="flex items-center gap-4">

@@ -177,11 +177,33 @@ function Step1({
           : "Link your Instagram Creator account so WASP can engage with your audience automatically."}
       </p>
 
+      {/* What WASP will analyze */}
+      <div className="border border-[#5C6B00]/25 bg-[#D4FF00]/10 rounded-2xl p-5 mb-5">
+        <p className="text-xs font-semibold text-[#5C6B00] uppercase tracking-wider mb-3">
+          What WASP analyzes when you connect
+        </p>
+        <div className="flex flex-col gap-2">
+          {[
+            { icon: "📝", text: "Your last 50 posts & captions" },
+            { icon: "💬", text: "Your existing comment replies" },
+            { icon: "🧠", text: "Your tone, energy, and phrases you use" },
+          ].map((item) => (
+            <div key={item.icon} className="flex items-center gap-2.5">
+              <span className="text-sm">{item.icon}</span>
+              <p className="text-xs text-[#6B6058]">{item.text}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-[#5C6B00] font-medium mt-3">
+          → WASP auto-fills your voice profile in the next step. You just review it.
+        </p>
+      </div>
+
       {/* Placeholder card */}
-      <div className="border-2 border-dashed border-[#D5CFC3] rounded-2xl p-8 text-center mb-6">
-        <div className="text-4xl mb-3">📸</div>
+      <div className="border-2 border-dashed border-[#D5CFC3] rounded-2xl p-6 text-center mb-6">
+        <div className="text-3xl mb-2">📸</div>
         <p
-          className="font-bold text-[#1A1A1A] mb-2"
+          className="font-bold text-[#1A1A1A] mb-1.5"
           style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
         >
           Instagram OAuth
@@ -277,11 +299,19 @@ function Step2({
       >
         {isBrand ? "What's your brand voice?" : "What's your content style?"}
       </h1>
-      <p className="text-[#6B6058] mb-8">
+      <p className="text-[#6B6058] mb-5">
         {isBrand
           ? "WASP will study this and write replies that sound exactly like you — not robotic, not generic."
           : "WASP will match your style perfectly so your audience can't tell the difference."}
       </p>
+
+      {/* Profile analysis note */}
+      <div className="flex items-start gap-3 border border-[#5C6B00]/25 bg-[#D4FF00]/10 rounded-xl px-4 py-3.5 mb-6">
+        <span className="text-base flex-shrink-0 mt-0.5">🔍</span>
+        <p className="text-xs text-[#5C6B00] leading-relaxed">
+          <span className="font-semibold">Once you connect Instagram,</span> WASP will automatically analyze your posts, captions, and comment replies to pre-fill this for you. For now, fill it in manually — you can always update it later.
+        </p>
+      </div>
 
       <div className="flex flex-col gap-5 mb-6">
         <div>
@@ -696,18 +726,18 @@ export default function OnboardingPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-5 py-12"
+      className="min-h-screen flex flex-col items-center px-5 pt-10 pb-16"
       style={{ backgroundColor: "#F5F0E8" }}
     >
       {/* Logo */}
-      <div className="mb-10 flex items-center gap-2">
+      <div className="mb-7 flex items-center gap-1.5">
         <span
-          className="text-2xl font-black tracking-tighter text-[#1A1A1A]"
+          className="text-4xl font-black tracking-tighter text-[#1A1A1A]"
           style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
         >
           WASP
         </span>
-        <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF00]" />
+        <span className="text-2xl leading-none">⚡</span>
       </div>
 
       <div className="w-full max-w-lg">
