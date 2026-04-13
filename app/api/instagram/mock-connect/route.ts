@@ -6,15 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(`${appUrl}/login`);
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   const admin = createAdminClient();
@@ -35,8 +33,8 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error("Mock connect error:", error);
-    return NextResponse.redirect(`${appUrl}/onboarding?error=save_failed`);
+    return NextResponse.redirect(new URL("/onboarding?error=save_failed", request.url));
   }
 
-  return NextResponse.redirect(`${appUrl}/onboarding?instagram=connected`);
+  return NextResponse.redirect(new URL("/onboarding?instagram=connected", request.url));
 }

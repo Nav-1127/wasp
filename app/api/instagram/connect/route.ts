@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = new URL(request.url).origin;
 
   // ── Mock / dev mode ────────────────────────────────────────────────────────
   // Active when META_APP_ID is not set OR USE_MOCK_AUTH=true

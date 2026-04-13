@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state");
   const errorParam = searchParams.get("error");
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://joinwasp.com";
+  const appUrl = new URL(request.url).origin;
 
   // User denied permission
   if (errorParam) {
