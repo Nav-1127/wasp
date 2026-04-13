@@ -155,10 +155,14 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Mark onboarding complete in DB
+      // Mark onboarding complete + save engagement level
       await admin
         .from("brand_accounts")
-        .update({ onboarding_step: 5, onboarding_completed: true })
+        .update({
+          onboarding_step: 5,
+          onboarding_completed: true,
+          engagement_level: (data.engagement_level as string) ?? "smart_select",
+        })
         .eq("user_id", user.id);
 
       // Mark in Supabase Auth app_metadata so middleware can read it

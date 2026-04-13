@@ -51,7 +51,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtectedRoute =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/onboarding");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/sting-triggers") ||
+    pathname.startsWith("/settings");
   const isAuthRoute = pathname === "/login" || pathname === "/signup";
 
   // Not authenticated → redirect to /login

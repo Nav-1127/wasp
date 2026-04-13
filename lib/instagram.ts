@@ -110,6 +110,89 @@ export async function getInstagramProfile(
   };
 }
 
+// ── Content fetching for personality analysis ──────────────────────────────────
+
+export interface InstagramPost {
+  id: string;
+  caption: string | null;
+  timestamp: string;
+  hashtags: string[];
+  comments?: InstagramComment[];
+}
+
+export interface InstagramComment {
+  id: string;
+  text: string;
+  from_account_owner: boolean;
+}
+
+/** Fetch last N posts with captions and timestamps */
+export async function getRecentPosts(
+  igUserId: string,
+  accessToken: string,
+  limit = 50
+): Promise<InstagramPost[]> {
+  const res = await fetch(
+    `${GRAPH_BASE}/${igUserId}/media?fields=id,caption,timestamp&limit=${limit}&access_token=${accessToken}`
+  );
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message ?? "Failed to fetch posts");
+  }
+
+  const posts: InstagramPost[] = (data.data ?? []).map(
+    (p: { id: string; caption?: string; timestamp: string }) => {
+      const caption = p.caption ?? "";
+      // Extract hashtags from caption
+      const hashtags = (caption.match(/#\w+/g) ?? []).map((h: string) =>
+        h.toLowerCase()
+      );
+      return {
+        id: p.id,
+        caption,
+        timestamp: p.timestamp,
+        hashtags,
+      };
+    }
+  );
+
+  return posts;
+}
+
+/** Fetch the account owner's own comment replies on their posts (how they talk back) */
+export async function getAccountCommentReplies(
+  igUserId: string,
+  posts: InstagramPost[],
+  accessToken: string,
+  maxPostsToCheck = 10
+): Promise<string[]> {
+  const replies: string[] = [];
+  const postsToCheck = posts.slice(0, maxPostsToCheck);
+
+  for (const post of postsToCheck) {
+    try {
+      const res = await fetch(
+        `${GRAPH_BASE}/${post.id}/comments?fields=id,text,from&limit=25&access_token=${accessToken}`
+      );
+      const data = await res.json();
+
+      if (!res.ok || data.error) continue;
+
+      for (const comment of data.data ?? []) {
+        // Only include comments made by the account owner
+        if (comment.from?.id === igUserId && comment.text) {
+          replies.push(comment.text);
+        }
+      }
+    } catch {
+      // Skip failed post — don't break the whole analysis
+    }
+  }
+
+  return replies;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 export function formatFollowerCount(count: number): string {
