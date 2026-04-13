@@ -30,6 +30,11 @@ CREATE TABLE IF NOT EXISTS sting_triggers (
   created_at          TIMESTAMPTZ DEFAULT now()
 );
 
+-- ── Extend interactions table for Phase 2c ────────────────────────────────────
+ALTER TABLE interactions
+  ADD COLUMN IF NOT EXISTS sting_trigger_id UUID REFERENCES sting_triggers(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS comment_category TEXT;
+
 -- ── RLS for sting_triggers ─────────────────────────────────────────────────────
 ALTER TABLE sting_triggers ENABLE ROW LEVEL SECURITY;
 

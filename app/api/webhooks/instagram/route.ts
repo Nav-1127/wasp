@@ -118,18 +118,18 @@ async function handleComment(comment: IncomingComment) {
   if (matchedTrigger) {
     console.log(`Sting trigger matched: ${matchedTrigger.name}`);
 
-    // Log the interaction
+    // Log the interaction (using actual interactions table column names)
     await admin.from("interactions").insert({
-      brand_account_id:  account.id,
-      user_id:           account.user_id,
-      interaction_type:  "comment",
-      platform_id:       comment.comment_id,
-      commenter_id:      comment.commenter_id,
-      commenter_username: comment.commenter_username,
-      content:           comment.comment_text,
-      draft_response:    matchedTrigger.comment_reply,
-      status:            "queued", // Phase 3 will send these automatically
-      sting_trigger_id:  matchedTrigger.id,
+      brand_account_id:   account.id,
+      user_id:            account.user_id,
+      interaction_type:   "comment",
+      source_post_id:     comment.post_id,
+      instagram_user_id:  comment.commenter_id,
+      instagram_username: comment.commenter_username,
+      message_text:       comment.comment_text,
+      drafted_response:   matchedTrigger.comment_reply,
+      status:             "pending",
+      sting_trigger_id:   matchedTrigger.id,
     });
 
     // Increment the trigger's fired counter
@@ -158,12 +158,12 @@ async function handleComment(comment: IncomingComment) {
     brand_account_id:   account.id,
     user_id:            account.user_id,
     interaction_type:   "comment",
-    platform_id:        comment.comment_id,
-    commenter_id:       comment.commenter_id,
-    commenter_username: comment.commenter_username,
-    content:            comment.comment_text,
+    source_post_id:     comment.post_id,
+    instagram_user_id:  comment.commenter_id,
+    instagram_username: comment.commenter_username,
+    message_text:       comment.comment_text,
     comment_category:   category,
-    status:             "pending_draft",
+    status:             "pending",
   });
 
   console.log(`Comment queued for AI response (${category})`);
@@ -186,16 +186,15 @@ async function handleDirectMessage(
 
   if (!account) return;
 
-  // DMs always get a response — log as pending_draft for Phase 3
+  // DMs always get a response — log as pending for Phase 3
   await admin.from("interactions").insert({
     brand_account_id:   account.id,
     user_id:            account.user_id,
     interaction_type:   "dm",
-    platform_id:        messageValue.mid ?? "",
-    commenter_id:       messageValue.sender?.id ?? "",
-    commenter_username: "",
-    content:            messageValue.message?.text ?? "",
-    status:             "pending_draft",
+    instagram_user_id:  messageValue.sender?.id ?? "",
+    instagram_username: "",
+    message_text:       messageValue.message?.text ?? "",
+    status:             "pending",
   });
 }
 
