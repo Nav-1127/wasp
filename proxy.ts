@@ -4,6 +4,18 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
+  // ── Intercept Supabase auth errors redirected to the site URL ───────────────
+  // When an OTP/email link expires or is invalid, Supabase redirects to
+  // [siteURL]?error=access_denied&error_code=otp_expired&...
+  // Catch this before it reaches the page and show a friendly message instead.
+  const errorCode = request.nextUrl.searchParams.get("error_code");
+  if (errorCode === "otp_expired" || errorCode === "access_denied") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/signup";
+    url.search = "?error=link_expired";
+    return NextResponse.redirect(url);
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,9 +38,15 @@ export async function proxy(request: NextRequest) {
   );
 
   // Refresh session — always call getUser() to keep tokens fresh
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Wrapped in try/catch so a Supabase error never causes a 500
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (err) {
+    console.error("Proxy: getUser() failed", err);
+    return supabaseResponse;
+  }
 
   const { pathname } = request.nextUrl;
 
@@ -73,14 +91,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all routes EXCEPT:
-     * - _next/static  (static files)
-     * - _next/image   (image optimisation)
-     * - favicon.ico
-     * - api routes (handled separately)
-     * - public assets with extensions
-     */
     "/((?!_next/static|_next/image|favicon\\.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)",
   ],
 };
