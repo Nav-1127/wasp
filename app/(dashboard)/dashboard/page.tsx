@@ -43,7 +43,7 @@ export default async function DashboardPage() {
           <form action="/api/auth/signout" method="POST">
             <button
               type="submit"
-              className="text-xs text-[#9A9080] hover:text-[#5C6B00] transition-colors border border-[#D5CFC3] rounded-lg px-3 py-1.5"
+              className="text-xs font-semibold text-[#1A1A1A] bg-[#EDE8DE] hover:bg-[#1A1A1A] hover:text-[#F5F0E8] transition-colors border border-[#D5CFC3] rounded-lg px-4 py-2"
             >
               Sign out
             </button>
