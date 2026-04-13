@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 
-export default function SignupPage() {
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const linkExpired = searchParams.get("error") === "link_expired";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -55,6 +60,22 @@ export default function SignupPage() {
 
   return (
     <div className="flex flex-col gap-5">
+
+      {/* Link expired banner */}
+      {linkExpired && (
+        <div className="border border-orange-200 bg-orange-50 rounded-2xl px-5 py-4 flex items-start gap-3">
+          <span className="text-lg flex-shrink-0">⏱️</span>
+          <div>
+            <p className="text-sm font-semibold text-orange-800 mb-0.5">
+              Your confirmation link expired
+            </p>
+            <p className="text-xs text-orange-700 leading-relaxed">
+              Email links expire after 1 hour. Sign up again below and we&apos;ll send you a fresh one — confirm it straight away this time.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl px-8 py-8">
         <h1
           className="text-2xl font-black text-[#1A1A1A] mb-1"
@@ -150,5 +171,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   );
 }
