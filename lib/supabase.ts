@@ -1,3 +1,7 @@
+// ── Server-only Supabase clients ─────────────────────────────────────────────
+// Do NOT import this file in Client Components.
+// For Client Components, import from "@/lib/supabase-browser" instead.
+
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -5,12 +9,7 @@ import { cookies } from "next/headers";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Browser client (for client components)
-export function createBrowserClient() {
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
-
-// Server client (for server components and API routes)
+// ── Server client (for Server Components, Route Handlers, Server Actions) ────
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies();
 
@@ -32,7 +31,7 @@ export async function createServerSupabaseClient() {
   });
 }
 
-// Admin client (for server-only operations using service role key)
+// ── Admin client (service role — server only, never expose to client) ─────────
 export function createAdminClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   return createClient(supabaseUrl, serviceRoleKey, {
