@@ -536,7 +536,9 @@ function Step2({
         setEditedTraits({ ...json.profile.traits });
         setPhase("report");
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Analysis failed");
+        const msg = err instanceof Error ? err.message : "Analysis failed";
+        console.error("Personality analysis failed:", msg);
+        setError(msg);
         setPhase("fresh"); // fall back to manual entry
       }
     })();

@@ -198,7 +198,7 @@ Be specific and accurate — base everything strictly on the actual content you 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const message = await anthropic.messages.create({
-      model:      "claude-sonnet-4-5",
+      model:      "claude-sonnet-4-6",
       max_tokens: 2000,
       messages:   [{ role: "user", content: prompt }],
     });
