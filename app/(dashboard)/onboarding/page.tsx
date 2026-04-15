@@ -526,18 +526,21 @@ function Step2({
 
   // Run analysis on mount
   useEffect(() => {
+    console.log("[WASP] Step 2 mounted — calling /api/analyze-personality");
     (async () => {
       try {
         const res  = await fetch("/api/analyze-personality", { method: "POST" });
-        const json = await res.json();
-        if (!res.ok || json.error) throw new Error(json.error ?? "Analysis failed");
-        setProfile(json.profile);
-        setPersonalityPrompt(json.personality_prompt);
-        setEditedTraits({ ...json.profile.traits });
+        console.log("[WASP] analyze-personality response status:", res.status);
+        let json: Record<string, unknown> = {};
+        try { json = await res.json(); } catch { /* non-JSON body */ }
+        if (!res.ok || json.error) throw new Error((json.error as string) ?? `HTTP ${res.status}`);
+        setProfile(json.profile as PersonalityProfile);
+        setPersonalityPrompt(json.personality_prompt as string);
+        setEditedTraits({ ...(json.profile as PersonalityProfile).traits });
         setPhase("report");
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Analysis failed";
-        console.error("Personality analysis failed:", msg);
+        console.error("[WASP] Personality analysis failed:", msg);
         setError(msg);
         setPhase("fresh"); // fall back to manual entry
       }

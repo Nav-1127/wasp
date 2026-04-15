@@ -35,6 +35,94 @@ const MOCK_REPLIES = [
   "shipping starts tuesday! you'll get a tracking email 📦",
 ];
 
+// ── Mock profile (used when ANTHROPIC_API_KEY is not set) ─────────────────────
+
+const MOCK_PROFILE = {
+  voice_summary:
+    "A direct, energetic streetwear brand that keeps it real with their audience. They're casual and confident — not a corporate account, more like a friend who happens to drop fire fits.",
+  traits: {
+    formal_casual: 8,
+    serious_playful: 7,
+    reserved_bold: 8,
+    minimal_expressive: 7,
+    corporate_streetwise: 9,
+  },
+  language_patterns: {
+    emoji_usage: "moderate" as const,
+    emoji_types: ["🔥", "👀", "🙏", "❤️", "😭"],
+    sentence_length: "short" as const,
+    slang_level: "moderate" as const,
+    signature_phrases: ["fr fr", "not gonna lie", "appreciate you", "stay tuned", "link in bio"],
+    capitalization: "standard" as const,
+  },
+  engagement_style: {
+    to_compliments: "Warm and genuine — short, heartfelt reply, often with an emoji.",
+    to_product_questions: "Fast and helpful — drop the link or answer directly, keep it friendly.",
+    to_negative_comments: "Calm and confident — acknowledge without being defensive.",
+    to_generic_comments: "Energetic and fun — match their vibe, keep it short.",
+  },
+  content_themes: [
+    { theme: "New drops & restocks", percentage: 35 },
+    { theme: "Brand values & quality", percentage: 25 },
+    { theme: "Behind the scenes", percentage: 20 },
+    { theme: "Community & gratitude", percentage: 20 },
+  ],
+  sample_responses: {
+    to_compliment: "appreciate you fr fr ❤️🙏",
+    to_product_question: "link in bio babe! grab it before it's gone 👀",
+    to_negative_comment: "we hear you! quality takes time — hope you give us another shot 🙏",
+    to_hype_comment: "you already know 🔥🔥",
+    to_purchase_confirmation: "welcome to the fam!! you're gonna love it 😭❤️",
+  },
+};
+
+// ── Helper: build personality_prompt string from a profile ────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildPersonalityPrompt(profile: any, handle: string): string {
+  const t = profile.traits;
+  const l = profile.language_patterns;
+  const e = profile.engagement_style;
+
+  const toneLabel    = t.formal_casual        >= 7 ? "casual and relaxed"              : t.formal_casual        <= 3 ? "formal and polished"       : "balanced in tone";
+  const playfulLabel = t.serious_playful      >= 7 ? "playful and fun"                 : t.serious_playful      <= 3 ? "serious and measured"        : "a mix of serious and playful";
+  const boldLabel    = t.reserved_bold        >= 7 ? "bold and direct"                 : t.reserved_bold        <= 3 ? "reserved and thoughtful"     : "confident but not overbearing";
+  const expressLabel = t.minimal_expressive   >= 7 ? "expressive and emotive"          : t.minimal_expressive   <= 3 ? "minimal and understated"      : "moderately expressive";
+  const streetLabel  = t.corporate_streetwise >= 7 ? "street-savvy and culturally sharp" : t.corporate_streetwise <= 3 ? "professional and polished" : "authentic and approachable";
+
+  const emojiNote = l.emoji_usage === "none"
+    ? "You never use emojis."
+    : l.emoji_usage === "minimal"
+      ? `You use emojis sparingly${l.emoji_types?.length ? ` — typically ${l.emoji_types.slice(0, 3).join(" ")}` : ""}.`
+      : l.emoji_usage === "moderate"
+        ? `You use emojis naturally${l.emoji_types?.length ? ` — favourites include ${l.emoji_types.slice(0, 4).join(" ")}` : ""}.`
+        : `You use emojis freely and often${l.emoji_types?.length ? ` — ${l.emoji_types.slice(0, 5).join(" ")} are regulars` : ""}.`;
+
+  const sentenceNote = `Your sentences are ${l.sentence_length === "very short" ? "very short and punchy" : l.sentence_length === "short" ? "short and to the point" : l.sentence_length === "medium" ? "medium length" : "detailed and thorough"}.`;
+
+  const phrasesNote = l.signature_phrases?.length
+    ? `You often use phrases like: ${l.signature_phrases.map((p: string) => `"${p}"`).join(", ")}.`
+    : "";
+
+  const capsNote = l.capitalization === "lowercase"
+    ? "You tend to write in lowercase."
+    : l.capitalization === "uppercase"
+      ? "You often write in uppercase for emphasis."
+      : "";
+
+  return `You are the Instagram voice of @${handle}. ${profile.voice_summary}
+
+Your personality: you are ${toneLabel}, ${playfulLabel}, ${boldLabel}, ${expressLabel}, and ${streetLabel}.
+
+${emojiNote} ${sentenceNote} ${phrasesNote} ${capsNote}
+
+When someone compliments you: ${e.to_compliments}
+When someone asks a product or content question: ${e.to_product_questions}
+When someone is negative or critical: ${e.to_negative_comments}
+When someone leaves a generic hype comment: ${e.to_generic_comments}
+
+Keep every response to 1-3 sentences max. Sound like a real person — never robotic, never like a corporate brand account. Mirror the energy of the person commenting.`.trim();
+}
+
 // ── POST — run analysis ────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
@@ -195,6 +283,17 @@ Analyze this content and return a JSON object (no markdown, just raw JSON) with 
 
 Be specific and accurate — base everything strictly on the actual content you see, not generic assumptions. The content_themes percentages should add up to 100. Return ONLY the JSON, nothing else.`;
 
+    // ── If no API key, return mock profile immediately ─────────────────────────
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.warn("ANTHROPIC_API_KEY not set — returning mock profile for testing");
+      const mockPersonalityPrompt = buildPersonalityPrompt(MOCK_PROFILE, handle);
+      await admin
+        .from("brand_accounts")
+        .update({ personality_profile: MOCK_PROFILE, personality_prompt: mockPersonalityPrompt })
+        .eq("user_id", user.id);
+      return Response.json({ profile: MOCK_PROFILE, personality_prompt: mockPersonalityPrompt });
+    }
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const message = await anthropic.messages.create({
@@ -209,49 +308,8 @@ Be specific and accurate — base everything strictly on the actual content you 
     const jsonStr = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
     const profile = JSON.parse(jsonStr);
 
-    // ── Generate personality_prompt ────────────────────────────────────────────
-    const t = profile.traits;
-    const l = profile.language_patterns;
-    const e = profile.engagement_style;
-
-    const toneLabel     = t.formal_casual      >= 7 ? "casual and relaxed"   : t.formal_casual      <= 3 ? "formal and polished" : "balanced in tone";
-    const playfulLabel  = t.serious_playful    >= 7 ? "playful and fun"       : t.serious_playful    <= 3 ? "serious and measured" : "a mix of serious and playful";
-    const boldLabel     = t.reserved_bold      >= 7 ? "bold and direct"       : t.reserved_bold      <= 3 ? "reserved and thoughtful" : "confident but not overbearing";
-    const expressLabel  = t.minimal_expressive >= 7 ? "expressive and emotive" : t.minimal_expressive <= 3 ? "minimal and understated" : "moderately expressive";
-    const streetLabel   = t.corporate_streetwise >= 7 ? "street-savvy and culturally sharp" : t.corporate_streetwise <= 3 ? "professional and polished" : "authentic and approachable";
-
-    const emojiNote = l.emoji_usage === "none"
-      ? "You never use emojis."
-      : l.emoji_usage === "minimal"
-        ? `You use emojis sparingly${l.emoji_types?.length ? ` — typically ${l.emoji_types.slice(0, 3).join(" ")}` : ""}.`
-        : l.emoji_usage === "moderate"
-          ? `You use emojis naturally${l.emoji_types?.length ? ` — favourites include ${l.emoji_types.slice(0, 4).join(" ")}` : ""}.`
-          : `You use emojis freely and often${l.emoji_types?.length ? ` — ${l.emoji_types.slice(0, 5).join(" ")} are regulars` : ""}.`;
-
-    const sentenceNote = `Your sentences are ${l.sentence_length === "very short" ? "very short and punchy" : l.sentence_length === "short" ? "short and to the point" : l.sentence_length === "medium" ? "medium length" : "detailed and thorough"}.`;
-
-    const phrasesNote = l.signature_phrases?.length
-      ? `You often use phrases like: ${l.signature_phrases.map((p: string) => `"${p}"`).join(", ")}.`
-      : "";
-
-    const capsNote = l.capitalization === "lowercase"
-      ? "You tend to write in lowercase."
-      : l.capitalization === "uppercase"
-        ? "You often write in uppercase for emphasis."
-        : "";
-
-    const personalityPrompt = `You are the Instagram voice of @${handle}. ${profile.voice_summary}
-
-Your personality: you are ${toneLabel}, ${playfulLabel}, ${boldLabel}, ${expressLabel}, and ${streetLabel}.
-
-${emojiNote} ${sentenceNote} ${phrasesNote} ${capsNote}
-
-When someone compliments you: ${e.to_compliments}
-When someone asks a product or content question: ${e.to_product_questions}
-When someone is negative or critical: ${e.to_negative_comments}
-When someone leaves a generic hype comment: ${e.to_generic_comments}
-
-Keep every response to 1-3 sentences max. Sound like a real person — never robotic, never like a corporate brand account. Mirror the energy of the person commenting.`.trim();
+    // ── Build personality_prompt ───────────────────────────────────────────────
+    const personalityPrompt = buildPersonalityPrompt(profile, handle);
 
     // ── Save to brand_accounts ─────────────────────────────────────────────────
     await admin
