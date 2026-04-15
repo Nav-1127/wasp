@@ -25,10 +25,10 @@ function SignupForm() {
       email,
       password,
       options: {
-        // Points to our /auth/confirm route so the token_hash is verified
-        // on our server. Using window.location.origin means this works on
-        // both localhost (dev) and joinwasp.com (production).
-        emailRedirectTo: `${window.location.origin}/onboarding`,
+        // Points to THIS site's /auth/confirm page so the token is verified
+        // on whichever environment the user signed up from (dev, preview, prod).
+        // The confirm page then redirects to /onboarding after verification.
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
     });
 
