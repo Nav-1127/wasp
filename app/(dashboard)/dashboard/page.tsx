@@ -1,60 +1,36 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase";
+import DashboardShell from "@/components/dashboard-shell";
+
+const ENGAGEMENT_LEVEL_LABELS: Record<string, string> = {
+  smart_select:   "Smart select",
+  reply_all:      "Reply to all",
+  questions_only: "Questions only",
+  manual_pick:    "Manual pick",
+};
 
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const admin = createAdminClient();
   const { data: account } = await admin
     .from("brand_accounts")
-    .select("account_type, instagram_handle, onboarding_completed")
+    .select("account_type, instagram_handle, onboarding_completed, engagement_level")
     .eq("user_id", user.id)
     .single();
 
-  const isBrand = account?.account_type !== "creator";
-  const handle = account?.instagram_handle;
+  const isBrand        = account?.account_type !== "creator";
+  const handle         = account?.instagram_handle;
+  const engagementLevel = account?.engagement_level ?? "smart_select";
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5F0E8" }}>
-      {/* Top bar */}
-      <header
-        className="border-b px-6 py-4 flex items-center justify-between"
-        style={{ borderColor: "#D5CFC3", backgroundColor: "#EDE8DE" }}
-      >
-        <div className="flex items-center gap-1.5">
-          <span
-            className="text-2xl font-black tracking-tighter text-[#1A1A1A]"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-          >
-            WASP
-          </span>
-          <span className="text-lg leading-none">⚡</span>
-        </div>
+    <DashboardShell email={user.email ?? ""}>
+      <div className="max-w-4xl mx-auto px-6 py-10">
 
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-[#6B6058] hidden sm:block">
-            {user.email}
-          </span>
-          <form action="/api/auth/signout" method="POST">
-            <button
-              type="submit"
-              className="text-xs font-semibold text-[#1A1A1A] bg-[#EDE8DE] hover:bg-[#1A1A1A] hover:text-[#F5F0E8] transition-colors border border-[#D5CFC3] rounded-lg px-4 py-2"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="max-w-5xl mx-auto px-6 py-12">
         {/* Welcome banner */}
-        <div className="border border-[#5C6B00]/30 bg-[#D4FF00]/15 rounded-2xl px-8 py-8 mb-10">
+        <div className="border border-[#5C6B00]/30 bg-[#D4FF00]/15 rounded-2xl px-8 py-8 mb-8">
           <div className="flex items-start gap-4">
             <span className="text-3xl">🐝</span>
             <div>
@@ -74,7 +50,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Status cards */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-10">
+        <div className="grid sm:grid-cols-4 gap-4 mb-8">
           {[
             {
               label: "Account type",
@@ -86,6 +62,11 @@ export default async function DashboardPage() {
               value: handle ? `@${handle}` : "Not connected",
               icon: "📸",
               muted: !handle,
+            },
+            {
+              label: "Engagement mode",
+              value: ENGAGEMENT_LEVEL_LABELS[engagementLevel] ?? "Smart select",
+              icon: "🎯",
             },
             {
               label: "Agent status",
@@ -117,7 +98,30 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        {/* What's next */}
+        {/* Sting Triggers quick-access */}
+        <div
+          className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-6 mb-8 flex items-center justify-between gap-4"
+        >
+          <div>
+            <p
+              className="font-black text-[#1A1A1A] mb-1"
+              style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+            >
+              ⚡ Sting Triggers
+            </p>
+            <p className="text-sm text-[#6B6058]">
+              Auto-DM anyone who comments asking for links or info. Set up keyword and smart-intent triggers.
+            </p>
+          </div>
+          <a
+            href="/sting-triggers"
+            className="flex-shrink-0 text-xs font-semibold bg-[#1A1A1A] text-[#F5F0E8] px-4 py-2.5 rounded-xl hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors"
+          >
+            Manage →
+          </a>
+        </div>
+
+        {/* Roadmap */}
         <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-6 sm:p-8">
           <h2
             className="text-lg font-black text-[#1A1A1A] mb-6"
@@ -136,14 +140,14 @@ export default async function DashboardPage() {
               },
               {
                 step: "Phase 2c",
-                title: "Live comment & DM monitoring",
-                description: "WASP watches your Instagram 24/7 and queues responses for your review.",
-                done: false,
+                title: "Engagement Level + Sting Triggers",
+                description: "Control how WASP handles comment volume and set up comment-to-DM automations.",
+                done: true,
               },
               {
                 step: "Phase 3",
-                title: "Auto-reply mode",
-                description: "Flip the switch. WASP replies instantly and automatically.",
+                title: "Live comment & DM monitoring",
+                description: "WASP watches your Instagram 24/7 and replies automatically.",
                 done: false,
               },
             ].map((item) => (
@@ -170,7 +174,8 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
-      </main>
-    </div>
+
+      </div>
+    </DashboardShell>
   );
 }

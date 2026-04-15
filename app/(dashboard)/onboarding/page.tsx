@@ -28,6 +28,40 @@ interface PersonalityData {
   energy: number; // 0 = playful, 100 = professional
 }
 
+// ── Personality profile returned by /api/analyze-personality ──────────────────
+interface PersonalityProfile {
+  voice_summary: string;
+  traits: {
+    formal_casual: number;
+    serious_playful: number;
+    reserved_bold: number;
+    minimal_expressive: number;
+    corporate_streetwise: number;
+  };
+  language_patterns: {
+    emoji_usage: string;
+    emoji_types: string[];
+    sentence_length: string;
+    slang_level: string;
+    signature_phrases: string[];
+    capitalization: string;
+  };
+  engagement_style: {
+    to_compliments: string;
+    to_product_questions: string;
+    to_negative_comments: string;
+    to_generic_comments: string;
+  };
+  content_themes: { theme: string; percentage: number }[];
+  sample_responses: {
+    to_compliment: string;
+    to_product_question: string;
+    to_negative_comment: string;
+    to_hype_comment: string;
+    to_purchase_confirmation: string;
+  };
+}
+
 interface GoalData {
   interaction_type: "comment" | "dm" | "story_reply";
   goal: string;
@@ -379,7 +413,76 @@ function Step1({
   );
 }
 
-// ─── Step 2 — Content Personality ────────────────────────────────────────────
+// ─── Step 2 — Content Personality Analysis ───────────────────────────────────
+
+const TRAIT_LABELS: Record<keyof PersonalityProfile["traits"], [string, string]> = {
+  formal_casual:        ["Formal",    "Casual"],
+  serious_playful:      ["Serious",   "Playful"],
+  reserved_bold:        ["Reserved",  "Bold"],
+  minimal_expressive:   ["Minimal",   "Expressive"],
+  corporate_streetwise: ["Corporate", "Streetwise"],
+};
+
+const LOADING_MESSAGES = [
+  "Reading your captions…",
+  "Studying how you reply to comments…",
+  "Spotting your signature phrases…",
+  "Mapping your emoji habits…",
+  "Detecting your vibe…",
+  "Building your personality profile…",
+  "Almost there…",
+];
+
+function TraitSlider({
+  traitKey,
+  value,
+  onChange,
+}: {
+  traitKey: keyof PersonalityProfile["traits"];
+  value: number;
+  onChange?: (v: number) => void;
+}) {
+  const [left, right] = TRAIT_LABELS[traitKey];
+  const pct = ((value - 1) / 9) * 100;
+  return (
+    <div>
+      <div className="flex justify-between mb-1.5">
+        <span className="text-xs text-[#9A9080]">{left}</span>
+        <span className="text-xs text-[#9A9080]">{right}</span>
+      </div>
+      <div className="relative h-2 rounded-full" style={{ backgroundColor: "#D5CFC3" }}>
+        <div
+          className="absolute left-0 top-0 h-2 rounded-full transition-all"
+          style={{ width: `${pct}%`, backgroundColor: "#5C6B00" }}
+        />
+        {onChange ? (
+          <input
+            type="range"
+            min={1}
+            max={10}
+            value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className="absolute inset-0 w-full opacity-0 cursor-pointer h-2"
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function ChatBubble({ label, text }: { label: string; text: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[10px] text-[#9A9080] uppercase tracking-wider">{label}</span>
+      <div
+        className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-[#1A1A1A] max-w-xs"
+        style={{ backgroundColor: "#EDE8DE", border: "1px solid #D5CFC3" }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+}
 
 function Step2({
   accountType,
@@ -390,40 +493,266 @@ function Step2({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const [data, setData] = useState<PersonalityData>({
-    description: "",
-    phrases: "",
-    tone: 30,
-    energy: 30,
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  type Phase =
+    | "loading"      // running analysis
+    | "report"       // showing AI result
+    | "tweak"        // editing sliders inline
+    | "evolve"       // text field: describe aspiration
+    | "fresh";       // free-text, start from scratch
 
-  async function handleNext() {
-    if (!data.description.trim()) {
-      setError("Please describe your content personality so WASP can sound like you.");
-      return;
-    }
-    setLoading(true);
-    setError("");
+  const [phase,   setPhase]   = useState<Phase>("loading");
+  const [profile, setProfile] = useState<PersonalityProfile | null>(null);
+  const [editedTraits, setEditedTraits] = useState<PersonalityProfile["traits"] | null>(null);
+  const [evolveText, setEvolveText]     = useState("");
+  const [freshText,  setFreshText]      = useState("");
+  const [loadingMsg, setLoadingMsg]     = useState(LOADING_MESSAGES[0]);
+  const [msgIndex,   setMsgIndex]       = useState(0);
+  const [saving,     setSaving]         = useState(false);
+  const [error,      setError]          = useState("");
+  const [personalityPrompt, setPersonalityPrompt] = useState("");
 
-    const personalityProfile = {
-      tone: data.tone,
-      energy: data.energy,
-      phrases: data.phrases,
-    };
-    const personalityPrompt = `${data.description}${data.phrases ? ` Common phrases: ${data.phrases}.` : ""} Tone: ${data.tone < 40 ? "casual" : data.tone > 60 ? "formal" : "balanced"}. Energy: ${data.energy < 40 ? "playful" : data.energy > 60 ? "professional" : "balanced"}.`;
+  // Cycle loading messages
+  useEffect(() => {
+    if (phase !== "loading") return;
+    const interval = setInterval(() => {
+      setMsgIndex((prev) => {
+        const next = Math.min(prev + 1, LOADING_MESSAGES.length - 1);
+        setLoadingMsg(LOADING_MESSAGES[next]);
+        return next;
+      });
+    }, 2200);
+    return () => clearInterval(interval);
+  }, [phase]);
 
+  // Run analysis on mount
+  useEffect(() => {
+    console.log("[WASP] Step 2 mounted — calling /api/analyze-personality");
+    (async () => {
+      try {
+        const res  = await fetch("/api/analyze-personality", { method: "POST" });
+        console.log("[WASP] analyze-personality response status:", res.status);
+        let json: Record<string, unknown> = {};
+        try { json = await res.json(); } catch { /* non-JSON body */ }
+        if (!res.ok || json.error) throw new Error((json.error as string) ?? `HTTP ${res.status}`);
+        setProfile(json.profile as PersonalityProfile);
+        setPersonalityPrompt(json.personality_prompt as string);
+        setEditedTraits({ ...(json.profile as PersonalityProfile).traits });
+        setPhase("report");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Analysis failed";
+        console.error("[WASP] Personality analysis failed:", msg);
+        setError(msg);
+        setPhase("fresh"); // fall back to manual entry
+      }
+    })();
+  }, []);
+
+  async function saveAndContinue(prompt: string, prof: PersonalityProfile | null) {
+    setSaving(true);
     await fetch("/api/onboarding/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         step: 2,
-        data: { personality_prompt: personalityPrompt, personality_profile: personalityProfile },
+        data: {
+          personality_prompt: prompt,
+          personality_profile: prof ?? {},
+        },
       }),
     });
+    setSaving(false);
     onNext();
   }
+
+  async function handleAccept() {
+    await saveAndContinue(personalityPrompt, profile);
+  }
+
+  async function handleTweakConfirm() {
+    if (!profile || !editedTraits) return;
+    // Merge edited traits into profile and regenerate prompt client-side
+    const merged = { ...profile, traits: editedTraits };
+    const updatedPrompt = buildPromptFromProfile(merged);
+    setPersonalityPrompt(updatedPrompt);
+    await saveAndContinue(updatedPrompt, merged);
+  }
+
+  async function handleEvolve() {
+    if (!evolveText.trim()) { setError("Describe how you want your content to sound."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      // Re-run analysis with aspiration blend
+      const res  = await fetch("/api/analyze-personality", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ evolve_prompt: evolveText }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? "Analysis failed");
+      setProfile(json.profile);
+      setPersonalityPrompt(json.personality_prompt);
+      setEditedTraits({ ...json.profile.traits });
+      setPhase("report");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleFresh() {
+    if (!freshText.trim()) { setError("Please describe your content personality."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      const res  = await fetch("/api/analyze-personality", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fresh_description: freshText }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? "Analysis failed");
+      setProfile(json.profile);
+      setPersonalityPrompt(json.personality_prompt);
+      setEditedTraits({ ...json.profile.traits });
+      setPhase("report");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ── Loading screen ─────────────────────────────────────────────────────────
+  if (phase === "loading") {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        {/* Animated wasp */}
+        <div className="relative mb-8">
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+            style={{ backgroundColor: "#D4FF00", animation: "pulse 1.5s ease-in-out infinite" }}
+          >
+            🐝
+          </div>
+          <div
+            className="absolute -inset-2 rounded-full border-2 border-[#5C6B00]/30"
+            style={{ animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite" }}
+          />
+        </div>
+        <h1
+          className="text-2xl font-black text-[#1A1A1A] mb-2"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          WASP is studying your content
+        </h1>
+        <p className="text-sm text-[#5C6B00] font-medium mb-8 min-h-[20px] transition-all">
+          {loadingMsg}
+        </p>
+        {/* Progress bar */}
+        <div className="w-64 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#D5CFC3" }}>
+          <div
+            className="h-full rounded-full"
+            style={{
+              backgroundColor: "#5C6B00",
+              width: `${((msgIndex + 1) / LOADING_MESSAGES.length) * 100}%`,
+              transition: "width 2.2s ease",
+            }}
+          />
+        </div>
+        <p className="text-xs text-[#9A9080] mt-4">This usually takes 10–15 seconds</p>
+      </div>
+    );
+  }
+
+  // ── "Start fresh" screen ───────────────────────────────────────────────────
+  if (phase === "fresh") {
+    return (
+      <div>
+        <h1
+          className="text-3xl font-black text-[#1A1A1A] mb-2"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          Describe your content personality
+        </h1>
+        <p className="text-[#6B6058] mb-6">
+          Write how you want WASP to sound. Be as specific as you like — tone, energy, phrases, how you handle different comments.
+        </p>
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mb-4">{error}</p>
+        )}
+        <textarea
+          value={freshText}
+          onChange={(e) => setFreshText(e.target.value)}
+          rows={5}
+          placeholder={
+            accountType === "brand"
+              ? "e.g. We're direct and energetic — no fluff. We use casual language, lots of 'you', and we're confident without being arrogant. We use fire and 💯 emojis. When people ask about products we give the link fast."
+              : "e.g. Super casual and real. I write in lowercase mostly, use 'omg' and 'lol' a lot. I keep it short and punchy. When people compliment me I'm grateful but not gushy."
+          }
+          className="w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-4 py-3 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors resize-none mb-6"
+        />
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleFresh}
+            disabled={saving}
+            className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+          >
+            {saving ? "Building your personality…" : "Build my personality →"}
+          </button>
+          <button onClick={onBack} className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors">
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── "Evolve it" screen ─────────────────────────────────────────────────────
+  if (phase === "evolve") {
+    return (
+      <div>
+        <h1
+          className="text-3xl font-black text-[#1A1A1A] mb-2"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          How do you want to evolve it?
+        </h1>
+        <p className="text-[#6B6058] mb-6">
+          WASP will blend your current content personality with this new direction.
+        </p>
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mb-4">{error}</p>
+        )}
+        <textarea
+          value={evolveText}
+          onChange={(e) => setEvolveText(e.target.value)}
+          rows={4}
+          placeholder='e.g. "I want to sound more confident and bold, less hesitant. Still casual but more decisive."'
+          className="w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-4 py-3 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors resize-none mb-6"
+        />
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleEvolve}
+            disabled={saving}
+            className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+          >
+            {saving ? "Evolving your personality…" : "Evolve it →"}
+          </button>
+          <button onClick={() => { setError(""); setPhase("report"); }} className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors">
+            ← Back to report
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Report screen (+ tweak mode) ───────────────────────────────────────────
+  if (!profile) return null;
+
+  const isTweaking = phase === "tweak";
+  const displayTraits = isTweaking && editedTraits ? editedTraits : profile.traits;
 
   return (
     <div>
@@ -433,121 +762,183 @@ function Step2({
       >
         Your content personality
       </h1>
-      <p className="text-[#6B6058] mb-5">
-        {accountType === "brand"
-          ? "WASP will use this to write replies that sound exactly like your brand — not robotic, not generic."
-          : "WASP will match how you sound so your audience can't tell the difference."}
-      </p>
 
-      {/* Analysis note */}
-      <div className="flex items-start gap-3 border border-[#5C6B00]/25 bg-[#D4FF00]/10 rounded-xl px-4 py-3.5 mb-6">
-        <span className="text-base flex-shrink-0 mt-0.5">🔍</span>
-        <p className="text-xs text-[#5C6B00] leading-relaxed">
-          <span className="font-semibold">Once you connect Instagram,</span> WASP will automatically analyse your posts, captions, and comment replies to pre-fill your content personality — you just review and tweak it.
-        </p>
+      {/* Voice summary */}
+      <div
+        className="border border-[#5C6B00]/30 bg-[#D4FF00]/10 rounded-2xl px-5 py-4 mb-6"
+      >
+        <p className="text-[10px] text-[#5C6B00] font-semibold uppercase tracking-widest mb-1">WASP says</p>
+        <p className="text-sm text-[#1A1A1A] leading-relaxed font-medium">{profile.voice_summary}</p>
       </div>
 
-      <div className="flex flex-col gap-5 mb-6">
-        <div>
-          <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">
-            {accountType === "brand"
-              ? "Describe how your brand communicates *"
-              : "Describe your content personality *"}
-          </label>
-          <textarea
-            value={data.description}
-            onChange={(e) => setData({ ...data, description: e.target.value })}
-            rows={4}
-            placeholder={
-              accountType === "brand"
-                ? "e.g. We're direct and energetic — no fluff, just results. We use 'you' a lot, never 'one'. Confident but never arrogant."
-                : "e.g. Super casual and real. I swear sometimes, use a lot of 'omg' and 'lol'. I keep it short and punchy."
-            }
-            className="w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-4 py-3 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors resize-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">
-            Phrases or expressions you often use{" "}
-            <span className="normal-case font-normal text-[#9A9080]">(optional)</span>
-          </label>
-          <input
-            type="text"
-            value={data.phrases}
-            onChange={(e) => setData({ ...data, phrases: e.target.value })}
-            placeholder={
-              accountType === "brand"
-                ? 'e.g. "built different", "the real deal", "no cap"'
-                : 'e.g. "bestie", "let\'s go!", "that\'s the vibe"'
-            }
-            className="w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-4 py-3 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors"
-          />
-        </div>
-
-        {/* Tone & energy sliders */}
-        <div className="grid sm:grid-cols-2 gap-5">
-          <div>
-            <div className="flex justify-between mb-2">
-              <label className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider">Tone</label>
-              <span className="text-xs text-[#9A9080]">
-                {data.tone < 40 ? "Casual" : data.tone > 60 ? "Formal" : "Balanced"}
-              </span>
-            </div>
-            <input
-              type="range" min={0} max={100} value={data.tone}
-              onChange={(e) => setData({ ...data, tone: Number(e.target.value) })}
-              className="w-full accent-[#5C6B00]"
+      {/* Personality traits */}
+      <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 mb-4">
+        <p className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider mb-4">
+          Personality traits {isTweaking && <span className="text-[#5C6B00]">— drag to adjust</span>}
+        </p>
+        <div className="flex flex-col gap-4">
+          {(Object.keys(TRAIT_LABELS) as Array<keyof PersonalityProfile["traits"]>).map((key) => (
+            <TraitSlider
+              key={key}
+              traitKey={key}
+              value={displayTraits[key]}
+              onChange={isTweaking && editedTraits
+                ? (v) => setEditedTraits({ ...editedTraits, [key]: v })
+                : undefined
+              }
             />
-            <div className="flex justify-between mt-1">
-              <span className="text-xs text-[#9A9080]">Casual</span>
-              <span className="text-xs text-[#9A9080]">Formal</span>
-            </div>
-          </div>
+          ))}
+        </div>
+      </div>
 
-          <div>
-            <div className="flex justify-between mb-2">
-              <label className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider">Energy</label>
-              <span className="text-xs text-[#9A9080]">
-                {data.energy < 40 ? "Playful" : data.energy > 60 ? "Professional" : "Balanced"}
-              </span>
-            </div>
-            <input
-              type="range" min={0} max={100} value={data.energy}
-              onChange={(e) => setData({ ...data, energy: Number(e.target.value) })}
-              className="w-full accent-[#5C6B00]"
-            />
-            <div className="flex justify-between mt-1">
-              <span className="text-xs text-[#9A9080]">Playful</span>
-              <span className="text-xs text-[#9A9080]">Professional</span>
-            </div>
+      {/* Language patterns */}
+      <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 mb-4">
+        <p className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider mb-3">Language patterns</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            `Emoji: ${profile.language_patterns.emoji_usage}`,
+            `Sentences: ${profile.language_patterns.sentence_length}`,
+            `Slang: ${profile.language_patterns.slang_level}`,
+            `Caps: ${profile.language_patterns.capitalization}`,
+            ...(profile.language_patterns.emoji_types?.slice(0, 4) ?? []),
+            ...(profile.language_patterns.signature_phrases?.slice(0, 3).map((p) => `"${p}"`) ?? []),
+          ].map((tag, i) => (
+            <span
+              key={i}
+              className="text-xs px-3 py-1 rounded-full border"
+              style={{ backgroundColor: "#F5F0E8", borderColor: "#D5CFC3", color: "#6B6058" }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Content themes */}
+      {profile.content_themes?.length > 0 && (
+        <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 mb-4">
+          <p className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider mb-3">Content themes</p>
+          <div className="flex flex-col gap-2">
+            {profile.content_themes.slice(0, 5).map((t) => (
+              <div key={t.theme} className="flex items-center gap-3">
+                <span className="text-xs text-[#1A1A1A] w-32 flex-shrink-0 truncate">{t.theme}</span>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#D5CFC3" }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${t.percentage}%`, backgroundColor: "#5C6B00" }}
+                  />
+                </div>
+                <span className="text-xs text-[#9A9080] w-8 text-right">{t.percentage}%</span>
+              </div>
+            ))}
           </div>
+        </div>
+      )}
+
+      {/* Sample responses */}
+      <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 mb-6">
+        <p className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider mb-4">How WASP will reply for you</p>
+        <div className="flex flex-col gap-4">
+          <ChatBubble label="To a compliment" text={profile.sample_responses.to_compliment} />
+          <ChatBubble label="To a product/content question" text={profile.sample_responses.to_product_question} />
+          <ChatBubble label="To a negative comment" text={profile.sample_responses.to_negative_comment} />
+          <ChatBubble label="To a hype comment 🔥" text={profile.sample_responses.to_hype_comment} />
+          <ChatBubble label="To 'just bought / subscribed!'" text={profile.sample_responses.to_purchase_confirmation} />
         </div>
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mb-4">
-          {error}
-        </p>
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mb-4">{error}</p>
       )}
 
-      <div className="flex flex-col gap-3">
-        <button
-          onClick={handleNext}
-          disabled={loading}
-          className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
-        >
-          {loading ? "Saving…" : "Continue →"}
-        </button>
-        <button
-          onClick={onBack}
-          className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors"
-        >
-          ← Back
-        </button>
-      </div>
+      {/* Four choice buttons */}
+      {!isTweaking ? (
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleAccept}
+            disabled={saving}
+            className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+          >
+            {saving ? "Saving…" : "This is me — continue →"}
+          </button>
+          <button
+            onClick={() => { setError(""); setPhase("tweak"); }}
+            className="w-full border-2 border-[#D5CFC3] bg-[#EDE8DE] text-[#1A1A1A] font-semibold px-7 py-3 rounded-xl text-sm hover:border-[#5C6B00] transition-colors"
+          >
+            Tweak it
+          </button>
+          <button
+            onClick={() => { setError(""); setPhase("evolve"); }}
+            className="w-full border-2 border-[#D5CFC3] bg-[#EDE8DE] text-[#1A1A1A] font-semibold px-7 py-3 rounded-xl text-sm hover:border-[#5C6B00] transition-colors"
+          >
+            Evolve it
+          </button>
+          <button
+            onClick={() => { setError(""); setPhase("fresh"); }}
+            className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors"
+          >
+            Start fresh →
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleTweakConfirm}
+            disabled={saving}
+            className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+          >
+            {saving ? "Saving…" : "Confirm tweaks →"}
+          </button>
+          <button
+            onClick={() => { setError(""); setPhase("report"); }}
+            className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors"
+          >
+            ← Cancel tweaks
+          </button>
+        </div>
+      )}
     </div>
   );
+}
+
+// ── Helper: rebuild personality_prompt from an edited profile (client-side) ────
+function buildPromptFromProfile(profile: PersonalityProfile): string {
+  const t = profile.traits;
+  const l = profile.language_patterns;
+  const e = profile.engagement_style;
+
+  const toneLabel    = t.formal_casual      >= 7 ? "casual and relaxed"      : t.formal_casual      <= 3 ? "formal and polished"        : "balanced in tone";
+  const playfulLabel = t.serious_playful    >= 7 ? "playful and fun"          : t.serious_playful    <= 3 ? "serious and measured"        : "a mix of serious and playful";
+  const boldLabel    = t.reserved_bold      >= 7 ? "bold and direct"          : t.reserved_bold      <= 3 ? "reserved and thoughtful"     : "confident but not overbearing";
+  const expressLabel = t.minimal_expressive >= 7 ? "expressive and emotive"   : t.minimal_expressive <= 3 ? "minimal and understated"      : "moderately expressive";
+  const streetLabel  = t.corporate_streetwise >= 7 ? "street-savvy and culturally sharp" : t.corporate_streetwise <= 3 ? "professional and polished" : "authentic and approachable";
+
+  const emojiNote = l.emoji_usage === "none"
+    ? "Never use emojis."
+    : l.emoji_usage === "minimal"
+      ? `Use emojis sparingly${l.emoji_types?.length ? ` — typically ${l.emoji_types.slice(0, 3).join(" ")}` : ""}.`
+      : l.emoji_usage === "moderate"
+        ? `Use emojis naturally${l.emoji_types?.length ? ` — favourites include ${l.emoji_types.slice(0, 4).join(" ")}` : ""}.`
+        : `Use emojis freely${l.emoji_types?.length ? ` — ${l.emoji_types.slice(0, 5).join(" ")} are regulars` : ""}.`;
+
+  const sentenceNote = `Sentences are ${l.sentence_length === "very short" ? "very short and punchy" : l.sentence_length === "short" ? "short and to the point" : l.sentence_length === "medium" ? "medium length" : "detailed and thorough"}.`;
+
+  const phrasesNote = l.signature_phrases?.length
+    ? `Often use: ${l.signature_phrases.map((p: string) => `"${p}"`).join(", ")}.`
+    : "";
+
+  return `${profile.voice_summary}
+
+Personality: ${toneLabel}, ${playfulLabel}, ${boldLabel}, ${expressLabel}, ${streetLabel}.
+
+${emojiNote} ${sentenceNote} ${phrasesNote}
+
+To compliments: ${e.to_compliments}
+To product/content questions: ${e.to_product_questions}
+To negative comments: ${e.to_negative_comments}
+To generic hype: ${e.to_generic_comments}
+
+Keep every response to 1-3 sentences max. Sound like a real person, not a brand account.`.trim();
 }
 
 // ─── Step 3 — Products & Links ────────────────────────────────────────────────
@@ -694,18 +1085,48 @@ const CREATOR_GOALS = [
   { id: "convert_followers", label: "Convert followers to fans",   description: "Deepen connection with your audience" },
 ];
 
+const ENGAGEMENT_LEVELS = [
+  {
+    id: "smart_select",
+    label: "Smart select",
+    description: "WASP replies to questions, compliments, meaningful feedback, and purchase intent. Skips emojis and friend tags.",
+    recommended: true,
+  },
+  {
+    id: "reply_all",
+    label: "Reply to all",
+    description: "Respond to every comment, no exceptions.",
+    recommended: false,
+  },
+  {
+    id: "questions_only",
+    label: "Questions only",
+    description: "Only reply when someone asks a question or requests information.",
+    recommended: false,
+  },
+  {
+    id: "manual_pick",
+    label: "Manual pick",
+    description: "WASP drafts replies for all comments, but you choose which ones to send from the dashboard.",
+    recommended: false,
+  },
+];
+
 function Step4({
   accountType,
   onNext,
   onBack,
+  onSetupStingTrigger,
 }: {
   accountType: AccountType;
   onNext: () => void;
   onBack: () => void;
+  onSetupStingTrigger: () => void;
 }) {
   const goals = accountType === "brand" ? BRAND_GOALS : CREATOR_GOALS;
-  const [selected, setSelected] = useState<Set<string>>(new Set(["engage"]));
-  const [loading, setLoading] = useState(false);
+  const [selected, setSelected]             = useState<Set<string>>(new Set(["engage"]));
+  const [engagementLevel, setEngagementLevel] = useState("smart_select");
+  const [loading, setLoading]               = useState(false);
 
   function toggleGoal(id: string) {
     setSelected((prev) => {
@@ -719,7 +1140,7 @@ function Step4({
     });
   }
 
-  async function handleFinish() {
+  async function handleFinish(goToStingTrigger = false) {
     setLoading(true);
     const types: Array<"comment" | "dm" | "story_reply"> = ["comment", "dm", "story_reply"];
     const primaryGoal = Array.from(selected)[0];
@@ -731,9 +1152,17 @@ function Step4({
     await fetch("/api/onboarding/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step: 4, data: { goals: goalRows } }),
+      body: JSON.stringify({
+        step: 4,
+        data: { goals: goalRows, engagement_level: engagementLevel },
+      }),
     });
-    onNext();
+
+    if (goToStingTrigger) {
+      onSetupStingTrigger();
+    } else {
+      onNext();
+    }
   }
 
   return (
@@ -750,7 +1179,8 @@ function Step4({
           : "Tell WASP what matters most. It'll prioritise these in every conversation."}
       </p>
 
-      <div className="flex flex-col gap-3 mb-8">
+      {/* Goals */}
+      <div className="flex flex-col gap-3 mb-10">
         {goals.map((goal) => {
           const active = selected.has(goal.id);
           return (
@@ -781,9 +1211,78 @@ function Step4({
         })}
       </div>
 
+      {/* Engagement Level */}
+      <div className="mb-10">
+        <h2
+          className="text-base font-black text-[#1A1A1A] mb-1"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          How should WASP handle comment volume?
+        </h2>
+        <p className="text-xs text-[#6B6058] mb-4">
+          For DMs and story replies, WASP always responds — these are high-intent by nature.
+        </p>
+        <div className="flex flex-col gap-2">
+          {ENGAGEMENT_LEVELS.map((level) => {
+            const active = engagementLevel === level.id;
+            return (
+              <button
+                key={level.id}
+                onClick={() => setEngagementLevel(level.id)}
+                className="flex items-start gap-4 text-left border-2 rounded-2xl p-4 transition-all"
+                style={{
+                  borderColor: active ? "#5C6B00" : "#D5CFC3",
+                  background: active ? "rgba(212,255,0,0.08)" : "#EDE8DE",
+                }}
+              >
+                <div
+                  className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-0.5 transition-all"
+                  style={{
+                    borderColor: active ? "#5C6B00" : "#D5CFC3",
+                    backgroundColor: active ? "#5C6B00" : "transparent",
+                  }}
+                >
+                  {active && <span className="text-white text-[10px]">✓</span>}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-[#1A1A1A] text-sm">{level.label}</p>
+                    {level.recommended && (
+                      <span className="text-[10px] bg-[#D4FF00]/40 text-[#5C6B00] font-semibold px-2 py-0.5 rounded-full">
+                        Recommended
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#6B6058] mt-0.5">{level.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sting Trigger teaser */}
+      <div
+        className="border-2 rounded-2xl p-5 mb-8"
+        style={{ borderColor: "#D5CFC3", background: "#EDE8DE" }}
+      >
+        <p className="text-sm font-bold text-[#1A1A1A] mb-1">⚡ Auto-DM people who ask for links?</p>
+        <p className="text-xs text-[#6B6058] mb-4">
+          Set up a Sting Trigger — when someone comments asking for a link or info, WASP
+          replies publicly and sends them a DM automatically.
+        </p>
+        <button
+          onClick={() => handleFinish(true)}
+          disabled={loading}
+          className="text-xs font-semibold text-[#5C6B00] hover:text-[#1A1A1A] transition-colors underline underline-offset-2"
+        >
+          Set up my first Sting Trigger →
+        </button>
+      </div>
+
       <div className="flex flex-col gap-3">
         <button
-          onClick={handleFinish}
+          onClick={() => handleFinish(false)}
           disabled={loading}
           className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
         >
@@ -846,6 +1345,10 @@ function OnboardingContent() {
 
   function handleComplete() {
     window.location.href = "/dashboard";
+  }
+
+  function handleSetupStingTrigger() {
+    window.location.href = "/sting-triggers?new=true";
   }
 
   function handleDisconnect() {
@@ -922,6 +1425,7 @@ function OnboardingContent() {
             accountType={accountType}
             onNext={handleComplete}
             onBack={() => setStep(3)}
+            onSetupStingTrigger={handleSetupStingTrigger}
           />
         )}
       </div>
