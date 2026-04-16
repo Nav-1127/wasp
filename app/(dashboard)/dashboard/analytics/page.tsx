@@ -1,13 +1,12 @@
-// app/(dashboard)/test-agent/page.tsx
-// Test the AI agent by simulating comments and DMs without real Instagram traffic.
-// Development / testing only — requires onboarding to be complete.
+// app/(dashboard)/dashboard/analytics/page.tsx
+// Analytics tab — engagement metrics and charts.
 
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import DashboardShell from "@/components/dashboard-shell";
-import TestAgentClient from "./test-agent-client";
+import AnalyticsClient from "./analytics-client";
 
-export default async function TestAgentPage() {
+export default async function AnalyticsPage() {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -16,7 +15,7 @@ export default async function TestAgentPage() {
 
   return (
     <DashboardShell>
-      <TestAgentClient />
+      <AnalyticsClient />
     </DashboardShell>
   );
 }
