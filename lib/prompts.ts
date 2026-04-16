@@ -81,7 +81,7 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     });
     parts.push(
       `PRODUCTS / SERVICES / OFFERS YOU CAN MENTION:\n` +
-        `When someone asks about price, cost, or what you sell — respond directly with the relevant product and its details. For other conversations, only bring these up when it naturally fits.\n` +
+        `When someone asks about price, cost, or what you sell — respond directly with the relevant product name, price, and a link. Do not ask them to clarify first. For other conversations, only mention products when it naturally fits.\n` +
         lines.join("\n")
     );
   }
