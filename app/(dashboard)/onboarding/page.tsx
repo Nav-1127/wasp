@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatFollowerCount } from "@/lib/instagram";
 
@@ -990,8 +990,11 @@ function Step3({
   }
 
   async function handleImport() {
-    const trimmed = importUrl.trim();
+    let trimmed = importUrl.trim();
     if (!trimmed) { setImportError("Paste a website URL first."); return; }
+    // Auto-prepend https:// so users can type "shopamaar.com" without the protocol
+    if (!/^https?:\/\//i.test(trimmed)) trimmed = "https://" + trimmed;
+    setImportUrl(trimmed); // reflect the corrected URL back in the input
     setImporting(true);
     setImportError("");
     setImportedItems(null);
@@ -1345,12 +1348,10 @@ const PRIMARY_OBJECTIVES = [
 function Step4({
   onNext,
   onBack,
-  onSetupStingTrigger,
 }: {
   accountType: AccountType;
   onNext: () => void;
   onBack: () => void;
-  onSetupStingTrigger: () => void;
 }) {
   const [objective, setObjective]             = useState("grow_engagement");
   const [assets, setAssets]                   = useState<AccountAsset[]>([]);
@@ -1358,6 +1359,30 @@ function Step4({
   const [newAsset, setNewAsset]               = useState<Omit<AccountAsset, "id">>({ label: "", url: "", when_to_share: "" });
   const [engagementLevel, setEngagementLevel] = useState("smart_select");
   const [loading, setLoading]                 = useState(false);
+
+  // ── Inline sting trigger form ──────────────────────────────────────────────
+  const [showTriggerForm, setShowTriggerForm] = useState(false);
+  const [triggerSaved, setTriggerSaved]       = useState(false);
+  const [triggerSaving, setTriggerSaving]     = useState(false);
+  const [triggerError, setTriggerError]       = useState("");
+  const [triggerForm, setTriggerForm]         = useState({
+    name:                "",
+    trigger_type:        "keyword" as "keyword" | "smart_intent",
+    trigger_keywords:    "",
+    trigger_description: "",
+    comment_reply:       "",
+    dm_message:          "",
+    dm_link:             "",
+    applies_to:          "all_posts" as "all_posts" | "specific_posts",
+  });
+  const triggerFormRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to form when it opens
+  useEffect(() => {
+    if (showTriggerForm && triggerFormRef.current) {
+      triggerFormRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [showTriggerForm]);
 
   function addAsset() {
     if (!newAsset.label.trim() || !newAsset.url.trim()) return;
@@ -1370,7 +1395,44 @@ function Step4({
     setAssets((prev) => prev.filter((a) => a.id !== id));
   }
 
-  async function handleFinish(goToStingTrigger = false) {
+  async function handleTriggerSave() {
+    if (!triggerForm.name.trim())          { setTriggerError("Give this trigger a name."); return; }
+    if (!triggerForm.comment_reply.trim()) { setTriggerError("Add a public comment reply."); return; }
+    if (!triggerForm.dm_message.trim())    { setTriggerError("Add the DM message."); return; }
+    if (triggerForm.trigger_type === "keyword" && !triggerForm.trigger_keywords.trim()) {
+      setTriggerError("Add at least one keyword."); return;
+    }
+    setTriggerSaving(true);
+    setTriggerError("");
+    try {
+      const keywords = triggerForm.trigger_keywords
+        .split(",").map((k) => k.trim()).filter(Boolean);
+      const res = await fetch("/api/sting-triggers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name:                triggerForm.name,
+          trigger_type:        triggerForm.trigger_type,
+          trigger_keywords:    keywords,
+          trigger_description: triggerForm.trigger_description || null,
+          comment_reply:       triggerForm.comment_reply,
+          dm_message:          triggerForm.dm_message,
+          dm_link:             triggerForm.dm_link || null,
+          applies_to:          triggerForm.applies_to,
+          is_active:           true,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setTriggerSaved(true);
+      setShowTriggerForm(false);
+    } catch {
+      setTriggerError("Something went wrong. Please try again.");
+    } finally {
+      setTriggerSaving(false);
+    }
+  }
+
+  async function handleFinish() {
     setLoading(true);
     await fetch("/api/onboarding/save", {
       method: "POST",
@@ -1384,11 +1446,7 @@ function Step4({
         },
       }),
     });
-    if (goToStingTrigger) {
-      onSetupStingTrigger();
-    } else {
-      onNext();
-    }
+    onNext();
   }
 
   return (
@@ -1584,25 +1642,184 @@ function Step4({
         </div>
       </div>
 
-      {/* ── Sting Trigger teaser ──────────────────────────────────────────── */}
-      <div className="border-2 rounded-2xl p-5 mb-8" style={{ borderColor: "#D5CFC3", background: "#EDE8DE" }}>
-        <p className="text-sm font-bold text-[#1A1A1A] mb-1">⚡ Want to auto-DM people who ask for links or info?</p>
-        <p className="text-xs text-[#6B6058] mb-4">
-          Set up a Sting Trigger — when someone comments asking for a link or info, WASP
-          replies publicly and sends them a DM automatically.
-        </p>
-        <button
-          onClick={() => handleFinish(true)}
-          disabled={loading}
-          className="text-xs font-semibold text-[#5C6B00] hover:text-[#1A1A1A] transition-colors underline underline-offset-2"
-        >
-          Set up my first Sting Trigger →
-        </button>
+      {/* ── Sting Trigger — inline ────────────────────────────────────────── */}
+      <div ref={triggerFormRef} className="mb-8">
+        {triggerSaved ? (
+          // ── Success state ────────────────────────────────────────────────
+          <div className="border-2 border-[#5C6B00] bg-[#D4FF00]/15 rounded-2xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#5C6B00] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-sm font-bold">✓</span>
+              </div>
+              <div>
+                <p className="font-bold text-[#1A1A1A] text-sm">Sting Trigger created! ⚡</p>
+                <p className="text-xs text-[#6B6058] mt-0.5">WASP will fire it as soon as live monitoring is active in Phase 3.</p>
+              </div>
+            </div>
+          </div>
+        ) : !showTriggerForm ? (
+          // ── Teaser state ─────────────────────────────────────────────────
+          <div className="border-2 rounded-2xl p-5" style={{ borderColor: "#D5CFC3", background: "#EDE8DE" }}>
+            <p className="text-sm font-bold text-[#1A1A1A] mb-1">⚡ Want to auto-DM people who ask for links or info?</p>
+            <p className="text-xs text-[#6B6058] mb-4">
+              Set up a Sting Trigger — when someone comments asking for a link or info, WASP
+              replies publicly and sends them a DM automatically.
+            </p>
+            <button
+              onClick={() => setShowTriggerForm(true)}
+              className="text-xs font-semibold text-[#5C6B00] hover:text-[#1A1A1A] transition-colors underline underline-offset-2"
+            >
+              Set up my first Sting Trigger →
+            </button>
+          </div>
+        ) : (
+          // ── Inline form ──────────────────────────────────────────────────
+          <div className="border-2 border-[#5C6B00] bg-[#EDE8DE] rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-5">
+              <h2
+                className="text-base font-black text-[#1A1A1A]"
+                style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+              >
+                ⚡ New Sting Trigger
+              </h2>
+              <button
+                onClick={() => { setShowTriggerForm(false); setTriggerError(""); }}
+                className="text-xs text-[#9A9080] hover:text-[#5C6B00] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Trigger name</label>
+                <input
+                  type="text"
+                  placeholder='e.g. "Free Guide Link"'
+                  value={triggerForm.name}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, name: e.target.value })}
+                  className={INPUT_SM}
+                />
+              </div>
+
+              {/* Trigger type toggle */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Trigger type</label>
+                <div className="flex gap-2">
+                  {(["keyword", "smart_intent"] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTriggerForm({ ...triggerForm, trigger_type: t })}
+                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-colors"
+                      style={{
+                        borderColor:     triggerForm.trigger_type === t ? "#5C6B00" : "#D5CFC3",
+                        backgroundColor: triggerForm.trigger_type === t ? "rgba(212,255,0,0.12)" : "#F5F0E8",
+                        color:           triggerForm.trigger_type === t ? "#1A1A1A" : "#6B6058",
+                      }}
+                    >
+                      {t === "keyword" ? "Keyword match" : "Smart intent"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Keywords or intent description */}
+              {triggerForm.trigger_type === "keyword" ? (
+                <div>
+                  <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Keywords</label>
+                  <input
+                    type="text"
+                    placeholder="link, guide, send, info"
+                    value={triggerForm.trigger_keywords}
+                    onChange={(e) => setTriggerForm({ ...triggerForm, trigger_keywords: e.target.value })}
+                    className={INPUT_SM}
+                  />
+                  <p className="text-[11px] text-[#9A9080] mt-1">Comma-separated. Case-insensitive.</p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Describe the intent to detect</label>
+                  <textarea
+                    rows={2}
+                    placeholder='e.g. "Someone asking for a link, wanting more info, or requesting pricing"'
+                    value={triggerForm.trigger_description}
+                    onChange={(e) => setTriggerForm({ ...triggerForm, trigger_description: e.target.value })}
+                    className={INPUT_SM + " resize-none"}
+                  />
+                  <p className="text-[11px] text-[#9A9080] mt-1">WASP uses AI to match this — be specific.</p>
+                </div>
+              )}
+
+              {/* Comment reply */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Public comment reply</label>
+                <input
+                  type="text"
+                  placeholder="Just sent it to your DMs! 📩"
+                  value={triggerForm.comment_reply}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, comment_reply: e.target.value })}
+                  className={INPUT_SM}
+                />
+                <p className="text-[11px] text-[#9A9080] mt-1">Posted on the comment — visible to everyone.</p>
+              </div>
+
+              {/* DM message */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">DM message</label>
+                <textarea
+                  rows={3}
+                  placeholder="Hey! Here's the link you asked for…"
+                  value={triggerForm.dm_message}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, dm_message: e.target.value })}
+                  className={INPUT_SM + " resize-none"}
+                />
+                <p className="text-[11px] text-[#9A9080] mt-1">Sent privately to the commenter.</p>
+              </div>
+
+              {/* DM link */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">
+                  DM link <span className="font-normal normal-case text-[#9A9080]">(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://yoursite.com/guide"
+                  value={triggerForm.dm_link}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, dm_link: e.target.value })}
+                  className={INPUT_SM}
+                />
+              </div>
+
+              {triggerError && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+                  {triggerError}
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={handleTriggerSave}
+                  disabled={triggerSaving}
+                  className="flex-1 bg-[#1A1A1A] text-[#F5F0E8] font-bold px-5 py-3 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+                >
+                  {triggerSaving ? "Saving…" : "Create trigger ⚡"}
+                </button>
+                <button
+                  onClick={() => { setShowTriggerForm(false); setTriggerError(""); }}
+                  className="px-5 py-3 rounded-xl text-sm text-[#6B6058] border border-[#D5CFC3] hover:border-[#5C6B00] transition-colors"
+                >
+                  Skip
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
         <button
-          onClick={() => handleFinish(false)}
+          onClick={handleFinish}
           disabled={loading}
           className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
         >
@@ -1665,10 +1882,6 @@ function OnboardingContent() {
 
   function handleComplete() {
     window.location.href = "/dashboard?welcome=true";
-  }
-
-  function handleSetupStingTrigger() {
-    window.location.href = "/sting-triggers?new=true";
   }
 
   function handleDisconnect() {
@@ -1745,7 +1958,6 @@ function OnboardingContent() {
             accountType={accountType}
             onNext={handleComplete}
             onBack={() => setStep(3)}
-            onSetupStingTrigger={handleSetupStingTrigger}
           />
         )}
       </div>
