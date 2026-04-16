@@ -83,7 +83,8 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     });
     parts.push(
       `PRODUCTS / SERVICES / OFFERS YOU CAN MENTION:\n` +
-        `When someone asks about price, cost, or what you sell — respond directly with the relevant product name, price, and a link. Do not ask them to clarify first. For other conversations, only mention products when it naturally fits.\n` +
+        `When someone asks about price, cost, how much something is, or what you sell — lead immediately with the product name, price, and the direct product link. Do NOT say "link in bio", do NOT ask what they are looking for first, do NOT hedge. Use the exact URL listed below.\n` +
+        `For other conversations, only mention products when it naturally fits.\n` +
         lines.join("\n")
     );
   }
