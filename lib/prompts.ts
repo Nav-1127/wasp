@@ -81,7 +81,7 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     });
     parts.push(
       `PRODUCTS / SERVICES / OFFERS YOU CAN MENTION:\n` +
-        `Only bring these up when the conversation naturally calls for it.\n` +
+        `When someone asks about price, cost, or what you sell — respond directly with the relevant product and its details. For other conversations, only bring these up when it naturally fits.\n` +
         lines.join("\n")
     );
   }
