@@ -32,6 +32,7 @@ export interface BuildPromptOptions {
   assets: PromptAsset[];
   interactionType: InteractionType;
   storyContext?: string | null; // the story caption/text if this is a story reply
+  postContext?: string | null;  // the caption of the post the comment was left on
 }
 
 // Maps each primary_objective ID to a clear instruction for Claude
@@ -58,6 +59,7 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     assets,
     interactionType,
     storyContext,
+    postContext,
   } = opts;
 
   const parts: string[] = [];
@@ -101,7 +103,16 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     );
   }
 
-  // ── 5. Story reply context ──────────────────────────────────────────────────
+  // ── 5. Post context (for comments) ─────────────────────────────────────────
+  // When a comment comes in on a specific post, include the post caption so Claude
+  // can understand what the comment is about even without an explicit product mention.
+  if (interactionType === "comment" && postContext) {
+    parts.push(
+      `POST CONTEXT:\nThis comment was left on a post with the following caption: "${postContext}"\nUse this to understand what the person is asking about or reacting to.`
+    );
+  }
+
+  // ── 6. Story reply context ──────────────────────────────────────────────────
   // Story replies arrive as DMs. When we know which story triggered the reply,
   // include it so the agent can reference it naturally.
   if (interactionType === "story_reply") {
@@ -112,7 +123,7 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     parts.push(`CONTEXT:\n${storyNote}`);
   }
 
-  // ── 6. Hard rules ───────────────────────────────────────────────────────────
+  // ── 7. Hard rules ───────────────────────────────────────────────────────────
   const lengthRule =
     interactionType === "comment"
       ? "For comments: keep replies to 1 sentence. Short and genuine always beats long and thoughtful."

@@ -384,6 +384,7 @@ export async function processComment(
     products: (productsRes.data as PromptProduct[]) ?? [],
     assets: (assetsRes.data as PromptAsset[]) ?? [],
     interactionType: "comment",
+    postContext: postInfo?.caption ?? null,
   });
 
   // ── Step D: Generate response ───────────────────────────────────────────────
