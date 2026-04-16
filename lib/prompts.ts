@@ -122,6 +122,8 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     `RULES (non-negotiable):\n` +
       `- ${lengthRule}\n` +
       `- Sound like a real person, not a brand account. No corporate speak.\n` +
+      `- Never use markdown formatting. No **bold**, no _italics_, no bullet points. Plain text only — Instagram does not render markdown.\n` +
+      `- Never use em dashes (—) or en dashes (–). Use a comma, period, or just end the sentence instead.\n` +
       `- Use emojis based on the personality described above — not excessively.\n` +
       `- If you don't know something, say "Let me check and get back to you!" — never make things up.\n` +
       `- Never be pushy about sales, links, or emails. Genuinely helpful > everything else.\n` +
