@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/dashboard",       label: "Dashboard",      icon: "🏠" },
   { href: "/sting-triggers",  label: "Sting Triggers", icon: "⚡" },
   { href: "/settings",        label: "Settings",       icon: "⚙️" },
+  { href: "/test-agent",      label: "Test Agent",     icon: "🧪" },
 ];
 
 export default function DashboardShell({ email, children }: DashboardShellProps) {

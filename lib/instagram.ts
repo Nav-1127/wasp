@@ -200,3 +200,93 @@ export function formatFollowerCount(count: number): string {
   if (count >= 1_000) return `${(count / 1_000).toFixed(1)}K`;
   return count.toString();
 }
+
+// ── Agent action helpers (Phase 2e) ────────────────────────────────────────────
+// All functions are server-side only — never call from client components.
+
+import { decrypt } from "@/lib/encryption";
+
+/** Decrypt a stored Instagram access token */
+export function decryptToken(encryptedToken: string): string {
+  return decrypt(encryptedToken);
+}
+
+/** Reply to a comment on a post */
+export async function replyToComment(
+  commentId: string,
+  message: string,
+  accessToken: string
+): Promise<string> {
+  const res = await fetch(
+    `${GRAPH_BASE}/${commentId}/replies`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, access_token: accessToken }),
+    }
+  );
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message ?? "Failed to post comment reply");
+  }
+
+  return data.id as string; // the new reply's comment ID
+}
+
+/** Send a direct message to an Instagram user */
+export async function sendDirectMessage(
+  recipientId: string,
+  message: string,
+  accessToken: string
+): Promise<string> {
+  const res = await fetch(
+    `${GRAPH_BASE}/me/messages`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipient: { id: recipientId },
+        message: { text: message },
+        access_token: accessToken,
+      }),
+    }
+  );
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message ?? "Failed to send direct message");
+  }
+
+  return data.message_id as string;
+}
+
+export interface PostInfo {
+  id: string;
+  caption: string | null;
+  thumbnail_url: string | null;
+  permalink: string | null;
+}
+
+/** Fetch basic info about a post (for context when generating replies) */
+export async function getPostInfo(
+  postId: string,
+  accessToken: string
+): Promise<PostInfo> {
+  const res = await fetch(
+    `${GRAPH_BASE}/${postId}?fields=id,caption,media_url,thumbnail_url,permalink&access_token=${accessToken}`
+  );
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message ?? "Failed to fetch post info");
+  }
+
+  return {
+    id: data.id as string,
+    caption: (data.caption as string) ?? null,
+    // thumbnail_url exists for videos; fall back to media_url for images
+    thumbnail_url: (data.thumbnail_url as string) ?? (data.media_url as string) ?? null,
+    permalink: (data.permalink as string) ?? null,
+  };
+}

@@ -32,12 +32,17 @@ export async function createServerSupabaseClient() {
 }
 
 // ── Admin client (service role — server only, never expose to client) ─────────
+// Returned as `any`: Supabase v2 returns GenericStringError on query results
+// without generated DB types. Since admin queries are server-only and bypass
+// RLS, `any` here is safe. Generate types with `supabase gen types typescript`
+// to get full type safety in a future migration.
 export function createAdminClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-  });
+  }) as any;
 }
