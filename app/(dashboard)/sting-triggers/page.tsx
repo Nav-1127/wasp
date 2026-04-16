@@ -174,11 +174,11 @@ function StingTriggersContent() {
   }
 
   return (
-    <DashboardShell email={email}>
+    <DashboardShell>
       <div className="max-w-3xl mx-auto px-6 py-10">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-8">
           <div>
             <h1
               className="text-2xl font-black text-[#1A1A1A]"
@@ -186,14 +186,14 @@ function StingTriggersContent() {
             >
               ⚡ Sting Triggers
             </h1>
-            <p className="text-sm text-[#6B6058] mt-1">
+            <p className="text-sm text-[#6B6058] mt-1 max-w-md">
               When someone comments with a keyword or intent, WASP replies publicly and sends them a DM simultaneously.
             </p>
           </div>
           {!showForm && (
             <button
               onClick={openCreate}
-              className="flex-shrink-0 text-xs font-semibold bg-[#1A1A1A] text-[#F5F0E8] px-4 py-2.5 rounded-xl hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors"
+              className="self-start flex-shrink-0 text-xs font-semibold bg-[#1A1A1A] text-[#F5F0E8] px-4 py-2.5 rounded-xl hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors"
             >
               + New trigger
             </button>
