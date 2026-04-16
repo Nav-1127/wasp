@@ -222,7 +222,17 @@ export default function SettingsPage() {
   }
 
   function applyModeChange(field: string, value: string) {
-    setAccount((a) => a ? { ...a, [field]: value } as AccountData : a);
+    if (field === "agent_mode") {
+      // Master mode cascades to all per-type modes
+      const v = value as "draft" | "auto";
+      setAccount((a) =>
+        a
+          ? { ...a, agent_mode: v, comment_mode: v, dm_mode: v, story_mode: v }
+          : a
+      );
+    } else {
+      setAccount((a) => a ? { ...a, [field]: value } as AccountData : a);
+    }
     setShowAutoConfirm(null);
     setPendingAutoValue(null);
   }
@@ -388,25 +398,25 @@ export default function SettingsPage() {
             <Section title="Agent Mode">
               <ModeRow
                 label="Master mode"
-                description="Controls the default for all interaction types."
+                description="Sets Draft or Auto for all interaction types at once."
                 value={account.agent_mode}
                 onChange={(v) => requestModeChange("agent_mode", v)}
               />
               <ModeRow
                 label="Comments"
-                description="Draft mode for comment replies."
+                description="Override mode for comment replies specifically."
                 value={account.comment_mode}
                 onChange={(v) => requestModeChange("comment_mode", v)}
               />
               <ModeRow
                 label="Direct Messages"
-                description="Draft mode for DM replies."
+                description="Override mode for DM replies specifically."
                 value={account.dm_mode}
                 onChange={(v) => requestModeChange("dm_mode", v)}
               />
               <ModeRow
                 label="Story Replies"
-                description="Draft mode for story reply responses."
+                description="Override mode for story reply responses specifically."
                 value={account.story_mode}
                 onChange={(v) => requestModeChange("story_mode", v)}
               />
