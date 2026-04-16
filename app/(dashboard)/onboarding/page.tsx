@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatFollowerCount } from "@/lib/instagram";
 
@@ -18,6 +18,7 @@ interface Product {
   id: string;
   name: string;
   description: string;
+  price_range: string;
   url: string;
 }
 
@@ -60,11 +61,6 @@ interface PersonalityProfile {
     to_hype_comment: string;
     to_purchase_confirmation: string;
   };
-}
-
-interface GoalData {
-  interaction_type: "comment" | "dm" | "story_reply";
-  goal: string;
 }
 
 // ─── Step progress indicator ──────────────────────────────────────────────────
@@ -943,6 +939,9 @@ Keep every response to 1-3 sentences max. Sound like a real person, not a brand 
 
 // ─── Step 3 — Products & Links ────────────────────────────────────────────────
 
+const INPUT_SM =
+  "w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-3 py-2.5 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors";
+
 function Step3({
   accountType,
   onNext,
@@ -953,22 +952,83 @@ function Step3({
   onBack: () => void;
 }) {
   const isBrand = accountType === "brand";
-  const [products, setProducts] = useState<Product[]>([
-    { id: crypto.randomUUID(), name: "", description: "", url: "" },
-  ]);
-  const [loading, setLoading] = useState(false);
+  type Tab = "manual" | "import";
+
+  const [activeTab, setActiveTab]         = useState<Tab>("manual");
+  const [products, setProducts]           = useState<Product[]>([]);
+  const [importUrl, setImportUrl]         = useState("");
+  const [importing, setImporting]         = useState(false);
+  const [importedItems, setImportedItems] = useState<Product[] | null>(null);
+  const [importError, setImportError]     = useState("");
+  const [loading, setLoading]             = useState(false);
+
+  // ── Manual helpers ─────────────────────────────────────────────────────────
 
   function addProduct() {
-    setProducts([...products, { id: crypto.randomUUID(), name: "", description: "", url: "" }]);
+    setProducts((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), name: "", description: "", price_range: "", url: "" },
+    ]);
   }
 
   function removeProduct(id: string) {
-    setProducts(products.filter((p) => p.id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   }
 
   function updateProduct(id: string, field: keyof Product, value: string) {
-    setProducts(products.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
   }
+
+  // ── Import helpers ─────────────────────────────────────────────────────────
+
+  function updateImportedItem(id: string, field: keyof Product, value: string) {
+    setImportedItems((prev) => prev?.map((p) => (p.id === id ? { ...p, [field]: value } : p)) ?? null);
+  }
+
+  function removeImportedItem(id: string) {
+    setImportedItems((prev) => prev?.filter((p) => p.id !== id) ?? null);
+  }
+
+  async function handleImport() {
+    let trimmed = importUrl.trim();
+    if (!trimmed) { setImportError("Paste a website URL first."); return; }
+    // Auto-prepend https:// so users can type "shopamaar.com" without the protocol
+    if (!/^https?:\/\//i.test(trimmed)) trimmed = "https://" + trimmed;
+    setImportUrl(trimmed); // reflect the corrected URL back in the input
+    setImporting(true);
+    setImportError("");
+    setImportedItems(null);
+    try {
+      const res  = await fetch("/api/scrape-website", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: trimmed }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setImportError(json.error ?? "Failed to import"); return; }
+      const items: Product[] = json.items ?? [];
+      if (items.length === 0) {
+        setImportError("No products or links found on that page. Try a different URL or use manual entry.");
+        return;
+      }
+      setImportedItems(items);
+    } catch {
+      setImportError("Could not reach that website. Try manual entry instead.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  function confirmImport() {
+    if (!importedItems) return;
+    const valid = importedItems.filter((i) => i.name.trim());
+    setProducts((prev) => [...prev, ...valid]);
+    setImportedItems(null);
+    setImportUrl("");
+    setActiveTab("manual");
+  }
+
+  // ── Save ───────────────────────────────────────────────────────────────────
 
   async function handleNext(skip = false) {
     setLoading(true);
@@ -989,76 +1049,217 @@ function Step3({
       >
         {isBrand ? "Add your products & services" : "Add your links & offers"}
       </h1>
-      <p className="text-[#6B6058] mb-8">
+      <p className="text-[#6B6058] mb-6">
         {isBrand
           ? "WASP uses this to mention your products naturally in replies and drive traffic at the right moments."
-          : "Add any links, offers, or paid products you want WASP to promote when the moment's right."}
+          : "Courses, affiliate links, merch, booking links, newsletter, etc. WASP will promote these when the moment's right."}
       </p>
 
-      <div className="flex flex-col gap-4 mb-6">
-        {products.map((product, i) => (
-          <div key={product.id} className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider">
-                {isBrand ? `Product / Service ${i + 1}` : `Link / Offer ${i + 1}`}
-              </span>
-              {products.length > 1 && (
-                <button
-                  onClick={() => removeProduct(product.id)}
-                  className="text-xs text-[#9A9080] hover:text-red-500 transition-colors"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-            <div className="flex flex-col gap-3">
-              <input
-                type="text" value={product.name}
-                onChange={(e) => updateProduct(product.id, "name", e.target.value)}
-                placeholder={isBrand ? "Product or service name" : "Link or offer name"}
-                className="w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-4 py-2.5 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors"
-              />
-              <input
-                type="text" value={product.description}
-                onChange={(e) => updateProduct(product.id, "description", e.target.value)}
-                placeholder={isBrand ? "Short description (optional)" : "What is this? (optional)"}
-                className="w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-4 py-2.5 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors"
-              />
-              <input
-                type="url" value={product.url}
-                onChange={(e) => updateProduct(product.id, "url", e.target.value)}
-                placeholder="https://yoursite.com/product (optional)"
-                className="w-full bg-[#F5F0E8] border border-[#D5CFC3] rounded-xl px-4 py-2.5 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors"
-              />
-            </div>
-          </div>
+      {/* Method tabs */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {(["manual", "import"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => { setActiveTab(tab); setImportError(""); }}
+            className="px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors"
+            style={{
+              borderColor: activeTab === tab ? "#5C6B00" : "#D5CFC3",
+              backgroundColor: activeTab === tab ? "rgba(212,255,0,0.1)" : "#EDE8DE",
+              color: activeTab === tab ? "#1A1A1A" : "#6B6058",
+            }}
+          >
+            {tab === "manual" ? "Add manually" : "Import from website"}
+          </button>
         ))}
-
-        <button
-          onClick={addProduct}
-          className="border border-dashed border-[#D5CFC3] rounded-2xl py-3 text-sm text-[#6B6058] hover:border-[#5C6B00] hover:text-[#5C6B00] transition-colors"
-        >
-          + Add another
-        </button>
+        {/* Shopify — Coming Soon */}
+        <div className="px-4 py-2 rounded-xl text-sm font-semibold border-2 border-[#D5CFC3] bg-[#EDE8DE] text-[#9A9080] flex items-center gap-1.5 cursor-not-allowed select-none">
+          Shopify
+          <span className="text-[9px] bg-[#D5CFC3] text-[#9A9080] px-1.5 py-0.5 rounded-full uppercase tracking-wide font-bold leading-none">
+            soon
+          </span>
+        </div>
       </div>
 
+      {/* ── Manual entry ──────────────────────────────────────────────────── */}
+      {activeTab === "manual" && (
+        <div className="mb-6">
+          {products.length === 0 ? (
+            <div className="border-2 border-dashed border-[#D5CFC3] rounded-2xl py-10 text-center mb-4">
+              <p className="text-[#9A9080] text-sm mb-3">
+                No {isBrand ? "products" : "links"} added yet
+              </p>
+              <button
+                onClick={addProduct}
+                className="text-sm font-semibold text-[#5C6B00] hover:text-[#1A1A1A] transition-colors"
+              >
+                + Add {isBrand ? "a product or service" : "a link or offer"}
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 mb-4">
+              {products.map((product, i) => (
+                <div key={product.id} className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider">
+                      {isBrand ? `Product / Service ${i + 1}` : `Link / Offer ${i + 1}`}
+                    </span>
+                    <button
+                      onClick={() => removeProduct(product.id)}
+                      className="text-xs text-[#9A9080] hover:text-red-500 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-2.5">
+                    <input
+                      type="text" value={product.name}
+                      onChange={(e) => updateProduct(product.id, "name", e.target.value)}
+                      placeholder={isBrand ? "Product or service name *" : "Link or offer name *"}
+                      className={INPUT_SM}
+                    />
+                    <input
+                      type="text" value={product.description}
+                      onChange={(e) => updateProduct(product.id, "description", e.target.value)}
+                      placeholder="Short description (optional)"
+                      className={INPUT_SM}
+                    />
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <input
+                        type="text" value={product.price_range}
+                        onChange={(e) => updateProduct(product.id, "price_range", e.target.value)}
+                        placeholder={isBrand ? "Price (e.g. $49)" : "Price (optional)"}
+                        className={INPUT_SM}
+                      />
+                      <input
+                        type="url" value={product.url}
+                        onChange={(e) => updateProduct(product.id, "url", e.target.value)}
+                        placeholder="URL (optional)"
+                        className={INPUT_SM}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <button
+                onClick={addProduct}
+                className="border border-dashed border-[#D5CFC3] rounded-2xl py-3 text-sm text-[#6B6058] hover:border-[#5C6B00] hover:text-[#5C6B00] transition-colors"
+              >
+                + Add another
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Import from website ──────────────────────────────────────────── */}
+      {activeTab === "import" && (
+        <div className="mb-6">
+          <p className="text-sm text-[#6B6058] mb-4">
+            Paste your website or store URL. WASP will scan it and extract your{" "}
+            {isBrand ? "products and services" : "links and offers"} automatically — then you review before saving.
+          </p>
+          <div className="flex gap-2 mb-3">
+            <input
+              type="url" value={importUrl}
+              onChange={(e) => { setImportUrl(e.target.value); setImportError(""); }}
+              placeholder="https://yoursite.com"
+              className="flex-1 bg-[#EDE8DE] border border-[#D5CFC3] rounded-xl px-4 py-3 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors"
+            />
+            <button
+              onClick={handleImport}
+              disabled={importing}
+              className="bg-[#1A1A1A] text-[#F5F0E8] font-semibold px-5 py-3 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40 whitespace-nowrap"
+            >
+              {importing ? "Scanning…" : "Import"}
+            </button>
+          </div>
+
+          {importing && (
+            <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-6 text-center mt-4">
+              <div className="w-6 h-6 rounded-full border-2 border-[#D5CFC3] border-t-[#5C6B00] animate-spin mx-auto mb-3" />
+              <p className="text-sm text-[#6B6058]">Scanning your website…</p>
+            </div>
+          )}
+
+          {importError && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mt-3">
+              {importError}
+            </p>
+          )}
+
+          {importedItems && !importing && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-[#5C6B00] uppercase tracking-wider">
+                  Found {importedItems.length} item{importedItems.length !== 1 ? "s" : ""} — review before saving
+                </p>
+                <button onClick={() => setImportedItems(null)} className="text-xs text-[#9A9080] hover:text-red-500 transition-colors">
+                  Clear
+                </button>
+              </div>
+              <div className="flex flex-col gap-3 mb-4">
+                {importedItems.map((item, i) => (
+                  <div key={item.id} className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-[#9A9080]">Item {i + 1}</span>
+                      <button onClick={() => removeImportedItem(item.id)} className="text-xs text-[#9A9080] hover:text-red-500 transition-colors">Remove</button>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <input type="text" value={item.name} onChange={(e) => updateImportedItem(item.id, "name", e.target.value)}
+                        placeholder="Name *" className={INPUT_SM} />
+                      <input type="text" value={item.description} onChange={(e) => updateImportedItem(item.id, "description", e.target.value)}
+                        placeholder="Description (optional)" className={INPUT_SM} />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" value={item.price_range} onChange={(e) => updateImportedItem(item.id, "price_range", e.target.value)}
+                          placeholder="Price (optional)" className={INPUT_SM} />
+                        <input type="url" value={item.url} onChange={(e) => updateImportedItem(item.id, "url", e.target.value)}
+                          placeholder="URL (optional)" className={INPUT_SM} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={confirmImport}
+                className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors"
+              >
+                Add {importedItems.length} item{importedItems.length !== 1 ? "s" : ""} to my {isBrand ? "products" : "links"} →
+              </button>
+            </div>
+          )}
+
+          <p className="text-xs text-[#9A9080] mt-3">
+            Results depend on the site&apos;s structure — always review before saving.
+          </p>
+        </div>
+      )}
+
+      {/* Product count indicator */}
+      {products.length > 0 && (
+        <div className="flex items-center gap-2 mb-5 bg-[#D4FF00]/10 border border-[#5C6B00]/20 rounded-xl px-4 py-2.5">
+          <span className="w-2 h-2 rounded-full bg-[#5C6B00] flex-shrink-0" />
+          <p className="text-xs text-[#5C6B00] font-medium">
+            {products.length} {isBrand ? "product" : "link"}{products.length !== 1 ? "s" : ""} ready to save
+          </p>
+        </div>
+      )}
+
+      {/* Actions */}
       <div className="flex flex-col gap-3">
         <button
           onClick={() => handleNext(false)}
           disabled={loading}
           className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
         >
-          {loading ? "Saving…" : "Continue →"}
+          {loading ? "Saving…" : products.length > 0 ? "Continue →" : "Continue without products →"}
         </button>
-        {!isBrand && (
-          <button
-            onClick={() => handleNext(true)}
-            disabled={loading}
-            className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors py-1"
-          >
-            Skip — I don&apos;t sell anything
-          </button>
-        )}
+        <button
+          onClick={() => handleNext(true)}
+          disabled={loading}
+          className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors py-1"
+        >
+          I don&apos;t sell anything right now
+        </button>
         <button onClick={onBack} className="text-sm text-[#9A9080] hover:text-[#5C6B00] transition-colors">
           ← Back
         </button>
@@ -1069,27 +1270,11 @@ function Step3({
 
 // ─── Step 4 — Engagement Goals ────────────────────────────────────────────────
 
-const BRAND_GOALS = [
-  { id: "engage",         label: "Build brand awareness",      description: "Genuine replies that grow affinity" },
-  { id: "drive_to_dm",   label: "Convert comments to DMs",     description: "Move conversations to private" },
-  { id: "send_link",     label: "Drive traffic to website",    description: "Share product links at the right moment" },
-  { id: "collect_email", label: "Collect leads & emails",      description: "Ask interested followers for their email" },
-  { id: "book_call",     label: "Book discovery calls",        description: "Invite qualified leads to connect" },
-];
-
-const CREATOR_GOALS = [
-  { id: "engage",            label: "Grow my engagement",          description: "Real replies that build community" },
-  { id: "build_community",   label: "Build community",             description: "Make followers feel seen and heard" },
-  { id: "drive_clicks",      label: "Drive link clicks",           description: "Promote your link-in-bio naturally" },
-  { id: "collect_email",     label: "Collect email subscribers",   description: "Grow your newsletter list" },
-  { id: "convert_followers", label: "Convert followers to fans",   description: "Deepen connection with your audience" },
-];
-
 const ENGAGEMENT_LEVELS = [
   {
     id: "smart_select",
     label: "Smart select",
-    description: "WASP replies to questions, compliments, meaningful feedback, and purchase intent. Skips emojis and friend tags.",
+    description: "Replies to questions, compliments, meaningful feedback, and purchase intent. Skips lone emojis and friend tags.",
     recommended: true,
   },
   {
@@ -1112,57 +1297,156 @@ const ENGAGEMENT_LEVELS = [
   },
 ];
 
+// ─── Step 4 types + constants ─────────────────────────────────────────────────
+
+interface AccountAsset {
+  id: string;
+  label: string;
+  url: string;
+  when_to_share: string;
+}
+
+const PRIMARY_OBJECTIVES = [
+  {
+    id: "grow_engagement",
+    label: "Grow engagement and community",
+    description: "Build real relationships, more comments, deeper conversations",
+    emoji: "🤝",
+  },
+  {
+    id: "drive_sales",
+    label: "Drive product or service sales",
+    description: "Turn followers into customers — naturally, never pushy",
+    emoji: "💰",
+  },
+  {
+    id: "grow_email_list",
+    label: "Grow my email list",
+    description: "Collect emails organically through genuine conversations",
+    emoji: "📧",
+  },
+  {
+    id: "book_calls",
+    label: "Book calls or consultations",
+    description: "Guide interested people to schedule time with you",
+    emoji: "📅",
+  },
+  {
+    id: "grow_followers",
+    label: "Grow my follower count",
+    description: "Turn commenters and DM-ers into long-term followers",
+    emoji: "📈",
+  },
+  {
+    id: "mix",
+    label: "Mix — I want all of the above",
+    description: "WASP uses judgment per conversation based on what makes sense",
+    emoji: "✨",
+  },
+];
+
 function Step4({
-  accountType,
   onNext,
   onBack,
-  onSetupStingTrigger,
 }: {
   accountType: AccountType;
   onNext: () => void;
   onBack: () => void;
-  onSetupStingTrigger: () => void;
 }) {
-  const goals = accountType === "brand" ? BRAND_GOALS : CREATOR_GOALS;
-  const [selected, setSelected]             = useState<Set<string>>(new Set(["engage"]));
+  const [objective, setObjective]             = useState("grow_engagement");
+  const [assets, setAssets]                   = useState<AccountAsset[]>([]);
+  const [showAssetForm, setShowAssetForm]     = useState(false);
+  const [newAsset, setNewAsset]               = useState<Omit<AccountAsset, "id">>({ label: "", url: "", when_to_share: "" });
   const [engagementLevel, setEngagementLevel] = useState("smart_select");
-  const [loading, setLoading]               = useState(false);
+  const [loading, setLoading]                 = useState(false);
 
-  function toggleGoal(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        if (next.size > 1) next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+  // ── Inline sting trigger form ──────────────────────────────────────────────
+  const [showTriggerForm, setShowTriggerForm] = useState(false);
+  const [triggerSaved, setTriggerSaved]       = useState(false);
+  const [triggerSaving, setTriggerSaving]     = useState(false);
+  const [triggerError, setTriggerError]       = useState("");
+  const [triggerForm, setTriggerForm]         = useState({
+    name:                "",
+    trigger_type:        "keyword" as "keyword" | "smart_intent",
+    trigger_keywords:    "",
+    trigger_description: "",
+    comment_reply:       "",
+    dm_message:          "",
+    dm_link:             "",
+    applies_to:          "all_posts" as "all_posts" | "specific_posts",
+  });
+  const triggerFormRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to form when it opens
+  useEffect(() => {
+    if (showTriggerForm && triggerFormRef.current) {
+      triggerFormRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [showTriggerForm]);
+
+  function addAsset() {
+    if (!newAsset.label.trim() || !newAsset.url.trim()) return;
+    setAssets((prev) => [...prev, { id: crypto.randomUUID(), ...newAsset }]);
+    setNewAsset({ label: "", url: "", when_to_share: "" });
+    setShowAssetForm(false);
   }
 
-  async function handleFinish(goToStingTrigger = false) {
-    setLoading(true);
-    const types: Array<"comment" | "dm" | "story_reply"> = ["comment", "dm", "story_reply"];
-    const primaryGoal = Array.from(selected)[0];
-    const goalRows: GoalData[] = types.map((type, i) => ({
-      interaction_type: type,
-      goal: Array.from(selected)[Math.min(i, selected.size - 1)] ?? primaryGoal,
-    }));
+  function removeAsset(id: string) {
+    setAssets((prev) => prev.filter((a) => a.id !== id));
+  }
 
+  async function handleTriggerSave() {
+    if (!triggerForm.name.trim())          { setTriggerError("Give this trigger a name."); return; }
+    if (!triggerForm.comment_reply.trim()) { setTriggerError("Add a public comment reply."); return; }
+    if (!triggerForm.dm_message.trim())    { setTriggerError("Add the DM message."); return; }
+    if (triggerForm.trigger_type === "keyword" && !triggerForm.trigger_keywords.trim()) {
+      setTriggerError("Add at least one keyword."); return;
+    }
+    setTriggerSaving(true);
+    setTriggerError("");
+    try {
+      const keywords = triggerForm.trigger_keywords
+        .split(",").map((k) => k.trim()).filter(Boolean);
+      const res = await fetch("/api/sting-triggers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name:                triggerForm.name,
+          trigger_type:        triggerForm.trigger_type,
+          trigger_keywords:    keywords,
+          trigger_description: triggerForm.trigger_description || null,
+          comment_reply:       triggerForm.comment_reply,
+          dm_message:          triggerForm.dm_message,
+          dm_link:             triggerForm.dm_link || null,
+          applies_to:          triggerForm.applies_to,
+          is_active:           true,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setTriggerSaved(true);
+      setShowTriggerForm(false);
+    } catch {
+      setTriggerError("Something went wrong. Please try again.");
+    } finally {
+      setTriggerSaving(false);
+    }
+  }
+
+  async function handleFinish() {
+    setLoading(true);
     await fetch("/api/onboarding/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         step: 4,
-        data: { goals: goalRows, engagement_level: engagementLevel },
+        data: {
+          primary_objective: objective,
+          assets,
+          engagement_level: engagementLevel,
+        },
       }),
     });
-
-    if (goToStingTrigger) {
-      onSetupStingTrigger();
-    } else {
-      onNext();
-    }
+    onNext();
   }
 
   return (
@@ -1171,56 +1455,153 @@ function Step4({
         className="text-3xl font-black text-[#1A1A1A] mb-2"
         style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
       >
-        What do you want WASP to do?
+        What matters to you?
       </h1>
       <p className="text-[#6B6058] mb-8">
-        {accountType === "brand"
-          ? "Choose your engagement goals. WASP will weave these into every reply naturally."
-          : "Tell WASP what matters most. It'll prioritise these in every conversation."}
+        This shapes how WASP handles every conversation — comments, DMs, and story replies.
       </p>
 
-      {/* Goals */}
-      <div className="flex flex-col gap-3 mb-10">
-        {goals.map((goal) => {
-          const active = selected.has(goal.id);
-          return (
-            <button
-              key={goal.id}
-              onClick={() => toggleGoal(goal.id)}
-              className="flex items-center gap-4 text-left border-2 rounded-2xl p-4 transition-all"
-              style={{
-                borderColor: active ? "#5C6B00" : "#D5CFC3",
-                background: active ? "rgba(212,255,0,0.08)" : "#EDE8DE",
-              }}
-            >
-              <div
-                className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                style={{
-                  borderColor: active ? "#5C6B00" : "#D5CFC3",
-                  backgroundColor: active ? "#5C6B00" : "transparent",
-                }}
-              >
-                {active && <span className="text-white text-[10px]">✓</span>}
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-[#1A1A1A] text-sm">{goal.label}</p>
-                <p className="text-xs text-[#6B6058] mt-0.5">{goal.description}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Engagement Level */}
-      <div className="mb-10">
+      {/* ── Primary Objective ────────────────────────────────────────────── */}
+      <div className="mb-8">
         <h2
           className="text-base font-black text-[#1A1A1A] mb-1"
           style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
         >
-          How should WASP handle comment volume?
+          Primary objective
+        </h2>
+        <p className="text-xs text-[#6B6058] mb-4">Pick your #1 goal. WASP will keep this in mind with every reply.</p>
+        <div className="flex flex-col gap-2">
+          {PRIMARY_OBJECTIVES.map((obj) => {
+            const active = objective === obj.id;
+            return (
+              <button
+                key={obj.id}
+                onClick={() => setObjective(obj.id)}
+                className="flex items-center gap-4 text-left border-2 rounded-2xl p-4 transition-all"
+                style={{
+                  borderColor: active ? "#5C6B00" : "#D5CFC3",
+                  background: active ? "rgba(212,255,0,0.08)" : "#EDE8DE",
+                }}
+              >
+                <div
+                  className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                  style={{
+                    borderColor: active ? "#5C6B00" : "#D5CFC3",
+                    backgroundColor: active ? "#5C6B00" : "transparent",
+                  }}
+                >
+                  {active && <span className="text-white text-[10px]">✓</span>}
+                </div>
+                <span className="text-lg flex-shrink-0">{obj.emoji}</span>
+                <div className="min-w-0">
+                  <p className="font-semibold text-[#1A1A1A] text-sm">{obj.label}</p>
+                  <p className="text-xs text-[#6B6058] mt-0.5">{obj.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Available Assets ─────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <h2
+          className="text-base font-black text-[#1A1A1A] mb-1"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          Links &amp; assets <span className="text-[#9A9080] font-normal text-sm">(optional)</span>
         </h2>
         <p className="text-xs text-[#6B6058] mb-4">
-          For DMs and story replies, WASP always responds — these are high-intent by nature.
+          Anything WASP can share when the moment&apos;s right — your website, a free guide, a booking link.
+          WASP uses judgment on when to drop these in naturally. Skip this if you don&apos;t have anything to share yet.
+        </p>
+
+        {assets.length > 0 && (
+          <div className="flex flex-col gap-3 mb-4">
+            {assets.map((asset) => (
+              <div key={asset.id} className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#1A1A1A] text-sm truncate">{asset.label}</p>
+                    <p className="text-xs text-[#5C6B00] truncate mt-0.5">{asset.url}</p>
+                    {asset.when_to_share && (
+                      <p className="text-xs text-[#9A9080] mt-1 italic">&ldquo;{asset.when_to_share}&rdquo;</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeAsset(asset.id)}
+                    className="text-xs text-[#9A9080] hover:text-red-500 transition-colors flex-shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showAssetForm ? (
+          <div className="border-2 border-[#5C6B00]/40 bg-[#EDE8DE] rounded-2xl p-4 mb-3">
+            <p className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider mb-3">New asset</p>
+            <div className="flex flex-col gap-2.5">
+              <input
+                type="text"
+                value={newAsset.label}
+                onChange={(e) => setNewAsset({ ...newAsset, label: e.target.value })}
+                placeholder='Label — e.g. "My shop", "Free guide", "Book a call" *'
+                className={INPUT_SM}
+              />
+              <input
+                type="url"
+                value={newAsset.url}
+                onChange={(e) => setNewAsset({ ...newAsset, url: e.target.value })}
+                placeholder="URL — https://… *"
+                className={INPUT_SM}
+              />
+              <input
+                type="text"
+                value={newAsset.when_to_share}
+                onChange={(e) => setNewAsset({ ...newAsset, when_to_share: e.target.value })}
+                placeholder='When to share — e.g. "When someone asks about my services" (optional)'
+                className={INPUT_SM}
+              />
+            </div>
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={addAsset}
+                disabled={!newAsset.label.trim() || !newAsset.url.trim()}
+                className="flex-1 bg-[#1A1A1A] text-[#F5F0E8] font-semibold px-4 py-2.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+              >
+                Add asset
+              </button>
+              <button
+                onClick={() => { setShowAssetForm(false); setNewAsset({ label: "", url: "", when_to_share: "" }); }}
+                className="px-4 py-2.5 rounded-xl text-sm text-[#6B6058] border border-[#D5CFC3] hover:border-[#5C6B00] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAssetForm(true)}
+            className="border border-dashed border-[#D5CFC3] rounded-2xl py-3 w-full text-sm text-[#6B6058] hover:border-[#5C6B00] hover:text-[#5C6B00] transition-colors"
+          >
+            + Add a link or asset
+          </button>
+        )}
+      </div>
+
+      {/* ── Engagement Level ─────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <h2
+          className="text-base font-black text-[#1A1A1A] mb-1"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          Comment volume
+        </h2>
+        <p className="text-xs text-[#6B6058] mb-4">
+          How many comments should WASP reply to? DMs and story replies always get a response.
         </p>
         <div className="flex flex-col gap-2">
           {ENGAGEMENT_LEVELS.map((level) => {
@@ -1261,28 +1642,184 @@ function Step4({
         </div>
       </div>
 
-      {/* Sting Trigger teaser */}
-      <div
-        className="border-2 rounded-2xl p-5 mb-8"
-        style={{ borderColor: "#D5CFC3", background: "#EDE8DE" }}
-      >
-        <p className="text-sm font-bold text-[#1A1A1A] mb-1">⚡ Auto-DM people who ask for links?</p>
-        <p className="text-xs text-[#6B6058] mb-4">
-          Set up a Sting Trigger — when someone comments asking for a link or info, WASP
-          replies publicly and sends them a DM automatically.
-        </p>
-        <button
-          onClick={() => handleFinish(true)}
-          disabled={loading}
-          className="text-xs font-semibold text-[#5C6B00] hover:text-[#1A1A1A] transition-colors underline underline-offset-2"
-        >
-          Set up my first Sting Trigger →
-        </button>
+      {/* ── Sting Trigger — inline ────────────────────────────────────────── */}
+      <div ref={triggerFormRef} className="mb-8">
+        {triggerSaved ? (
+          // ── Success state ────────────────────────────────────────────────
+          <div className="border-2 border-[#5C6B00] bg-[#D4FF00]/15 rounded-2xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#5C6B00] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-sm font-bold">✓</span>
+              </div>
+              <div>
+                <p className="font-bold text-[#1A1A1A] text-sm">Sting Trigger created! ⚡</p>
+                <p className="text-xs text-[#6B6058] mt-0.5">WASP will fire it as soon as live monitoring is active in Phase 3.</p>
+              </div>
+            </div>
+          </div>
+        ) : !showTriggerForm ? (
+          // ── Teaser state ─────────────────────────────────────────────────
+          <div className="border-2 rounded-2xl p-5" style={{ borderColor: "#D5CFC3", background: "#EDE8DE" }}>
+            <p className="text-sm font-bold text-[#1A1A1A] mb-1">⚡ Want to auto-DM people who ask for links or info?</p>
+            <p className="text-xs text-[#6B6058] mb-4">
+              Set up a Sting Trigger — when someone comments asking for a link or info, WASP
+              replies publicly and sends them a DM automatically.
+            </p>
+            <button
+              onClick={() => setShowTriggerForm(true)}
+              className="text-xs font-semibold text-[#5C6B00] hover:text-[#1A1A1A] transition-colors underline underline-offset-2"
+            >
+              Set up my first Sting Trigger →
+            </button>
+          </div>
+        ) : (
+          // ── Inline form ──────────────────────────────────────────────────
+          <div className="border-2 border-[#5C6B00] bg-[#EDE8DE] rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-5">
+              <h2
+                className="text-base font-black text-[#1A1A1A]"
+                style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+              >
+                ⚡ New Sting Trigger
+              </h2>
+              <button
+                onClick={() => { setShowTriggerForm(false); setTriggerError(""); }}
+                className="text-xs text-[#9A9080] hover:text-[#5C6B00] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Trigger name</label>
+                <input
+                  type="text"
+                  placeholder='e.g. "Free Guide Link"'
+                  value={triggerForm.name}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, name: e.target.value })}
+                  className={INPUT_SM}
+                />
+              </div>
+
+              {/* Trigger type toggle */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Trigger type</label>
+                <div className="flex gap-2">
+                  {(["keyword", "smart_intent"] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTriggerForm({ ...triggerForm, trigger_type: t })}
+                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-colors"
+                      style={{
+                        borderColor:     triggerForm.trigger_type === t ? "#5C6B00" : "#D5CFC3",
+                        backgroundColor: triggerForm.trigger_type === t ? "rgba(212,255,0,0.12)" : "#F5F0E8",
+                        color:           triggerForm.trigger_type === t ? "#1A1A1A" : "#6B6058",
+                      }}
+                    >
+                      {t === "keyword" ? "Keyword match" : "Smart intent"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Keywords or intent description */}
+              {triggerForm.trigger_type === "keyword" ? (
+                <div>
+                  <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Keywords</label>
+                  <input
+                    type="text"
+                    placeholder="link, guide, send, info"
+                    value={triggerForm.trigger_keywords}
+                    onChange={(e) => setTriggerForm({ ...triggerForm, trigger_keywords: e.target.value })}
+                    className={INPUT_SM}
+                  />
+                  <p className="text-[11px] text-[#9A9080] mt-1">Comma-separated. Case-insensitive.</p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Describe the intent to detect</label>
+                  <textarea
+                    rows={2}
+                    placeholder='e.g. "Someone asking for a link, wanting more info, or requesting pricing"'
+                    value={triggerForm.trigger_description}
+                    onChange={(e) => setTriggerForm({ ...triggerForm, trigger_description: e.target.value })}
+                    className={INPUT_SM + " resize-none"}
+                  />
+                  <p className="text-[11px] text-[#9A9080] mt-1">WASP uses AI to match this — be specific.</p>
+                </div>
+              )}
+
+              {/* Comment reply */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">Public comment reply</label>
+                <input
+                  type="text"
+                  placeholder="Just sent it to your DMs! 📩"
+                  value={triggerForm.comment_reply}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, comment_reply: e.target.value })}
+                  className={INPUT_SM}
+                />
+                <p className="text-[11px] text-[#9A9080] mt-1">Posted on the comment — visible to everyone.</p>
+              </div>
+
+              {/* DM message */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">DM message</label>
+                <textarea
+                  rows={3}
+                  placeholder="Hey! Here's the link you asked for…"
+                  value={triggerForm.dm_message}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, dm_message: e.target.value })}
+                  className={INPUT_SM + " resize-none"}
+                />
+                <p className="text-[11px] text-[#9A9080] mt-1">Sent privately to the commenter.</p>
+              </div>
+
+              {/* DM link */}
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6058] mb-1.5 uppercase tracking-wider">
+                  DM link <span className="font-normal normal-case text-[#9A9080]">(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://yoursite.com/guide"
+                  value={triggerForm.dm_link}
+                  onChange={(e) => setTriggerForm({ ...triggerForm, dm_link: e.target.value })}
+                  className={INPUT_SM}
+                />
+              </div>
+
+              {triggerError && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+                  {triggerError}
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={handleTriggerSave}
+                  disabled={triggerSaving}
+                  className="flex-1 bg-[#1A1A1A] text-[#F5F0E8] font-bold px-5 py-3 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+                >
+                  {triggerSaving ? "Saving…" : "Create trigger ⚡"}
+                </button>
+                <button
+                  onClick={() => { setShowTriggerForm(false); setTriggerError(""); }}
+                  className="px-5 py-3 rounded-xl text-sm text-[#6B6058] border border-[#D5CFC3] hover:border-[#5C6B00] transition-colors"
+                >
+                  Skip
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
         <button
-          onClick={() => handleFinish(false)}
+          onClick={handleFinish}
           disabled={loading}
           className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
         >
@@ -1344,11 +1881,7 @@ function OnboardingContent() {
   }, [loadExistingData]);
 
   function handleComplete() {
-    window.location.href = "/dashboard";
-  }
-
-  function handleSetupStingTrigger() {
-    window.location.href = "/sting-triggers?new=true";
+    window.location.href = "/dashboard?welcome=true";
   }
 
   function handleDisconnect() {
@@ -1425,7 +1958,6 @@ function OnboardingContent() {
             accountType={accountType}
             onNext={handleComplete}
             onBack={() => setStep(3)}
-            onSetupStingTrigger={handleSetupStingTrigger}
           />
         )}
       </div>

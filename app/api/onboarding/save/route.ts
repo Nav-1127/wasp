@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (step === 4) {
-      // Engagement goals
+      // Primary objective + account assets + engagement level
       const { data: account, error: accountError } = await admin
         .from("brand_accounts")
         .select("id")
@@ -125,45 +125,50 @@ export async function POST(request: NextRequest) {
         return Response.json({ error: "Account not found" }, { status: 404 });
       }
 
-      const goals = (data.goals as Array<{
-        interaction_type: string;
-        goal: string;
-        goal_url?: string;
+      // Save account_assets (delete existing, reinsert)
+      const assets = (data.assets as Array<{
+        label: string;
+        url: string;
+        when_to_share?: string;
       }>) ?? [];
 
-      if (goals.length > 0) {
-        const rows = goals.map((g) => ({
-          brand_account_id: account.id,
-          user_id: user.id,
-          interaction_type: g.interaction_type,
-          goal: g.goal,
-          goal_url: g.goal_url ?? null,
-        }));
+      await admin.from("account_assets").delete().eq("brand_account_id", account.id);
 
-        await admin
-          .from("engagement_goals")
-          .delete()
-          .eq("brand_account_id", account.id);
+      if (assets.length > 0) {
+        const assetRows = assets
+          .filter((a) => a.label?.trim() && a.url?.trim())
+          .map((a) => ({
+            brand_account_id: account.id,
+            user_id: user.id,
+            label: a.label.trim(),
+            url: a.url.trim(),
+            when_to_share: a.when_to_share?.trim() ?? null,
+          }));
 
-        const { error: insertError } = await admin
-          .from("engagement_goals")
-          .insert(rows);
-
-        if (insertError) {
-          console.error("Step 4 goals error:", insertError);
-          return Response.json({ error: "Failed to save goals" }, { status: 500 });
+        if (assetRows.length > 0) {
+          const { error: assetError } = await admin.from("account_assets").insert(assetRows);
+          if (assetError) {
+            console.error("Step 4 assets error:", assetError);
+            return Response.json({ error: "Failed to save assets" }, { status: 500 });
+          }
         }
       }
 
-      // Mark onboarding complete + save engagement level
-      await admin
+      // Mark onboarding complete + save primary_objective + engagement level
+      const { error: updateError } = await admin
         .from("brand_accounts")
         .update({
           onboarding_step: 5,
           onboarding_completed: true,
+          primary_objective: (data.primary_objective as string) ?? "grow_engagement",
           engagement_level: (data.engagement_level as string) ?? "smart_select",
         })
         .eq("user_id", user.id);
+
+      if (updateError) {
+        console.error("Step 4 update error:", updateError);
+        return Response.json({ error: "Failed to complete onboarding" }, { status: 500 });
+      }
 
       // Mark in Supabase Auth app_metadata so middleware can read it
       await admin.auth.admin.updateUserById(user.id, {
@@ -193,7 +198,7 @@ export async function GET() {
     const admin = createAdminClient();
     const { data: account } = await admin
       .from("brand_accounts")
-      .select("*, products(*), engagement_goals(*)")
+      .select("*, products(*), account_assets(*)")
       .eq("user_id", user.id)
       .single();
 

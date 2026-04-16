@@ -9,7 +9,11 @@ const ENGAGEMENT_LEVEL_LABELS: Record<string, string> = {
   manual_pick:    "Manual pick",
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ welcome?: string }>;
+}) {
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -21,33 +25,59 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .single();
 
-  const isBrand        = account?.account_type !== "creator";
-  const handle         = account?.instagram_handle;
+  const isBrand         = account?.account_type !== "creator";
+  const handle          = account?.instagram_handle;
   const engagementLevel = account?.engagement_level ?? "smart_select";
+  const params          = await searchParams;
+  const isFirstVisit    = params.welcome === "true";
 
   return (
     <DashboardShell email={user.email ?? ""}>
       <div className="max-w-4xl mx-auto px-6 py-10">
 
         {/* Welcome banner */}
-        <div className="border border-[#5C6B00]/30 bg-[#D4FF00]/15 rounded-2xl px-8 py-8 mb-8">
-          <div className="flex items-start gap-4">
-            <span className="text-3xl">🐝</span>
-            <div>
-              <h1
-                className="text-2xl font-black text-[#1A1A1A] mb-1"
-                style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-              >
-                WASP is set up and ready.
-              </h1>
-              <p className="text-[#6B6058]">
-                {handle
-                  ? `@${handle} is connected. Full agent controls are coming in the next update.`
-                  : "Your account is configured. Connect your Instagram to go live."}
-              </p>
+        {isFirstVisit ? (
+          <div className="border-2 border-[#5C6B00] bg-[#D4FF00]/20 rounded-2xl px-8 py-8 mb-8">
+            <div className="flex items-start gap-4">
+              <span className="text-4xl">🐝</span>
+              <div>
+                <h1
+                  className="text-2xl font-black text-[#1A1A1A] mb-2"
+                  style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+                >
+                  You&apos;re all set up!
+                </h1>
+                <p className="text-[#6B6058] mb-1">
+                  {handle
+                    ? `@${handle} is connected and your content personality is ready.`
+                    : "Your account is configured and ready to go."}
+                </p>
+                <p className="text-sm text-[#5C6B00] font-medium">
+                  Full agent controls — live comment and DM monitoring — are coming in Phase 3.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="border border-[#5C6B00]/30 bg-[#D4FF00]/15 rounded-2xl px-8 py-8 mb-8">
+            <div className="flex items-start gap-4">
+              <span className="text-3xl">🐝</span>
+              <div>
+                <h1
+                  className="text-2xl font-black text-[#1A1A1A] mb-1"
+                  style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+                >
+                  WASP is set up and ready.
+                </h1>
+                <p className="text-[#6B6058]">
+                  {handle
+                    ? `@${handle} is connected. Full agent controls are coming in the next update.`
+                    : "Your account is configured. Connect your Instagram to go live."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Status cards */}
         <div className="grid sm:grid-cols-4 gap-4 mb-8">
