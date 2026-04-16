@@ -105,11 +105,23 @@ export async function POST(request: NextRequest) {
   // Fetch the saved interaction to return to the UI
   const { data: interaction } = await admin
     .from("interactions")
-    .select(
-      "id, interaction_type, message_text, drafted_response, status, comment_category, error_message"
-    )
+    .select("*")
     .eq("id", interactionId)
     .single();
 
-  return Response.json({ interaction });
+  // Debug: fetch products so we can confirm they're loading correctly
+  const { data: products, error: productsError } = await admin
+    .from("products")
+    .select("*")
+    .eq("brand_account_id", account.id);
+
+  return Response.json({
+    interaction,
+    _debug: {
+      brand_account_id: account.id,
+      products_found: products?.length ?? 0,
+      products,
+      products_error: productsError?.message ?? null,
+    },
+  });
 }
