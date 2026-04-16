@@ -32,6 +32,7 @@ export interface BuildPromptOptions {
   assets: PromptAsset[];
   interactionType: InteractionType;
   storyContext?: string | null; // the story caption/text if this is a story reply
+  postContext?: string | null;  // the caption of the post the comment was left on
 }
 
 // Maps each primary_objective ID to a clear instruction for Claude
@@ -58,6 +59,7 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     assets,
     interactionType,
     storyContext,
+    postContext,
   } = opts;
 
   const parts: string[] = [];
@@ -81,7 +83,8 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     });
     parts.push(
       `PRODUCTS / SERVICES / OFFERS YOU CAN MENTION:\n` +
-        `Only bring these up when the conversation naturally calls for it.\n` +
+        `When someone asks about price, cost, how much something is, or what you sell — lead immediately with the product name, price, and the direct product link. Do NOT say "link in bio", do NOT ask what they are looking for first, do NOT hedge. Use the exact URL listed below.\n` +
+        `For other conversations, only mention products when it naturally fits.\n` +
         lines.join("\n")
     );
   }
@@ -101,7 +104,16 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     );
   }
 
-  // ── 5. Story reply context ──────────────────────────────────────────────────
+  // ── 5. Post context (for comments) ─────────────────────────────────────────
+  // When a comment comes in on a specific post, include the post caption so Claude
+  // can understand what the comment is about even without an explicit product mention.
+  if (interactionType === "comment" && postContext) {
+    parts.push(
+      `POST CONTEXT:\nThis comment was left on a post with the following caption: "${postContext}"\nUse this to understand what the person is asking about or reacting to.`
+    );
+  }
+
+  // ── 6. Story reply context ──────────────────────────────────────────────────
   // Story replies arrive as DMs. When we know which story triggered the reply,
   // include it so the agent can reference it naturally.
   if (interactionType === "story_reply") {
@@ -112,7 +124,7 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     parts.push(`CONTEXT:\n${storyNote}`);
   }
 
-  // ── 6. Hard rules ───────────────────────────────────────────────────────────
+  // ── 7. Hard rules ───────────────────────────────────────────────────────────
   const lengthRule =
     interactionType === "comment"
       ? "For comments: keep replies to 1 sentence. Short and genuine always beats long and thoughtful."
@@ -122,6 +134,8 @@ export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
     `RULES (non-negotiable):\n` +
       `- ${lengthRule}\n` +
       `- Sound like a real person, not a brand account. No corporate speak.\n` +
+      `- Never use markdown formatting. No **bold**, no _italics_, no bullet points. Plain text only — Instagram does not render markdown.\n` +
+      `- Never use em dashes (—) or en dashes (–). Use a comma, period, or just end the sentence instead.\n` +
       `- Use emojis based on the personality described above — not excessively.\n` +
       `- If you don't know something, say "Let me check and get back to you!" — never make things up.\n` +
       `- Never be pushy about sales, links, or emails. Genuinely helpful > everything else.\n` +
