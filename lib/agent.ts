@@ -190,12 +190,27 @@ function shouldRespondByEngagementLevel(
 async function generateResponse(
   systemPrompt: string,
   userMessage: string,
-  conversationHistory: Array<{ role: "user" | "assistant"; content: string }> = []
+  conversationHistory: Array<{ role: "user" | "assistant"; content: string }> = [],
+  imageUrl?: string | null
 ): Promise<string | null> {
   try {
-    const messages: Array<{ role: "user" | "assistant"; content: string }> = [
+    // Build the current user turn — multimodal if we have a post image
+    type ContentBlock =
+      | { type: "text"; text: string }
+      | { type: "image"; source: { type: "url"; url: string } };
+
+    const currentContent: ContentBlock[] = imageUrl
+      ? [
+          { type: "image", source: { type: "url", url: imageUrl } },
+          { type: "text", text: userMessage },
+        ]
+      : [{ type: "text", text: userMessage }];
+
+    // History messages are always plain text; only the live turn includes the image
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const messages: any[] = [
       ...conversationHistory,
-      { role: "user", content: userMessage },
+      { role: "user", content: currentContent },
     ];
 
     const response = await anthropic.messages.create({
@@ -388,7 +403,13 @@ export async function processComment(
   });
 
   // ── Step D: Generate response ───────────────────────────────────────────────
-  const draftResponse = await generateResponse(systemPrompt, comment.comment_text);
+  // Pass the post thumbnail so Claude can see the actual image, not just the caption.
+  const draftResponse = await generateResponse(
+    systemPrompt,
+    comment.comment_text,
+    [],
+    postInfo?.thumbnail_url ?? null
+  );
 
   // ── Save interaction ────────────────────────────────────────────────────────
   const { data: interaction, error: insertError } = await admin
