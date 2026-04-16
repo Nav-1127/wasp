@@ -1294,116 +1294,53 @@ const ENGAGEMENT_LEVELS = [
   },
 ];
 
-interface GoalOption {
+// ─── Step 4 types + constants ─────────────────────────────────────────────────
+
+interface AccountAsset {
   id: string;
   label: string;
-  description: string;
-  hasUrl?: boolean;
-  urlPlaceholder?: string;
+  url: string;
+  when_to_share: string;
 }
 
-const COMMENT_GOALS: GoalOption[] = [
-  { id: "engage",        label: "Keep the conversation going", description: "Agent replies engagingly to encourage more comments" },
-  { id: "drive_to_dm",  label: "Drive to DM",                  description: "Agent nudges them to DM for more info" },
-  { id: "collect_email", label: "Collect email",               description: "Agent guides them to a link where they submit their email" },
-];
-
-const DM_GOALS: GoalOption[] = [
-  { id: "engage",        label: "Have a conversation",  description: "Agent answers questions, recommends products/links, stays helpful" },
-  { id: "collect_email", label: "Collect email",        description: "Agent works in a natural email ask after a few exchanges" },
+const PRIMARY_OBJECTIVES = [
   {
-    id: "send_link",
-    label: "Send to link",
-    description: "Agent shares a specific URL at the right moment",
-    hasUrl: true,
-    urlPlaceholder: "https://yoursite.com/page",
+    id: "grow_engagement",
+    label: "Grow engagement and community",
+    description: "Build real relationships, more comments, deeper conversations",
+    emoji: "🤝",
   },
   {
-    id: "book_call",
-    label: "Book a call",
-    description: "Agent shares your booking link (Calendly, etc.)",
-    hasUrl: true,
-    urlPlaceholder: "https://calendly.com/yourname",
+    id: "drive_sales",
+    label: "Drive product or service sales",
+    description: "Turn followers into customers — naturally, never pushy",
+    emoji: "💰",
+  },
+  {
+    id: "grow_email_list",
+    label: "Grow my email list",
+    description: "Collect emails organically through genuine conversations",
+    emoji: "📧",
+  },
+  {
+    id: "book_calls",
+    label: "Book calls or consultations",
+    description: "Guide interested people to schedule time with you",
+    emoji: "📅",
+  },
+  {
+    id: "grow_followers",
+    label: "Grow my follower count",
+    description: "Turn commenters and DM-ers into long-term followers",
+    emoji: "📈",
+  },
+  {
+    id: "mix",
+    label: "Mix — I want all of the above",
+    description: "WASP uses judgment per conversation based on what makes sense",
+    emoji: "✨",
   },
 ];
-
-const STORY_GOALS: GoalOption[] = [
-  { id: "engage",       label: "Keep the conversation going", description: "Agent continues the conversation naturally" },
-  { id: "drive_to_dm", label: "Drive to DM",                  description: "Agent moves the conversation into DMs" },
-];
-
-function GoalSection({
-  title,
-  subtitle,
-  goals,
-  selected,
-  onSelect,
-  urlValue,
-  onUrlChange,
-}: {
-  title: string;
-  subtitle?: string;
-  goals: GoalOption[];
-  selected: string;
-  onSelect: (id: string) => void;
-  urlValue?: string;
-  onUrlChange?: (v: string) => void;
-}) {
-  const selectedGoal = goals.find((g) => g.id === selected);
-  return (
-    <div className="mb-8">
-      <h2
-        className="text-base font-black text-[#1A1A1A] mb-1"
-        style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-      >
-        {title}
-      </h2>
-      {subtitle && <p className="text-xs text-[#6B6058] mb-3">{subtitle}</p>}
-      <div className="flex flex-col gap-2">
-        {goals.map((goal) => {
-          const active = selected === goal.id;
-          return (
-            <button
-              key={goal.id}
-              onClick={() => onSelect(goal.id)}
-              className="flex items-center gap-4 text-left border-2 rounded-2xl p-4 transition-all"
-              style={{
-                borderColor: active ? "#5C6B00" : "#D5CFC3",
-                background: active ? "rgba(212,255,0,0.08)" : "#EDE8DE",
-              }}
-            >
-              <div
-                className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                style={{
-                  borderColor: active ? "#5C6B00" : "#D5CFC3",
-                  backgroundColor: active ? "#5C6B00" : "transparent",
-                }}
-              >
-                {active && <span className="text-white text-[10px]">✓</span>}
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-[#1A1A1A] text-sm">{goal.label}</p>
-                <p className="text-xs text-[#6B6058] mt-0.5">{goal.description}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      {selectedGoal?.hasUrl && onUrlChange && (
-        <div className="mt-3">
-          <input
-            type="url"
-            value={urlValue}
-            onChange={(e) => onUrlChange(e.target.value)}
-            placeholder={selectedGoal.urlPlaceholder}
-            className="w-full bg-[#F5F0E8] border border-[#5C6B00]/40 rounded-xl px-4 py-3 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors"
-          />
-          <p className="text-xs text-[#9A9080] mt-1">WASP will share this link when the moment&apos;s right</p>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function Step4({
   onNext,
@@ -1415,37 +1352,38 @@ function Step4({
   onBack: () => void;
   onSetupStingTrigger: () => void;
 }) {
-  const [commentGoal, setCommentGoal]         = useState("engage");
-  const [dmGoal, setDmGoal]                   = useState("engage");
-  const [dmGoalUrl, setDmGoalUrl]             = useState("");
-  const [storyGoal, setStoryGoal]             = useState("engage");
+  const [objective, setObjective]             = useState("grow_engagement");
+  const [assets, setAssets]                   = useState<AccountAsset[]>([]);
+  const [showAssetForm, setShowAssetForm]     = useState(false);
+  const [newAsset, setNewAsset]               = useState<Omit<AccountAsset, "id">>({ label: "", url: "", when_to_share: "" });
   const [engagementLevel, setEngagementLevel] = useState("smart_select");
   const [loading, setLoading]                 = useState(false);
 
+  function addAsset() {
+    if (!newAsset.label.trim() || !newAsset.url.trim()) return;
+    setAssets((prev) => [...prev, { id: crypto.randomUUID(), ...newAsset }]);
+    setNewAsset({ label: "", url: "", when_to_share: "" });
+    setShowAssetForm(false);
+  }
+
+  function removeAsset(id: string) {
+    setAssets((prev) => prev.filter((a) => a.id !== id));
+  }
+
   async function handleFinish(goToStingTrigger = false) {
     setLoading(true);
-
-    const goals = [
-      { interaction_type: "comment",     goal: commentGoal },
-      {
-        interaction_type: "dm",
-        goal: dmGoal,
-        goal_url: (dmGoal === "send_link" || dmGoal === "book_call")
-          ? (dmGoalUrl.trim() || null)
-          : null,
-      },
-      { interaction_type: "story_reply", goal: storyGoal },
-    ];
-
     await fetch("/api/onboarding/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         step: 4,
-        data: { goals, engagement_level: engagementLevel },
+        data: {
+          primary_objective: objective,
+          assets,
+          engagement_level: engagementLevel,
+        },
       }),
     });
-
     if (goToStingTrigger) {
       onSetupStingTrigger();
     } else {
@@ -1459,48 +1397,153 @@ function Step4({
         className="text-3xl font-black text-[#1A1A1A] mb-2"
         style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
       >
-        Set your engagement goals
+        What matters to you?
       </h1>
       <p className="text-[#6B6058] mb-8">
-        For each interaction type, choose what you want WASP to do. These guide every reply.
+        This shapes how WASP handles every conversation — comments, DMs, and story replies.
       </p>
 
-      <GoalSection
-        title="💬 Comments"
-        subtitle="How should WASP respond to comments on your posts?"
-        goals={COMMENT_GOALS}
-        selected={commentGoal}
-        onSelect={setCommentGoal}
-      />
-
-      <GoalSection
-        title="📩 DMs"
-        subtitle="What's the goal when someone sends you a direct message?"
-        goals={DM_GOALS}
-        selected={dmGoal}
-        onSelect={setDmGoal}
-        urlValue={dmGoalUrl}
-        onUrlChange={setDmGoalUrl}
-      />
-
-      <GoalSection
-        title="📖 Story Replies"
-        subtitle="When someone replies to your story, what should happen?"
-        goals={STORY_GOALS}
-        selected={storyGoal}
-        onSelect={setStoryGoal}
-      />
-
-      {/* Engagement Level */}
+      {/* ── Primary Objective ────────────────────────────────────────────── */}
       <div className="mb-8">
         <h2
           className="text-base font-black text-[#1A1A1A] mb-1"
           style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
         >
-          Comment volume — how much should WASP reply?
+          Primary objective
+        </h2>
+        <p className="text-xs text-[#6B6058] mb-4">Pick your #1 goal. WASP will keep this in mind with every reply.</p>
+        <div className="flex flex-col gap-2">
+          {PRIMARY_OBJECTIVES.map((obj) => {
+            const active = objective === obj.id;
+            return (
+              <button
+                key={obj.id}
+                onClick={() => setObjective(obj.id)}
+                className="flex items-center gap-4 text-left border-2 rounded-2xl p-4 transition-all"
+                style={{
+                  borderColor: active ? "#5C6B00" : "#D5CFC3",
+                  background: active ? "rgba(212,255,0,0.08)" : "#EDE8DE",
+                }}
+              >
+                <div
+                  className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                  style={{
+                    borderColor: active ? "#5C6B00" : "#D5CFC3",
+                    backgroundColor: active ? "#5C6B00" : "transparent",
+                  }}
+                >
+                  {active && <span className="text-white text-[10px]">✓</span>}
+                </div>
+                <span className="text-lg flex-shrink-0">{obj.emoji}</span>
+                <div className="min-w-0">
+                  <p className="font-semibold text-[#1A1A1A] text-sm">{obj.label}</p>
+                  <p className="text-xs text-[#6B6058] mt-0.5">{obj.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Available Assets ─────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <h2
+          className="text-base font-black text-[#1A1A1A] mb-1"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          Links &amp; assets <span className="text-[#9A9080] font-normal text-sm">(optional)</span>
         </h2>
         <p className="text-xs text-[#6B6058] mb-4">
-          For DMs and story replies, WASP always responds — these are high-intent by nature.
+          Anything WASP can share when the moment&apos;s right — your website, a free guide, a booking link.
+          WASP uses judgment on when to drop these in naturally. Skip this if you don&apos;t have anything to share yet.
+        </p>
+
+        {assets.length > 0 && (
+          <div className="flex flex-col gap-3 mb-4">
+            {assets.map((asset) => (
+              <div key={asset.id} className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#1A1A1A] text-sm truncate">{asset.label}</p>
+                    <p className="text-xs text-[#5C6B00] truncate mt-0.5">{asset.url}</p>
+                    {asset.when_to_share && (
+                      <p className="text-xs text-[#9A9080] mt-1 italic">&ldquo;{asset.when_to_share}&rdquo;</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeAsset(asset.id)}
+                    className="text-xs text-[#9A9080] hover:text-red-500 transition-colors flex-shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showAssetForm ? (
+          <div className="border-2 border-[#5C6B00]/40 bg-[#EDE8DE] rounded-2xl p-4 mb-3">
+            <p className="text-xs font-semibold text-[#6B6058] uppercase tracking-wider mb-3">New asset</p>
+            <div className="flex flex-col gap-2.5">
+              <input
+                type="text"
+                value={newAsset.label}
+                onChange={(e) => setNewAsset({ ...newAsset, label: e.target.value })}
+                placeholder='Label — e.g. "My shop", "Free guide", "Book a call" *'
+                className={INPUT_SM}
+              />
+              <input
+                type="url"
+                value={newAsset.url}
+                onChange={(e) => setNewAsset({ ...newAsset, url: e.target.value })}
+                placeholder="URL — https://… *"
+                className={INPUT_SM}
+              />
+              <input
+                type="text"
+                value={newAsset.when_to_share}
+                onChange={(e) => setNewAsset({ ...newAsset, when_to_share: e.target.value })}
+                placeholder='When to share — e.g. "When someone asks about my services" (optional)'
+                className={INPUT_SM}
+              />
+            </div>
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={addAsset}
+                disabled={!newAsset.label.trim() || !newAsset.url.trim()}
+                className="flex-1 bg-[#1A1A1A] text-[#F5F0E8] font-semibold px-4 py-2.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+              >
+                Add asset
+              </button>
+              <button
+                onClick={() => { setShowAssetForm(false); setNewAsset({ label: "", url: "", when_to_share: "" }); }}
+                className="px-4 py-2.5 rounded-xl text-sm text-[#6B6058] border border-[#D5CFC3] hover:border-[#5C6B00] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAssetForm(true)}
+            className="border border-dashed border-[#D5CFC3] rounded-2xl py-3 w-full text-sm text-[#6B6058] hover:border-[#5C6B00] hover:text-[#5C6B00] transition-colors"
+          >
+            + Add a link or asset
+          </button>
+        )}
+      </div>
+
+      {/* ── Engagement Level ─────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <h2
+          className="text-base font-black text-[#1A1A1A] mb-1"
+          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+        >
+          Comment volume
+        </h2>
+        <p className="text-xs text-[#6B6058] mb-4">
+          How many comments should WASP reply to? DMs and story replies always get a response.
         </p>
         <div className="flex flex-col gap-2">
           {ENGAGEMENT_LEVELS.map((level) => {
@@ -1541,7 +1584,7 @@ function Step4({
         </div>
       </div>
 
-      {/* Sting Trigger teaser */}
+      {/* ── Sting Trigger teaser ──────────────────────────────────────────── */}
       <div className="border-2 rounded-2xl p-5 mb-8" style={{ borderColor: "#D5CFC3", background: "#EDE8DE" }}>
         <p className="text-sm font-bold text-[#1A1A1A] mb-1">⚡ Want to auto-DM people who ask for links or info?</p>
         <p className="text-xs text-[#6B6058] mb-4">
