@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { randomBytes } from "crypto";
 
-// Only request scopes that are approved (Ready for testing) in the Meta app
+// All 5 scopes matching Meta's embed URL exactly
 const SCOPES = [
   "instagram_business_basic",
   "instagram_business_manage_messages",
   "instagram_business_manage_comments",
+  "instagram_business_content_publish",
+  "instagram_business_manage_insights",
 ].join("%2C");
 
 export async function GET(request: NextRequest) {
