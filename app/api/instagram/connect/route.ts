@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   // Must exactly match the URI registered in Meta's Business Login Settings.
   const redirectUri =
     process.env.NODE_ENV === "production"
-      ? "https://www.joinwasp.com/api/auth/instagram"
+      ? "https://joinwasp.com/api/auth/instagram"
       : `${appUrl}/api/auth/instagram`;
 
   // Build URL manually to match Meta's exact format (no double-encoding)

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     // Hardcoded to match exactly what was used in the OAuth connect request.
     const redirectUri =
       process.env.NODE_ENV === "production"
-        ? "https://www.joinwasp.com/api/auth/instagram"
+        ? "https://joinwasp.com/api/auth/instagram"
         : `${appUrl}/api/auth/instagram`;
 
     console.log("[instagram/callback] request.url:", request.url);
