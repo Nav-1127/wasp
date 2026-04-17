@@ -217,14 +217,15 @@ export async function replyToComment(
   message: string,
   accessToken: string
 ): Promise<string> {
-  const res = await fetch(
-    `${GRAPH_BASE}/${commentId}/replies`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, access_token: accessToken }),
-    }
-  );
+  // access_token must go in the Authorization header, NOT the JSON body.
+  const res = await fetch(`${GRAPH_BASE}/${commentId}/replies`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ message }),
+  });
   const data = await res.json();
 
   if (!res.ok || data.error) {
@@ -240,18 +241,18 @@ export async function sendDirectMessage(
   message: string,
   accessToken: string
 ): Promise<string> {
-  const res = await fetch(
-    `${GRAPH_BASE}/me/messages`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        recipient: { id: recipientId },
-        message: { text: message },
-        access_token: accessToken,
-      }),
-    }
-  );
+  // access_token must go in the Authorization header, NOT the JSON body.
+  const res = await fetch(`${GRAPH_BASE}/me/messages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      recipient: { id: recipientId },
+      message: { text: message },
+    }),
+  });
   const data = await res.json();
 
   if (!res.ok || data.error) {
@@ -259,6 +260,35 @@ export async function sendDirectMessage(
   }
 
   return data.message_id as string;
+}
+
+/**
+ * Subscribe an Instagram account to receive webhook events (comments + messages).
+ * Must be called once after the user connects their Instagram account via OAuth.
+ * Without this call, Meta will NOT send webhook events for this account even if the
+ * app-level webhook is configured in the Meta Developer Dashboard.
+ */
+export async function subscribeToWebhooks(
+  igUserId: string,
+  accessToken: string
+): Promise<void> {
+  const res = await fetch(
+    `${GRAPH_BASE}/${igUserId}/subscribed_apps?subscribed_fields=comments,messages&access_token=${accessToken}`,
+    { method: "POST" }
+  );
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    // Log but don't throw — a failure here shouldn't break the whole connect flow.
+    // The user will still be connected; they just might not receive webhooks until
+    // they reconnect or it's manually subscribed.
+    console.error(
+      "[subscribeToWebhooks] Failed to subscribe:",
+      data.error?.message ?? "unknown error"
+    );
+  } else {
+    console.log("[subscribeToWebhooks] Subscribed:", igUserId);
+  }
 }
 
 export interface PostInfo {

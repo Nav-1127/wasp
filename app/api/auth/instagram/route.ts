@@ -9,6 +9,7 @@ import {
   getUserPages,
   getInstagramAccountForPage,
   getInstagramProfile,
+  subscribeToWebhooks,
 } from "@/lib/instagram";
 import { encrypt } from "@/lib/encryption";
 
@@ -112,6 +113,10 @@ export async function GET(request: NextRequest) {
       console.error("brand_accounts update error:", updateError);
       return NextResponse.redirect(`${appUrl}/onboarding?error=save_failed`);
     }
+
+    // Subscribe this Instagram account to receive webhook events (comments + DMs).
+    // This is required for Meta to actually send events to our webhook URL.
+    await subscribeToWebhooks(profile.id, longLivedToken);
 
     // Clear CSRF cookie and redirect back to onboarding
     const response = NextResponse.redirect(
