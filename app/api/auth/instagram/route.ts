@@ -52,9 +52,6 @@ export async function GET(request: NextRequest) {
         ? "https://www.joinwasp.com/api/auth/instagram"
         : `${appUrl}/api/auth/instagram`;
 
-    console.log("[instagram/callback] request.url:", request.url);
-    console.log("[instagram/callback] redirectUri:", redirectUri);
-
     // 1. Exchange code → short-lived token + ig user id
     //    Instagram Login returns the ig_user_id directly — no Pages lookup needed.
     const { access_token: shortLivedToken, user_id: igUserId } =

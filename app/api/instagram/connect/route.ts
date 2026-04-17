@@ -54,8 +54,6 @@ export async function GET(request: NextRequest) {
     `&scope=${SCOPES}` +
     `&state=${state}`;
 
-  console.log("[instagram/connect] Redirecting to:", authUrl);
-
   const response = NextResponse.redirect(authUrl);
 
   // Store state in cookie for CSRF verification in the callback
