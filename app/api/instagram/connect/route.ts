@@ -36,7 +36,13 @@ export async function GET(request: NextRequest) {
 
   // ── Real OAuth ─────────────────────────────────────────────────────────────
   const state = randomBytes(16).toString("hex");
-  const redirectUri = `${appUrl}/api/auth/instagram`;
+
+  // Hardcoded to avoid www vs non-www mismatch between connect and callback.
+  // Must exactly match the URI registered in Meta's Business Login Settings.
+  const redirectUri =
+    process.env.NODE_ENV === "production"
+      ? "https://www.joinwasp.com/api/auth/instagram"
+      : `${appUrl}/api/auth/instagram`;
 
   // Build URL manually to match Meta's exact format (no double-encoding)
   const authUrl =

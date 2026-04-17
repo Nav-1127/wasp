@@ -46,7 +46,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${appUrl}/login`);
     }
 
-    const redirectUri = `${appUrl}/api/auth/instagram`;
+    // Hardcoded to match exactly what was used in the OAuth connect request.
+    const redirectUri =
+      process.env.NODE_ENV === "production"
+        ? "https://www.joinwasp.com/api/auth/instagram"
+        : `${appUrl}/api/auth/instagram`;
 
     // 1. Exchange code → short-lived token + ig user id
     //    Instagram Login returns the ig_user_id directly — no Pages lookup needed.
