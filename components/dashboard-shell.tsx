@@ -40,6 +40,8 @@ export default function DashboardShell({
   const [togglingMode, setTogglingMode] = useState(false);
   const [showModeConfirm, setShowModeConfirm] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
+  const [tickNow, setTickNow] = useState(Date.now());
 
   const fetchSummary = useCallback(async () => {
     try {
@@ -52,11 +54,26 @@ export default function DashboardShell({
 
   useEffect(() => {
     fetchSummary();
-    // Re-fetch when interaction actions happen (dispatched by DraftsClient)
-    const handler = () => fetchSummary();
-    window.addEventListener("wasp:interaction-update", handler);
-    return () => window.removeEventListener("wasp:interaction-update", handler);
+    const interactionHandler = () => fetchSummary();
+    window.addEventListener("wasp:interaction-update", interactionHandler);
+
+    const pollHandler = (e: Event) => {
+      const detail = (e as CustomEvent<{ lastChecked: number }>).detail;
+      setLastCheckedAt(detail.lastChecked);
+    };
+    window.addEventListener("wasp:poll-complete", pollHandler);
+
+    // Tick every 30s so "Last checked X ago" stays fresh
+    const ticker = setInterval(() => setTickNow(Date.now()), 30_000);
+
+    return () => {
+      window.removeEventListener("wasp:interaction-update", interactionHandler);
+      window.removeEventListener("wasp:poll-complete", pollHandler);
+      clearInterval(ticker);
+    };
   }, [fetchSummary]);
+
+  void tickNow; // consumed by lastCheckedLabel below
 
   // Close mobile nav on route change
   useEffect(() => {
@@ -89,6 +106,15 @@ export default function DashboardShell({
 
   const pendingCount = summary?.pending_count ?? 0;
   const isAuto = summary?.agent_mode === "auto";
+
+  function checkedLabel(ts: number): string {
+    const secs = Math.floor((Date.now() - ts) / 1000);
+    if (secs < 60) return "just now";
+    const mins = Math.floor(secs / 60);
+    if (mins === 1) return "1 min ago";
+    if (mins < 60) return `${mins} min ago`;
+    return `${Math.floor(mins / 60)} hr ago`;
+  }
 
   const NavList = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <nav className="flex flex-col gap-1 pt-2">
@@ -215,7 +241,7 @@ export default function DashboardShell({
           </div>
         </div>
 
-        {/* Center: Instagram handle */}
+        {/* Center: Instagram handle + last checked indicator */}
         {summary?.instagram_handle && (
           <div className="hidden sm:flex items-center gap-2 flex-1 justify-center">
             {summary.profile_pic_url ? (
@@ -236,6 +262,11 @@ export default function DashboardShell({
             <span className="text-sm font-medium text-[#1A1A1A]">
               @{summary.instagram_handle}
             </span>
+            {lastCheckedAt && (
+              <span className="text-xs text-[#9A9080]">
+                · Checked {checkedLabel(lastCheckedAt)}
+              </span>
+            )}
           </div>
         )}
 

@@ -262,6 +262,78 @@ export async function getPostInfo(
   };
 }
 
+// ── Polling helpers ────────────────────────────────────────────────────────────
+
+/** Fetch IDs of the most recent posts (used by the polling fallback) */
+export async function getRecentMediaIds(
+  igUserId: string,
+  accessToken: string,
+  limit = 10
+): Promise<string[]> {
+  const res = await fetch(
+    `${INSTAGRAM_GRAPH}/${igUserId}/media?fields=id&limit=${limit}&access_token=${accessToken}`
+  );
+  const data = await res.json();
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message ?? "Failed to fetch media IDs");
+  }
+  return (data.data ?? []).map((m: { id: string }) => m.id);
+}
+
+export interface InstagramCommentRaw {
+  id: string;
+  text: string;
+  timestamp: string;
+  username?: string;
+  from?: { id: string; username?: string };
+}
+
+/** Fetch recent comments on a post with commenter info */
+export async function getPostCommentsRaw(
+  postId: string,
+  accessToken: string,
+  limit = 50
+): Promise<InstagramCommentRaw[]> {
+  const res = await fetch(
+    `${INSTAGRAM_GRAPH}/${postId}/comments?fields=id,text,timestamp,username,from{id,username}&limit=${limit}&access_token=${accessToken}`
+  );
+  const data = await res.json();
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message ?? "Failed to fetch comments");
+  }
+  return data.data ?? [];
+}
+
+export interface InstagramMessageRaw {
+  id: string;
+  message: string;
+  from: { id: string; username?: string; name?: string };
+  created_time: string;
+}
+
+export interface InstagramConversationRaw {
+  id: string;
+  messages?: { data: InstagramMessageRaw[] };
+}
+
+/** Fetch recent DM conversations with their messages (used by the polling fallback) */
+export async function getConversations(
+  igUserId: string,
+  accessToken: string,
+  limit = 10
+): Promise<InstagramConversationRaw[]> {
+  const res = await fetch(
+    `${INSTAGRAM_GRAPH}/${igUserId}/conversations?platform=instagram` +
+    `&fields=id,messages.limit(20){id,message,from,created_time}` +
+    `&limit=${limit}&access_token=${accessToken}`
+  );
+  const data = await res.json();
+  if (!res.ok || data.error) {
+    throw new Error(data.error?.message ?? "Failed to fetch conversations");
+  }
+  return data.data ?? [];
+}
+
 /**
  * Subscribe an Instagram account to receive webhook events (comments + messages).
  * Must be called once after the user connects via OAuth.
