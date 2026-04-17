@@ -44,12 +44,12 @@ export async function GET(request: NextRequest) {
       ? "https://www.joinwasp.com/api/auth/instagram"
       : `${appUrl}/api/auth/instagram`;
 
-  // Build URL manually to match Meta's exact format (no double-encoding)
+  // Build URL manually — encode redirect_uri but keep scope pre-encoded (%2C)
   const authUrl =
     `https://www.instagram.com/oauth/authorize` +
     `?force_reauth=true` +
     `&client_id=${process.env.META_APP_ID}` +
-    `&redirect_uri=${redirectUri}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
     `&response_type=code` +
     `&scope=${SCOPES}` +
     `&state=${state}`;
