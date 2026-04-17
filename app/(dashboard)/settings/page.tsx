@@ -296,7 +296,7 @@ export default function SettingsPage() {
     try {
       const r = await fetch("/api/account/delete", { method: "POST" });
       if (r.ok) {
-        window.location.href = "/signed-out";
+        window.location.href = "/signed-out?deleted=true";
       }
     } finally {
       setDeleting(false);
