@@ -23,12 +23,16 @@ export async function exchangeCodeForToken(
     code,
   });
 
+  console.log("[exchangeCodeForToken] client_id:", process.env.META_APP_ID);
+  console.log("[exchangeCodeForToken] redirect_uri:", redirectUri);
+
   const res = await fetch(`${INSTAGRAM_API}/oauth/access_token`, {
     method:  "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
   const data = await res.json();
+  console.log("[exchangeCodeForToken] response:", JSON.stringify(data));
 
   if (!res.ok || data.error_type) {
     throw new Error(data.error_message ?? "Failed to exchange code for token");
