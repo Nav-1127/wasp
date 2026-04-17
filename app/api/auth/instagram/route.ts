@@ -6,8 +6,6 @@ import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase";
 import {
   exchangeCodeForToken,
   exchangeForLongLivedToken,
-  getUserPages,
-  getInstagramAccountForPage,
   getInstagramProfile,
   subscribeToWebhooks,
 } from "@/lib/instagram";
@@ -50,52 +48,25 @@ export async function GET(request: NextRequest) {
 
     const redirectUri = `${appUrl}/api/auth/instagram`;
 
-    // 1. Exchange code → short-lived token
-    const shortLivedToken = await exchangeCodeForToken(code, redirectUri);
+    // 1. Exchange code → short-lived token + ig user id
+    //    Instagram Login returns the ig_user_id directly — no Pages lookup needed.
+    const { access_token: shortLivedToken, user_id: igUserId } =
+      await exchangeCodeForToken(code, redirectUri);
 
-    // 2. Short-lived → long-lived token (60 days)
+    // 2. Short-lived → long-lived token (~60 days)
     const { access_token: longLivedToken, expires_in } =
       await exchangeForLongLivedToken(shortLivedToken);
 
-    // 3. Get Facebook Pages this user manages
-    const pages = await getUserPages(longLivedToken);
+    // 3. Fetch Instagram profile
+    const profile = await getInstagramProfile(igUserId, longLivedToken);
 
-    if (pages.length === 0) {
-      // User has no Facebook Pages → can't have Instagram Business account
-      return NextResponse.redirect(`${appUrl}/onboarding?error=no_business_account`);
-    }
-
-    // 4. Find connected Instagram Business/Creator account
-    let igUserId: string | null = null;
-    let activeToken = longLivedToken;
-
-    for (const page of pages) {
-      const igId = await getInstagramAccountForPage(
-        page.id,
-        page.access_token || longLivedToken
-      );
-      if (igId) {
-        igUserId = igId;
-        activeToken = page.access_token || longLivedToken;
-        break;
-      }
-    }
-
-    if (!igUserId) {
-      // User has pages but none connected to Instagram Business/Creator
-      return NextResponse.redirect(`${appUrl}/onboarding?error=no_business_account`);
-    }
-
-    // 5. Fetch Instagram profile
-    const profile = await getInstagramProfile(igUserId, activeToken);
-
-    // 6. Encrypt the token before storing
+    // 4. Encrypt the token before storing
     const encryptedToken = encrypt(longLivedToken);
 
-    // 7. Calculate expiry timestamp
+    // 5. Calculate expiry timestamp
     const tokenExpiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
-    // 8. Save to brand_accounts
+    // 6. Save to brand_accounts
     const admin = createAdminClient();
     const { error: updateError } = await admin
       .from("brand_accounts")
@@ -115,7 +86,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Subscribe this Instagram account to receive webhook events (comments + DMs).
-    // This is required for Meta to actually send events to our webhook URL.
+    // Required for Meta to actually deliver events to our webhook URL.
     await subscribeToWebhooks(profile.id, longLivedToken);
 
     // Clear CSRF cookie and redirect back to onboarding
