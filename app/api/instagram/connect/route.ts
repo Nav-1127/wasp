@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     `https://www.instagram.com/oauth/authorize` +
     `?force_reauth=true` +
     `&client_id=${process.env.META_APP_ID}` +
-    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&redirect_uri=${redirectUri}` +
     `&response_type=code` +
     `&scope=${SCOPES}` +
     `&state=${state}`;
