@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 
+const POLL_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface Interaction {
@@ -56,9 +58,12 @@ export default function DraftsClient({
   const [showApproveAll, setShowApproveAll] = useState(false);
   const [approvingAll, setApprovingAll] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [polling, setPolling] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+  const pollingRef = useRef(false); // ref so runPoll stays stable for the interval
 
   // Tick "time ago" every 30s
   useEffect(() => {
@@ -169,6 +174,39 @@ export default function DraftsClient({
     window.dispatchEvent(new Event("wasp:interaction-update"));
   }, []);
 
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 4000);
+  }, []);
+
+  const runPoll = useCallback(async () => {
+    if (pollingRef.current) return;
+    pollingRef.current = true;
+    setPolling(true);
+    try {
+      const r = await fetch("/api/poll-comments", { method: "POST" });
+      if (!r.ok) { showToast("Check failed — try again"); return; }
+      const data = await r.json();
+      const total: number = data.total ?? 0;
+      showToast(total > 0 ? `Found ${total} new item${total !== 1 ? "s" : ""}` : "No new activity");
+      if (total > 0) notifyShell();
+      window.dispatchEvent(
+        new CustomEvent("wasp:poll-complete", { detail: { lastChecked: Date.now() } })
+      );
+    } catch {
+      showToast("Check failed — try again");
+    } finally {
+      pollingRef.current = false;
+      setPolling(false);
+    }
+  }, [notifyShell, showToast]); // no `polling` dep — uses ref so interval stays stable
+
+  // Auto-poll every 2 minutes while the dashboard is open
+  useEffect(() => {
+    const interval = setInterval(runPoll, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [runPoll]);
+
   async function handleAction(
     action: "approve" | "reject" | "skip" | "edit",
     item: Interaction
@@ -213,29 +251,40 @@ export default function DraftsClient({
     }
   }
 
-  // ── Empty state ──────────────────────────────────────────────────────────────
-
-  if (items.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-        <div className="text-5xl mb-4">🐝</div>
-        <h2
-          className="text-xl font-black text-[#1A1A1A] mb-2"
-          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-        >
-          All clear!
-        </h2>
-        <p className="text-[#6B6058] max-w-xs">
-          WASP has no pending drafts. Your audience is quiet… for now.
-        </p>
-      </div>
-    );
-  }
-
   // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className="fixed top-20 right-4 z-50 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg transition-all"
+          style={{ backgroundColor: "#1A1A1A", color: "#D4FF00" }}
+        >
+          {toast}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {items.length === 0 && (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] px-6 text-center">
+          <div className="text-5xl mb-4">🐝</div>
+          <h2
+            className="text-xl font-black text-[#1A1A1A] mb-2"
+            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+          >
+            All clear!
+          </h2>
+          <p className="text-[#6B6058] max-w-xs mb-6">
+            WASP has no pending drafts. Your audience is quiet… for now.
+          </p>
+          <PollButton onClick={runPoll} polling={polling} />
+        </div>
+      )}
+
+      {/* Non-empty state */}
+      {items.length > 0 && <>
 
       {/* Header row */}
       <div className="flex items-center justify-between gap-4 mb-5">
@@ -250,12 +299,15 @@ export default function DraftsClient({
             {items.length} pending · Use A / R / S / ↑↓ to navigate
           </p>
         </div>
-        <button
-          onClick={() => setShowApproveAll(true)}
-          className="flex-shrink-0 text-xs font-semibold bg-[#1A1A1A] text-[#D4FF00] px-4 py-2 rounded-xl hover:bg-[#5C6B00] transition-colors"
-        >
-          Approve All ({items.length})
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <PollButton onClick={runPoll} polling={polling} />
+          <button
+            onClick={() => setShowApproveAll(true)}
+            className="text-xs font-semibold bg-[#1A1A1A] text-[#D4FF00] px-4 py-2 rounded-xl hover:bg-[#5C6B00] transition-colors"
+          >
+            Approve All ({items.length})
+          </button>
+        </div>
       </div>
 
       {/* Approve All confirmation */}
@@ -461,7 +513,32 @@ export default function DraftsClient({
           </span>
         ))}
       </div>
+
+      </>}
     </div>
+  );
+}
+
+// ── Poll Button ────────────────────────────────────────────────────────────────
+
+function PollButton({ onClick, polling }: { onClick: () => void; polling: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={polling}
+      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border transition-colors hover:bg-[#D5CFC3] disabled:opacity-40"
+      style={{ borderColor: "#D5CFC3", color: "#6B6058", backgroundColor: "#F5F0E8" }}
+    >
+      <span
+        style={{
+          display: "inline-block",
+          animation: polling ? "spin 1s linear infinite" : "none",
+        }}
+      >
+        ↺
+      </span>
+      {polling ? "Checking…" : "Check for new activity"}
+    </button>
   );
 }
 

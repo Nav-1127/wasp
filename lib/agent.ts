@@ -48,6 +48,7 @@ export interface WebhookDM {
   timestamp: string;
   is_story_reply?: boolean;
   story_id?: string;           // the story that was replied to, if known
+  message_id?: string;         // Instagram message ID — used for polling deduplication
 }
 
 type CommentCategory =
@@ -589,6 +590,7 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
       message_text: dm.message_text,
       drafted_response: draftResponse,
       story_context: storyContext,
+      instagram_message_id: dm.message_id ?? null,
       status: "pending",
       error_message: draftResponse
         ? null
