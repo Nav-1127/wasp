@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { randomBytes } from "crypto";
 
+// Scopes matching Meta's embed URL exactly
 const SCOPES = [
   "instagram_business_basic",
-  "instagram_business_manage_comments",
   "instagram_business_manage_messages",
-].join(",");
+  "instagram_business_manage_comments",
+  "instagram_business_content_publish",
+  "instagram_business_manage_insights",
+].join("%2C");
 
 export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
@@ -35,15 +38,15 @@ export async function GET(request: NextRequest) {
   const state = randomBytes(16).toString("hex");
   const redirectUri = `${appUrl}/api/auth/instagram`;
 
-  const params = new URLSearchParams({
-    client_id: process.env.META_APP_ID!,
-    redirect_uri: redirectUri,
-    scope: SCOPES,
-    response_type: "code",
-    state,
-  });
-
-  const authUrl = `https://www.instagram.com/oauth/authorize?${params}`;
+  // Build URL manually to match Meta's exact format (no double-encoding)
+  const authUrl =
+    `https://www.instagram.com/oauth/authorize` +
+    `?force_reauth=true` +
+    `&client_id=${process.env.META_APP_ID}` +
+    `&redirect_uri=${redirectUri}` +
+    `&response_type=code` +
+    `&scope=${SCOPES}` +
+    `&state=${state}`;
 
   const response = NextResponse.redirect(authUrl);
 
