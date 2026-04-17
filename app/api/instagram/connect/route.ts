@@ -3,11 +3,9 @@ import { createServerSupabaseClient } from "@/lib/supabase";
 import { randomBytes } from "crypto";
 
 const SCOPES = [
-  "instagram_basic",
-  "instagram_manage_comments",
-  "instagram_manage_messages",
-  "pages_manage_metadata",
-  "pages_read_engagement",
+  "instagram_business_basic",
+  "instagram_business_manage_comments",
+  "instagram_business_manage_messages",
 ].join(",");
 
 export async function GET(request: NextRequest) {
@@ -45,7 +43,7 @@ export async function GET(request: NextRequest) {
     state,
   });
 
-  const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?${params}`;
+  const authUrl = `https://www.instagram.com/oauth/authorize?${params}`;
 
   const response = NextResponse.redirect(authUrl);
 
