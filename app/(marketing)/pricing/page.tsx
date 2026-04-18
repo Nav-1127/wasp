@@ -124,15 +124,13 @@ export default function PricingPage() {
           {plans.map((plan, i) => (
             <div
               key={i}
-              className={`relative border rounded-2xl p-8 flex flex-col ${
-                plan.badge
-                  ? "border-[#D4FF00]/40 bg-[#111111] shadow-[0_0_80px_rgba(212,255,0,0.04)]"
-                  : "border-[#2A2A2A] bg-[#111111]"
+              className={`relative border rounded-2xl p-8 flex flex-col bg-white ${
+                plan.badge ? "border-black shadow-md" : "border-gray-200"
               }`}
             >
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#D4FF00] text-[#0A0A0A] text-xs font-black px-4 py-1 rounded-full tracking-wide">
+                  <span className="bg-black text-white text-xs font-black px-4 py-1 rounded-full tracking-wide">
                     {plan.badge}
                   </span>
                 </div>
@@ -140,23 +138,17 @@ export default function PricingPage() {
 
               {/* Plan header */}
               <div className="mb-6">
-                <p
-                  className={`text-sm font-semibold mb-1 ${
-                    plan.badge ? "text-[#D4FF00]" : "text-[#6B6B6B]"
-                  }`}
-                >
-                  {plan.name}
-                </p>
+                <p className="text-sm font-semibold mb-1 text-gray-500">{plan.name}</p>
                 <div className="flex items-end gap-1 mb-3">
                   <span
-                    className="text-5xl font-black text-white"
+                    className="text-5xl font-black text-black"
                     style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
                   >
                     {plan.price}
                   </span>
-                  <span className="text-[#4A4A4A] text-sm mb-1.5">{plan.period}</span>
+                  <span className="text-gray-400 text-sm mb-1.5">{plan.period}</span>
                 </div>
-                <p className="text-sm text-[#4A4A4A]">{plan.description}</p>
+                <p className="text-sm text-gray-500">{plan.description}</p>
               </div>
 
               {/* Features */}
@@ -165,41 +157,18 @@ export default function PricingPage() {
                   <li
                     key={j}
                     className={`flex items-start gap-3 text-sm ${
-                      feature.included ? "text-[#F5F5F5]" : "text-[#3A3A3A]"
+                      feature.included ? "text-black" : "text-gray-300"
                     }`}
                   >
                     {feature.included ? (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        className="text-[#D4FF00] mt-0.5 flex-shrink-0"
-                      >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#5C6B00] mt-0.5 flex-shrink-0">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                        <path
-                          d="M5 8l2 2 4-4"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                        <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     ) : (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        className="text-[#2A2A2A] mt-0.5 flex-shrink-0"
-                      >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-gray-300 mt-0.5 flex-shrink-0">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                        <path
-                          d="M6 10l4-4M10 10L6 6"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
+                        <path d="M6 10l4-4M10 10L6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                       </svg>
                     )}
                     {feature.text}
@@ -213,14 +182,14 @@ export default function PricingPage() {
                   href="/signup"
                   className={`block text-center font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 mb-2 ${
                     plan.ctaType === "primary"
-                      ? "bg-[#D4FF00] text-[#0A0A0A] hover:bg-white"
-                      : "border border-[#2A2A2A] text-[#F5F5F5] hover:border-[#D4FF00]/50 hover:text-[#D4FF00]"
+                      ? "bg-black text-white hover:bg-[#5C6B00]"
+                      : "border border-gray-200 text-black hover:border-black"
                   }`}
                 >
                   {plan.cta}
                 </Link>
                 {plan.note && (
-                  <p className="text-center text-xs text-[#4A4A4A]">{plan.note}</p>
+                  <p className="text-center text-xs text-gray-400">{plan.note}</p>
                 )}
               </div>
             </div>
@@ -251,14 +220,14 @@ export default function PricingPage() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-20 text-center border border-[#D4FF00]/20 bg-[#D4FF00]/5 rounded-2xl p-12">
+        <div className="mt-8 text-center bg-white rounded-2xl p-12">
           <h2
-            className="text-3xl md:text-4xl font-black text-[#E8E8E8] mb-4"
+            className="text-3xl md:text-4xl font-black text-black mb-4"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
           >
             Ready to let WASP handle it?
           </h2>
-          <p className="text-[#AAAAAA] mb-8 max-w-md mx-auto">
+          <p className="text-gray-500 mb-8 max-w-md mx-auto">
             Start free. No credit card required. Connect your Instagram in minutes.
           </p>
           <Link
