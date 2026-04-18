@@ -163,6 +163,21 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteZone, setShowDeleteZone] = useState(false);
 
+  // Disconnect Instagram
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  async function handleDisconnect() {
+    if (!confirm("Disconnect Instagram? WASP will stop processing comments and DMs.")) return;
+    setDisconnecting(true);
+    try {
+      await fetch("/api/instagram/disconnect", { method: "POST" });
+      setAccount((a) => a ? { ...a, instagram_handle: null, profile_pic_url: null, follower_count: null, token_expires_at: null } : a);
+      flash("Instagram disconnected");
+    } finally {
+      setDisconnecting(false);
+    }
+  }
+
   useEffect(() => {
     fetch("/api/onboarding/save")
       .then((r) => r.json())
@@ -685,14 +700,23 @@ export default function SettingsPage() {
                       })()}
                     </div>
                   </div>
-                  {tokenStatus(account.token_expires_at).label === "Expired" && (
-                    <a
-                      href="/api/instagram/connect"
-                      className="text-xs font-semibold bg-[#FFD5D5] text-[#8B1A1A] px-3 py-2 rounded-xl hover:opacity-80 transition-opacity"
+                  <div className="flex flex-col gap-2 items-end">
+                    {tokenStatus(account.token_expires_at).label === "Expired" && (
+                      <a
+                        href="/api/instagram/connect"
+                        className="text-xs font-semibold bg-[#FFD5D5] text-[#8B1A1A] px-3 py-2 rounded-xl hover:opacity-80 transition-opacity"
+                      >
+                        Reconnect
+                      </a>
+                    )}
+                    <button
+                      onClick={handleDisconnect}
+                      disabled={disconnecting}
+                      className="text-xs font-semibold text-[#9A9080] hover:text-[#8B1A1A] hover:underline disabled:opacity-40 transition-colors"
                     >
-                      Reconnect
-                    </a>
-                  )}
+                      {disconnecting ? "Disconnecting…" : "Disconnect"}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-4">
