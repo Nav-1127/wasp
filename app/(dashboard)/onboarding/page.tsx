@@ -1880,7 +1880,12 @@ function OnboardingContent() {
     loadExistingData();
   }, [loadExistingData]);
 
-  function handleComplete() {
+  async function handleComplete() {
+    await fetch("/api/seed-demo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "seed" }),
+    }).catch(() => {});
     window.location.href = "/dashboard?welcome=true";
   }
 
