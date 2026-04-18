@@ -44,10 +44,20 @@ export async function POST() {
   let postsChecked = 0;
   let commentsFound = 0;
   let commentsFetchError: string | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rawProbe: any = null;
 
   // ── Poll comments ──────────────────────────────────────────────────────────────
   try {
     const mediaIds = await getRecentMediaIds(account.instagram_user_id, token, 10);
+
+    // Raw probe — fetch first post's comments directly and include full API response in debug
+    if (mediaIds.length > 0) {
+      const probeRes = await fetch(
+        `https://graph.instagram.com/v21.0/${mediaIds[0]}/comments?fields=id,text,timestamp,username&limit=5&access_token=${token}`
+      );
+      rawProbe = await probeRes.json();
+    }
     console.log(`[poll-comments] Fetched ${mediaIds.length} media IDs`);
 
     for (const postId of mediaIds) {
@@ -147,6 +157,6 @@ export async function POST() {
     newComments,
     newDMs,
     total,
-    debug: { postsChecked, commentsFound, commentsFetchError },
+    debug: { postsChecked, commentsFound, commentsFetchError, rawProbe },
   });
 }
