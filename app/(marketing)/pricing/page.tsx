@@ -228,23 +228,23 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ */}
-        <div className="border-t border-[#1A1A1A] pt-16">
+        <div className="bg-white rounded-2xl p-10 mt-4">
           <h2
-            className="text-3xl font-black text-white mb-10"
+            className="text-3xl font-black text-black mb-10"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
           >
             Frequently asked questions
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             {faqs.map((faq, i) => (
-              <div key={i} className="border-b border-[#1A1A1A] pb-8">
+              <div key={i} className="border-b border-gray-200 pb-8">
                 <h3
-                  className="text-base font-bold text-[#E8E8E8] mb-3"
+                  className="text-base font-bold text-black mb-3"
                   style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
                 >
                   {faq.q}
                 </h3>
-                <p className="text-sm text-[#AAAAAA] leading-relaxed">{faq.a}</p>
+                <p className="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
