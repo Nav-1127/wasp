@@ -100,21 +100,21 @@ const faqs = [
 
 export default function PricingPage() {
   return (
-    <div className="pt-24 pb-24 px-6">
+    <div className="pt-24 pb-24 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-          <span className="text-xs text-[#D4FF00] font-semibold tracking-widest uppercase mb-4 block">
+          <span className="text-xs text-[#5C6B00] font-semibold tracking-widest uppercase mb-4 block">
             Pricing
           </span>
           <h1
-            className="text-5xl md:text-6xl font-black text-white leading-tight mb-4"
+            className="text-5xl md:text-6xl font-black text-black leading-tight mb-4"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
           >
             Simple pricing,{" "}
-            <span className="text-[#D4FF00]">serious results</span>
+            <span className="text-[#5C6B00]">serious results</span>
           </h1>
-          <p className="text-[#6B6B6B] text-lg max-w-xl mx-auto">
+          <p className="text-gray-500 text-lg max-w-xl mx-auto">
             Start free. No credit card. Upgrade when WASP has already paid for itself.
           </p>
         </div>
