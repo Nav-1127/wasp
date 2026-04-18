@@ -41,17 +41,26 @@ export async function POST() {
   const token = decryptToken(account.instagram_access_token_encrypted);
   let newComments = 0;
   let newDMs = 0;
+  let postsChecked = 0;
+  let commentsFound = 0;
+  let commentsFetchError: string | null = null;
 
   // ── Poll comments ──────────────────────────────────────────────────────────────
   try {
     const mediaIds = await getRecentMediaIds(account.instagram_user_id, token, 10);
+    console.log(`[poll-comments] Fetched ${mediaIds.length} media IDs`);
 
     for (const postId of mediaIds) {
       let comments;
       try {
         comments = await getPostCommentsRaw(postId, token, 50);
-      } catch {
-        continue; // skip posts with failed comment fetches
+        postsChecked++;
+        commentsFound += comments.length;
+        console.log(`[poll-comments] Post ${postId}: ${comments.length} comments`);
+      } catch (err) {
+        commentsFetchError = (err as Error).message;
+        console.error(`[poll-comments] Failed to fetch comments for post ${postId}:`, commentsFetchError);
+        continue;
       }
 
       for (const comment of comments) {
@@ -66,25 +75,29 @@ export async function POST() {
           .eq("source_comment_id", comment.id)
           .maybeSingle();
 
-        if (existing) continue;
+        if (existing) {
+          console.log(`[poll-comments] Comment ${comment.id} already in DB, skipping`);
+          continue;
+        }
 
         const webhookComment: WebhookComment = {
           instagram_user_id: account.instagram_user_id,
           comment_id: comment.id,
           commenter_id: comment.from?.id ?? "",
-          commenter_username:
-            comment.from?.username ?? comment.username ?? "",
+          commenter_username: comment.from?.username ?? "",
           comment_text: comment.text,
           post_id: postId,
           timestamp: comment.timestamp,
         };
 
+        console.log(`[poll-comments] Processing new comment: "${comment.text.slice(0, 50)}"`);
         const interactionId = await processComment(webhookComment);
         if (interactionId) newComments++;
       }
     }
   } catch (err) {
     console.error("[poll-comments] Comment polling failed:", err);
+    commentsFetchError = (err as Error).message;
   }
 
   // ── Poll DMs ───────────────────────────────────────────────────────────────────
@@ -128,7 +141,12 @@ export async function POST() {
   }
 
   const total = newComments + newDMs;
-  console.log(`[poll-comments] Done — ${newComments} new comments, ${newDMs} new DMs`);
+  console.log(`[poll-comments] Done — ${newComments} new comments, ${newDMs} new DMs (checked ${postsChecked} posts, found ${commentsFound} comments total)`);
 
-  return NextResponse.json({ newComments, newDMs, total });
+  return NextResponse.json({
+    newComments,
+    newDMs,
+    total,
+    debug: { postsChecked, commentsFound, commentsFetchError },
+  });
 }
