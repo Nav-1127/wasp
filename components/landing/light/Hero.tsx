@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function HeroLight() {
   return (
     <section
-      id="waitlist"
+      id="hero"
       className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16"
       style={{ overflowX: "hidden" }}
     >

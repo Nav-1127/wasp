@@ -90,11 +90,11 @@ const faqs = [
   },
   {
     q: "What Instagram account type do I need?",
-    a: "You need an Instagram Business or Creator account connected to a Facebook Page. Personal accounts don't have API access.",
+    a: "You need an Instagram Business or Creator account. Personal accounts don't have API access.",
   },
   {
     q: "Is Stripe / payments live yet?",
-    a: "We're currently in early access. All signups start on Free. Pro and Agency tiers will be available when we launch billing — waitlist members get early pricing.",
+    a: "We're currently in early access. All signups start on Free. Pro and Agency tiers will be available when we launch billing.",
   },
 ];
 
@@ -210,7 +210,7 @@ export default function PricingPage() {
               {/* CTA */}
               <div>
                 <Link
-                  href="/#waitlist"
+                  href="/signup"
                   className={`block text-center font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 mb-2 ${
                     plan.ctaType === "primary"
                       ? "bg-[#D4FF00] text-[#0A0A0A] hover:bg-white"
@@ -239,12 +239,12 @@ export default function PricingPage() {
             {faqs.map((faq, i) => (
               <div key={i} className="border-b border-[#1A1A1A] pb-8">
                 <h3
-                  className="text-base font-bold text-white mb-3"
+                  className="text-base font-bold text-[#E8E8E8] mb-3"
                   style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
                 >
                   {faq.q}
                 </h3>
-                <p className="text-sm text-[#6B6B6B] leading-relaxed">{faq.a}</p>
+                <p className="text-sm text-[#AAAAAA] leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
@@ -253,19 +253,19 @@ export default function PricingPage() {
         {/* Bottom CTA */}
         <div className="mt-20 text-center border border-[#D4FF00]/20 bg-[#D4FF00]/5 rounded-2xl p-12">
           <h2
-            className="text-3xl md:text-4xl font-black text-white mb-4"
+            className="text-3xl md:text-4xl font-black text-[#E8E8E8] mb-4"
             style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
           >
             Ready to let WASP handle it?
           </h2>
-          <p className="text-[#6B6B6B] mb-8 max-w-md mx-auto">
-            Join the waitlist. Be first when we launch. Early members get locked-in pricing forever.
+          <p className="text-[#AAAAAA] mb-8 max-w-md mx-auto">
+            Start free. No credit card required. Connect your Instagram in minutes.
           </p>
           <Link
-            href="/#waitlist"
+            href="/signup"
             className="inline-block bg-[#D4FF00] text-[#0A0A0A] font-bold px-10 py-4 rounded-full text-sm hover:bg-white transition-colors"
           >
-            Join the Waitlist
+            Get Started Free
           </Link>
         </div>
       </div>
