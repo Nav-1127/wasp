@@ -52,9 +52,9 @@ export async function POST() {
     const mediaIds = await getRecentMediaIds(account.instagram_user_id, token, 10);
 
     // Raw probe — fetch first post's comments directly and include full API response in debug
-    if (mediaIds.length > 0) {
+    if (mediaIds.length > 1) {
       const probeRes = await fetch(
-        `https://graph.instagram.com/v21.0/${mediaIds[0]}/comments?fields=id,text,timestamp,username&limit=5&access_token=${token}`
+        `https://graph.instagram.com/v21.0/${mediaIds[1]}/comments?fields=id,text,timestamp,username&limit=5&access_token=${token}`
       );
       rawProbe = await probeRes.json();
     }
