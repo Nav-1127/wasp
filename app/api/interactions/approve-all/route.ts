@@ -47,7 +47,7 @@ export async function POST() {
     return Response.json({ ok: true, approved });
   }
 
-  // Real mode — fetch access token once
+  // Real mode — fetch access token once, but skip Instagram API for demo rows
   const { data: account } = await admin
     .from("brand_accounts")
     .select("*")
@@ -64,21 +64,24 @@ export async function POST() {
   for (const interaction of pending) {
     if (!interaction.drafted_response) continue;
     try {
-      if (
-        interaction.interaction_type === "comment" &&
-        interaction.source_comment_id
-      ) {
-        await replyToComment(
-          interaction.source_comment_id,
-          interaction.drafted_response,
-          token
-        );
-      } else if (interaction.instagram_user_id) {
-        await sendDirectMessage(
-          interaction.instagram_user_id,
-          interaction.drafted_response,
-          token
-        );
+      const isDemo = interaction.instagram_user_id?.startsWith("demo_");
+      if (!isDemo) {
+        if (
+          interaction.interaction_type === "comment" &&
+          interaction.source_comment_id
+        ) {
+          await replyToComment(
+            interaction.source_comment_id,
+            interaction.drafted_response,
+            token
+          );
+        } else if (interaction.instagram_user_id) {
+          await sendDirectMessage(
+            interaction.instagram_user_id,
+            interaction.drafted_response,
+            token
+          );
+        }
       }
       await admin
         .from("interactions")

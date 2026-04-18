@@ -58,8 +58,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (isMockMode) {
-    // In mock mode just mark it sent — no real Instagram call
+  const isDemo = interaction.instagram_user_id?.startsWith("demo_");
+
+  if (isMockMode || isDemo) {
+    // In mock mode or demo data — skip real Instagram call
     await admin
       .from("interactions")
       .update({
