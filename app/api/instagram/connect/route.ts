@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { randomBytes } from "crypto";
 
-// All 5 scopes matching Meta's embed URL exactly
+// 3 scopes — only what WASP actually uses
 const SCOPES = [
   "instagram_business_basic",
   "instagram_business_manage_messages",
   "instagram_business_manage_comments",
-  "instagram_business_content_publish",
-  "instagram_business_manage_insights",
 ].join("%2C");
 
 export async function GET(request: NextRequest) {
