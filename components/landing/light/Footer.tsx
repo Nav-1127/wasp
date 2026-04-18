@@ -38,12 +38,6 @@ export default function FooterLight() {
 
         <div className="mt-10 pt-6 border-t border-[#E5DFD5] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[#9A9080] text-xs">© {new Date().getFullYear()} WASP. All rights reserved.</p>
-          <p className="text-[#9A9080] text-xs">
-            Built by{" "}
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-[#6B6058] hover:text-[#5C6B00] transition-colors">
-              Nav
-            </a>
-          </p>
         </div>
       </div>
     </footer>
