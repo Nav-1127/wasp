@@ -1,42 +1,6 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 
 export default function HeroLight() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate">("idle");
-  const [message, setMessage] = useState("");
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email || status === "loading") return;
-
-    setStatus("loading");
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-
-      if (res.status === 201) {
-        setStatus("success");
-        setMessage(data.message);
-        setEmail("");
-      } else if (res.status === 409) {
-        setStatus("duplicate");
-        setMessage(data.error);
-      } else {
-        setStatus("error");
-        setMessage(data.error || "Something went wrong. Please try again.");
-      }
-    } catch {
-      setStatus("error");
-      setMessage("Connection error. Please try again.");
-    }
-  }
-
   return (
     <section
       id="waitlist"
@@ -86,42 +50,18 @@ export default function HeroLight() {
           replies like you, and never sleeps.
         </p>
 
-        {/* Email form */}
-        <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto mb-5 sm:mb-6">
-          {status === "success" ? (
-            <div className="border border-[#5C6B00]/30 bg-[#D4FF00]/20 rounded-2xl px-6 py-5 text-center">
-              <p className="text-[#5C6B00] font-bold text-lg mb-1">You're in. 🐝</p>
-              <p className="text-[#6B6058] text-sm">{message}</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="w-full bg-[#EDE8DE] border border-[#D5CFC3] rounded-xl px-5 py-3.5 text-[#1A1A1A] placeholder-[#9A9080] text-sm focus:outline-none focus:border-[#5C6B00] transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-60"
-              >
-                {status === "loading" ? "Joining..." : "Get Early Access, It's Free"}
-              </button>
-              <p className="text-xs text-[#9A9080] text-center">
-                Sign up now and get your first month of Pro free when we launch. No spam, ever.
-              </p>
-            </div>
-          )}
-
-          {(status === "error" || status === "duplicate") && (
-            <p className={`text-sm mt-2 ${status === "duplicate" ? "text-[#5C6B00]" : "text-red-600"}`}>
-              {message}
-            </p>
-          )}
-        </form>
+        {/* CTA */}
+        <div className="w-full max-w-md mx-auto mb-5 sm:mb-6 flex flex-col items-center gap-3">
+          <Link
+            href="/signup"
+            className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors text-center"
+          >
+            Get Started — It&apos;s Free
+          </Link>
+          <p className="text-xs text-[#9A9080] text-center">
+            No credit card required. Connect your Instagram in minutes.
+          </p>
+        </div>
 
         {/* Visual mockup — dark themed for contrast */}
         <div className="mt-12 sm:mt-16 max-w-2xl mx-auto w-full">

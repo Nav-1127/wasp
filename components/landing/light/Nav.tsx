@@ -27,10 +27,10 @@ export default function NavLight() {
             Pricing
           </Link>
           <a
-            href="#waitlist-light"
+            href="/signup"
             className="text-sm font-semibold bg-[#1A1A1A] text-[#F5F0E8] px-5 py-2.5 rounded-full hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors duration-200"
           >
-            Join Waitlist
+            Get Started
           </a>
         </div>
 
@@ -61,11 +61,11 @@ export default function NavLight() {
             Pricing
           </Link>
           <a
-            href="#waitlist-light"
+            href="/signup"
             className="text-sm font-semibold bg-[#1A1A1A] text-[#F5F0E8] px-5 py-2.5 rounded-full text-center"
             onClick={() => setMenuOpen(false)}
           >
-            Join Waitlist
+            Get Started
           </a>
         </div>
       )}

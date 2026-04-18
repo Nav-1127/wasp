@@ -117,7 +117,7 @@ export default function PricingPreviewLight() {
               </ul>
 
               <Link
-                href="/#waitlist"
+                href="/signup"
                 className={`block text-center font-bold py-3 rounded-xl text-sm transition-colors duration-200 ${
                   plan.highlighted
                     ? "bg-[#1A1A1A] text-[#F5F0E8] hover:bg-[#D4FF00] hover:text-[#1A1A1A]"
