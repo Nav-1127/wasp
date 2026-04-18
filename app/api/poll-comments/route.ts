@@ -64,8 +64,8 @@ export async function POST() {
       }
 
       for (const comment of comments) {
-        // Skip own replies (brand account commenting on its own post)
-        if (comment.from?.id === account.instagram_user_id) continue;
+        // Skip own replies — username match since from.id isn't available without OAuth
+        if (comment.username === account.instagram_handle) continue;
 
         // Dedup: source_comment_id stores the Instagram comment ID for all comment rows
         const { data: existing } = await admin
@@ -83,8 +83,8 @@ export async function POST() {
         const webhookComment: WebhookComment = {
           instagram_user_id: account.instagram_user_id,
           comment_id: comment.id,
-          commenter_id: comment.from?.id ?? "",
-          commenter_username: comment.from?.username ?? "",
+          commenter_id: "",
+          commenter_username: comment.username ?? "",
           comment_text: comment.text,
           post_id: postId,
           timestamp: comment.timestamp,

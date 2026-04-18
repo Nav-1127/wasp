@@ -295,7 +295,7 @@ export async function getPostCommentsRaw(
   limit = 50
 ): Promise<InstagramCommentRaw[]> {
   const res = await fetch(
-    `${INSTAGRAM_GRAPH}/${postId}/comments?fields=id,text,timestamp,from&limit=${limit}&access_token=${accessToken}`
+    `${INSTAGRAM_GRAPH}/${postId}/comments?fields=id,text,timestamp,username&limit=${limit}&access_token=${accessToken}`
   );
   const data = await res.json();
   if (!res.ok || data.error) {
