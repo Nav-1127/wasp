@@ -1,150 +1,95 @@
 export default function BeforeAfterLight() {
-  const metrics = [
-    { label: "Reply Rate", before: "<20%", after: "97%" },
-    { label: "Avg. Reply Time", before: "10+ hours", after: "2 minutes" },
-    { label: "Comments Answered / Day", before: "A handful", after: "200+" },
-    { label: "Social Team Needed", before: "Yes", after: "Nope" },
-  ];
-
   return (
-    <section className="py-16 sm:py-24 px-5 sm:px-6 border-t border-[#D5CFC3]">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-10 sm:mb-16 max-w-2xl">
-          <span className="text-xs text-[#5C6B00] font-semibold tracking-widest uppercase mb-4 block">
-            The Difference
-          </span>
-          <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-          >
-            What changes when{" "}
-            <span className="text-[#5C6B00]">WASP is on</span>
-          </h2>
-        </div>
+    <section
+      className="px-6 py-24 sm:py-40"
+      style={{ backgroundColor: "#FAF8F5", borderTop: "1px solid #EBE5DC" }}
+    >
+      <div className="max-w-5xl mx-auto">
+        <p className="text-xs text-[#888888] tracking-[0.18em] mb-6">content personality</p>
 
-        {/* Comparison table */}
-        <div className="grid grid-cols-1 gap-0">
-          {/* Desktop header */}
-          <div className="hidden sm:grid grid-cols-3 gap-4 pb-4 border-b border-[#D5CFC3]">
-            <div />
-            <div className="text-center">
-              <span className="text-xs font-semibold text-[#9A9080] tracking-widest uppercase">
-                Before WASP
-              </span>
-            </div>
-            <div className="text-center">
-              <span className="text-xs font-semibold text-[#5C6B00] tracking-widest uppercase">
-                After WASP
-              </span>
-            </div>
-          </div>
-          {/* Mobile header */}
-          <div className="sm:hidden flex justify-between pb-3 border-b border-[#D5CFC3] mb-1">
-            <span className="text-xs font-semibold text-[#9A9080] tracking-widest uppercase">Metric</span>
-            <div className="flex gap-4">
-              <span className="text-xs font-semibold text-[#9A9080] tracking-widest uppercase">Before</span>
-              <span className="text-xs font-semibold text-[#5C6B00] tracking-widest uppercase w-14 text-right">After</span>
-            </div>
-          </div>
+        <h2
+          className="text-[#1A1A1A] mb-6 max-w-3xl"
+          style={{
+            fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+            fontWeight: 500,
+            fontSize: "clamp(1.75rem, 4vw, 3rem)",
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          It doesn't just reply.
+          <br />
+          <span style={{ fontStyle: "italic", fontWeight: 400 }}>It replies like you.</span>
+        </h2>
 
-          {metrics.map((m, i) => (
-            <div key={i} className="border-b border-[#E5DFD3]">
-              {/* Desktop row */}
-              <div className="hidden sm:grid grid-cols-3 gap-4 py-5 items-center group">
-                <div className="text-sm font-medium text-[#6B6058] group-hover:text-[#1A1A1A] transition-colors">
-                  {m.label}
-                </div>
-                <div className="text-center">
-                  <span className="text-xl font-bold line-through text-[#C5BFB3]" style={{ textDecorationColor: "#C5BFB3" }}>
-                    {m.before}
-                  </span>
-                </div>
-                <div className="text-center">
-                  <span
-                    className="text-xl font-black text-[#5C6B00]"
-                    style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-                  >
-                    {m.after}
-                  </span>
-                </div>
-              </div>
-              {/* Mobile row */}
-              <div className="sm:hidden flex items-center justify-between py-4 gap-4">
-                <span className="text-sm font-medium text-[#6B6058] flex-1 min-w-0">{m.label}</span>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-base font-bold line-through text-[#C5BFB3]">{m.before}</span>
-                  <span className="text-[#C5BFB3] text-sm">→</span>
-                  <span
-                    className="text-base font-black text-[#5C6B00] w-14 text-right"
-                    style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-                  >
-                    {m.after}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Visual bars */}
-        <div className="mt-8 sm:mt-12 grid md:grid-cols-2 gap-4 sm:gap-8">
-          {/* Reply rate */}
-          <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-[#6B6058]">Reply Rate</span>
-              <span className="text-xs text-[#9A9080]">monthly average</span>
-            </div>
-            <div className="mb-3">
-              <div className="flex justify-between mb-1.5">
-                <span className="text-xs text-[#9A9080]">Before</span>
-                <span className="text-xs text-[#9A9080] font-medium">&lt;20%</span>
-              </div>
-              <div className="h-2.5 bg-[#D5CFC3] rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-[#C5BFB3]" style={{ width: "20%" }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1.5">
-                <span className="text-xs text-[#5C6B00]">After WASP</span>
-                <span className="text-xs text-[#5C6B00] font-bold">97%</span>
-              </div>
-              <div className="h-2.5 bg-[#D5CFC3] rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-[#5C6B00]" style={{ width: "97%" }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Response time */}
-          <div className="border border-[#D5CFC3] bg-[#EDE8DE] rounded-2xl p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-[#6B6058]">Response Time</span>
-              <span className="text-xs text-[#9A9080]">average</span>
-            </div>
-            <div className="mb-3">
-              <div className="flex justify-between mb-1.5">
-                <span className="text-xs text-[#9A9080]">Before</span>
-                <span className="text-xs text-[#9A9080] font-medium">10+ hours</span>
-              </div>
-              <div className="h-2.5 bg-[#D5CFC3] rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-[#C5BFB3]" style={{ width: "100%" }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1.5">
-                <span className="text-xs text-[#5C6B00]">After WASP</span>
-                <span className="text-xs text-[#5C6B00] font-bold">2 minutes</span>
-              </div>
-              <div className="h-2.5 bg-[#D5CFC3] rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-[#5C6B00]" style={{ width: "1.5%" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footnote */}
-        <p className="text-xs text-[#9A9080] mt-6">
-          * Sources: Sprout Social 2024 Instagram Benchmark Report; Spur.us Instagram Response Time Study 2026
+        <p
+          className="text-[#666666] mb-14 sm:mb-20 max-w-2xl"
+          style={{ fontSize: "clamp(1rem, 1.3vw, 1.125rem)", lineHeight: 1.55 }}
+        >
+          Same comment. Two replies. One sounds like a chatbot. The other sounds like
+          the brand your followers actually follow.
         </p>
+
+        {/* The comment everyone is replying to */}
+        <div className="max-w-2xl mx-auto mb-10">
+          <div
+            className="rounded-2xl border border-[#EBE5DC] p-5 sm:p-6"
+            style={{ backgroundColor: "#FFFFFF" }}
+          >
+            <p className="text-xs text-[#888888] mb-2">@sneakerhead_mike commented</p>
+            <p className="text-[#1A1A1A]" style={{ fontSize: "1rem", lineHeight: 1.5 }}>
+              These colorways are insane. Where can I cop a pair?
+            </p>
+          </div>
+        </div>
+
+        {/* Before / After */}
+        <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
+          {/* Generic AI */}
+          <div
+            className="rounded-2xl border border-[#EBE5DC] p-6 sm:p-7"
+            style={{ backgroundColor: "#FFFFFF" }}
+          >
+            <p className="text-xs text-[#888888] tracking-[0.18em] mb-4">
+              generic ai reply
+            </p>
+            <p
+              className="text-[#666666] mb-4"
+              style={{ fontSize: "1.0625rem", lineHeight: 1.55 }}
+            >
+              Thank you so much for your kind words! We're thrilled you love the new
+              colorways. Please visit our website to make a purchase. We appreciate
+              your support!
+            </p>
+            <p className="text-xs text-[#999999]">— sounds like a help desk.</p>
+          </div>
+
+          {/* Wasp reply */}
+          <div
+            className="rounded-2xl p-6 sm:p-7"
+            style={{
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #5B2B8C",
+            }}
+          >
+            <p
+              className="text-xs tracking-[0.18em] mb-4"
+              style={{ color: "#5B2B8C" }}
+            >
+              wasp reply
+            </p>
+            <p
+              className="text-[#1A1A1A] mb-4"
+              style={{ fontSize: "1.0625rem", lineHeight: 1.55 }}
+            >
+              appreciate you mike 🙏 limited run, link in bio — DMs open if your
+              size sells out, we'll sort you out.
+            </p>
+            <p className="text-xs" style={{ color: "#5B2B8C" }}>
+              — same voice you use in your captions.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

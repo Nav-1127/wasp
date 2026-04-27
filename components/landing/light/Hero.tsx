@@ -1,116 +1,85 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HeroLight() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16"
-      style={{ overflowX: "hidden" }}
+      className="px-6 pt-32 sm:pt-40 pb-20 sm:pb-32"
+      style={{ backgroundColor: "#FAF8F5" }}
     >
-      {/* Subtle dot pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(circle, #5C6B00 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-
-      {/* Glow orb */}
-      <div className="absolute inset-0 pointer-events-none" style={{ overflow: "hidden" }}>
-        <div
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] rounded-full opacity-20 blur-3xl"
-          style={{ background: "#D4FF00" }}
-        />
-      </div>
-
-      <div className="relative z-10 w-full max-w-5xl mx-auto text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 border border-[#D5CFC3] bg-[#EDE8DE] rounded-full px-4 py-1.5 mb-5 sm:mb-8">
-          <span className="w-2 h-2 rounded-full bg-[#5C6B00] animate-pulse" />
-          <span className="text-xs text-[#6B6058] tracking-widest uppercase">
-            AI Instagram Agent
-          </span>
-        </div>
-
-        {/* Headline */}
-        <h1
-          className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-tight sm:leading-[0.95] tracking-tight text-[#1A1A1A] mb-4 sm:mb-6"
-          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-        >
-          Put Your Instagram{" "}
-          <span className="text-[#5C6B00]">Engagement</span>{" "}
-          on Auto-Pilot
-        </h1>
-
-        {/* Subline */}
-        <p className="w-full max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-[#6B6058] mb-8 sm:mb-10 leading-relaxed">
-          Not a chatbot. Not a flow builder.{" "}
-          <span className="text-[#1A1A1A] font-medium">An AI agent that learns your voice</span>,
-          replies like you, and never sleeps.
+      <div className="max-w-5xl mx-auto text-center">
+        {/* Eyebrow */}
+        <p className="text-xs text-[#888888] tracking-[0.18em] mb-6 sm:mb-8">
+          ai-native instagram engagement
         </p>
 
-        {/* CTA */}
-        <div className="w-full max-w-md mx-auto mb-5 sm:mb-6 flex flex-col items-center gap-3">
+        {/* Serif H1 */}
+        <h1
+          className="text-[#1A1A1A] mb-6 sm:mb-8"
+          style={{
+            fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+            fontWeight: 500,
+            fontSize: "clamp(2.25rem, 6vw, 4.5rem)",
+            lineHeight: 1.05,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Your Instagram talks back.
+          <br />
+          <span style={{ fontStyle: "italic", fontWeight: 400 }}>
+            Wasp makes sure it sounds like you.
+          </span>
+        </h1>
+
+        {/* Subhead */}
+        <p
+          className="text-[#666666] mx-auto mb-10 sm:mb-12 max-w-2xl"
+          style={{
+            fontSize: "clamp(1rem, 1.4vw, 1.2rem)",
+            lineHeight: 1.55,
+          }}
+        >
+          An AI engagement agent that learns your content personality in 60 seconds,
+          then replies to every comment and DM the way you would.
+        </p>
+
+        {/* Single CTA */}
+        <div className="flex flex-col items-center gap-3">
           <Link
             href="/signup"
-            className="w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold px-7 py-3.5 rounded-xl text-sm hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors text-center"
+            className="inline-flex items-center gap-2 text-white text-sm font-medium rounded-full transition-opacity hover:opacity-90"
+            style={{
+              backgroundColor: "#5B2B8C",
+              padding: "14px 28px",
+            }}
           >
-            Get Started — It&apos;s Free
+            Start free
+            <span aria-hidden>→</span>
           </Link>
-          <p className="text-xs text-[#9A9080] text-center">
-            No credit card required. Connect your Instagram in minutes.
+          <p className="text-xs text-[#888888]">
+            free 50 replies/month. no card required.
           </p>
         </div>
 
-        {/* Visual mockup — dark themed for contrast */}
-        <div className="mt-12 sm:mt-16 max-w-2xl mx-auto w-full">
-          <div className="border border-[#3A3A3A] rounded-2xl bg-[#222222] overflow-hidden shadow-lg">
-            <div className="border-b border-[#2A2A2A] px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#D4FF00] flex-shrink-0" />
-                <span className="text-xs text-[#8A8A8A] font-medium truncate">WASP Agent — Active</span>
-              </div>
-              <span className="text-xs text-[#666666] flex-shrink-0">2 sent · 0 pending</span>
-            </div>
-
-            <div className="p-4 sm:p-5 space-y-4">
-              {[
-                {
-                  user: "@sneakerhead_mike",
-                  msg: "These colorways are insane 🔥 where can I buy?",
-                  reply: "DMs! Just dropped a few pairs. Link in bio or slide in 👇",
-                  delay: "2m ago",
-                },
-                {
-                  user: "@fitcheck_daily",
-                  msg: "Been following for years, quality never misses",
-                  reply: "That loyalty means everything to us 🙏 new drop coming Thursday 👀",
-                  delay: "5m ago",
-                },
-              ].map((item, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[#333333] flex-shrink-0 flex items-center justify-center text-xs text-[#8A8A8A]">
-                      {item.user[1].toUpperCase()}
-                    </div>
-                    <div className="bg-[#2A2A2A] rounded-xl rounded-tl-none px-4 py-2.5 max-w-xs">
-                      <p className="text-xs text-[#8A8A8A] mb-1">{item.user}</p>
-                      <p className="text-sm text-[#E8E8E8]">{item.msg}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3 justify-end">
-                    <div className="bg-[#D4FF00]/15 border border-[#D4FF00]/25 rounded-xl rounded-tr-none px-4 py-2.5 max-w-xs">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[8px] font-black text-[#D4FF00]">WASP</span>
-                        <span className="text-[10px] text-[#D4FF00]/50">{item.delay}</span>
-                      </div>
-                      <p className="text-sm text-[#E8E8E8]">{item.reply}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Hero visual */}
+        {/* TODO: replace /landing/hero-placeholder.svg with a real product screenshot or short muted video loop (1200×720) */}
+        <div className="mt-16 sm:mt-24">
+          <div
+            className="relative mx-auto rounded-2xl overflow-hidden border border-[#EBE5DC]"
+            style={{
+              maxWidth: "1100px",
+              aspectRatio: "1200 / 720",
+              backgroundColor: "#F2EDE3",
+            }}
+          >
+            <Image
+              src="/landing/hero-placeholder.svg"
+              alt="Wasp dashboard preview"
+              fill
+              priority
+              style={{ objectFit: "cover" }}
+            />
           </div>
         </div>
       </div>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E5DECF" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="720" fill="#F2EDE3"/>
+  <rect width="1200" height="720" fill="url(#grid)"/>
+  <g transform="translate(600 340)" text-anchor="middle" font-family="Georgia, serif">
+    <text font-size="48" fill="#1A1A1A" font-style="italic">Hero placeholder</text>
+    <text y="48" font-size="18" fill="#888888" font-family="Inter, sans-serif">1200 × 720 — replace with product screenshot or muted video loop</text>
+  </g>
+</svg>

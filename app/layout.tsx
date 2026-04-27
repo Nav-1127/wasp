@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, Space_Grotesk } from "next/font/google";
+import { Syne, Space_Grotesk, Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
 const syne = Syne({
@@ -13,6 +13,21 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-space",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -46,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${spaceGrotesk.variable}`}
+      className={`${syne.variable} ${spaceGrotesk.variable} ${playfair.variable} ${inter.variable}`}
     >
       <body className="min-h-screen flex flex-col">{children}</body>
     </html>

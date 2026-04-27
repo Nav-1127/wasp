@@ -1,90 +1,98 @@
+import Image from "next/image";
+
+const steps = [
+  {
+    number: "01",
+    title: "Connect your Instagram.",
+    sub: "OAuth connection in 30 seconds. Read-only until you say otherwise.",
+    image: "/landing/step-1-placeholder.svg",
+    alt: "Instagram connect screen",
+  },
+  {
+    number: "02",
+    title: "Wasp learns your voice.",
+    sub: "Reads your last 30 posts and synthesizes a content personality profile in 60 seconds.",
+    image: "/landing/step-2-placeholder.svg",
+    alt: "Content personality analysis",
+  },
+  {
+    number: "03",
+    title: "Replies that sound like you.",
+    sub: "Auto-reply or draft mode. You stay in control.",
+    image: "/landing/step-3-placeholder.svg",
+    alt: "Reply drafts in dashboard",
+  },
+];
+
 export default function HowItWorksLight() {
-  const steps = [
-    {
-      number: "01",
-      title: "Connect",
-      description:
-        "Link your Instagram Business account in one click. Takes 60 seconds. No dev setup required.",
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="2" y="2" width="20" height="20" rx="5" />
-          <circle cx="12" cy="12" r="4" />
-          <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
-        </svg>
-      ),
-    },
-    {
-      number: "02",
-      title: "Analyze",
-      description:
-        "WASP studies your posts, captions, and replies. Builds your unique brand personality profile using AI.",
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z" />
-          <path d="M12 8v4l3 3" strokeLinecap="round" />
-          <path d="M9 3.5c0 0 1.5 2.5 3 2.5s3-2.5 3-2.5" strokeLinecap="round" />
-        </svg>
-      ),
-    },
-    {
-      number: "03",
-      title: "Engage",
-      description:
-        "Every comment, DM, and story reply handled in your authentic voice — 24/7. You approve, or let it fly.",
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      ),
-    },
-  ];
-
   return (
-    <section className="py-16 sm:py-24 px-5 sm:px-6 border-t border-[#D5CFC3]">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-10 sm:mb-16 max-w-2xl">
-          <span className="text-xs text-[#5C6B00] font-semibold tracking-widest uppercase mb-4 block">
-            How It Works
-          </span>
-          <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-          >
-            Up and running{" "}
-            <span className="text-[#5C6B00]">in minutes</span>
-          </h2>
-        </div>
+    <section
+      className="px-6 py-24 sm:py-40"
+      style={{ backgroundColor: "#FAF8F5", borderTop: "1px solid #EBE5DC" }}
+    >
+      <div className="max-w-5xl mx-auto">
+        <p className="text-xs text-[#888888] tracking-[0.18em] mb-6">how it works</p>
+        <h2
+          className="text-[#1A1A1A] mb-16 sm:mb-24 max-w-3xl"
+          style={{
+            fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+            fontWeight: 500,
+            fontSize: "clamp(1.75rem, 4vw, 3rem)",
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Three steps. Then it just runs.
+        </h2>
 
-        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="space-y-24 sm:space-y-32">
           {steps.map((step, i) => (
             <div
-              key={i}
-              className="relative border border-[#6B8030] bg-[#4A5E20] rounded-2xl p-6 sm:p-8 group hover:border-[#8A9A40] transition-colors duration-300"
+              key={step.number}
+              className="grid md:grid-cols-2 gap-10 sm:gap-16 items-center"
             >
+              {/* TODO: replace placeholder with real product screenshot for "${step.title}" */}
               <div
-                className="text-7xl font-black text-[#5A7025] absolute top-6 right-8 select-none"
-                style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+                className={`relative rounded-2xl overflow-hidden border border-[#EBE5DC] ${
+                  i % 2 === 1 ? "md:order-2" : ""
+                }`}
+                style={{
+                  aspectRatio: "4 / 3",
+                  backgroundColor: "#F2EDE3",
+                }}
               >
-                {step.number}
+                <Image
+                  src={step.image}
+                  alt={step.alt}
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
               </div>
 
-              <div className="text-[#D4FF00] mb-6 relative z-10">{step.icon}</div>
-
-              <h3
-                className="text-2xl font-bold text-[#F5F0E8] mb-3 relative z-10"
-                style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-              >
-                {step.title}
-              </h3>
-              <p className="text-[#C8D8A0] text-sm leading-relaxed relative z-10">
-                {step.description}
-              </p>
-
-              {i < steps.length - 1 && (
-                <div className="hidden md:block absolute -right-4 top-1/2 -translate-y-1/2 z-20">
-                  <div className="w-8 h-[1px] bg-[#3D4A1A]" />
-                </div>
-              )}
+              <div className={i % 2 === 1 ? "md:order-1" : ""}>
+                <p className="text-xs text-[#888888] tracking-[0.18em] mb-4">
+                  step {step.number}
+                </p>
+                <h3
+                  className="text-[#1A1A1A] mb-4"
+                  style={{
+                    fontFamily:
+                      "var(--font-playfair), 'Playfair Display', Georgia, serif",
+                    fontWeight: 500,
+                    fontSize: "clamp(1.5rem, 2.6vw, 2rem)",
+                    lineHeight: 1.15,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {step.title}
+                </h3>
+                <p
+                  className="text-[#666666] max-w-md"
+                  style={{ fontSize: "1.0625rem", lineHeight: 1.55 }}
+                >
+                  {step.sub}
+                </p>
+              </div>
             </div>
           ))}
         </div>

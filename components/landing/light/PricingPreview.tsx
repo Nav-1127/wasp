@@ -1,139 +1,195 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+
+type Plan = {
+  name: string;
+  monthly: number;
+  yearly: number;
+  description: string;
+  features: string[];
+  cta: string;
+};
+
+const plans: Plan[] = [
+  {
+    name: "Free",
+    monthly: 0,
+    yearly: 0,
+    description: "1 IG account. Draft mode only. 50 replies/month.",
+    features: [
+      "1 Instagram account",
+      "Draft mode only",
+      "50 replies/month",
+      "Content personality analysis",
+    ],
+    cta: "Start free",
+  },
+  {
+    name: "Creator",
+    monthly: 19,
+    yearly: 16,
+    description: "1 IG account. Auto-reply mode. 1,000 interactions/month.",
+    features: [
+      "1 Instagram account",
+      "Auto-reply mode",
+      "1,000 interactions/month",
+      "Content personality",
+      "Basic analytics",
+    ],
+    cta: "Get started",
+  },
+  {
+    name: "Pro",
+    monthly: 49,
+    yearly: 41,
+    description: "3 IG accounts. 5,000 interactions. Story replies + comment-to-DM.",
+    features: [
+      "3 Instagram accounts",
+      "5,000 interactions/month",
+      "Story replies",
+      "Comment-to-DM",
+      "Priority support",
+    ],
+    cta: "Get started",
+  },
+];
 
 export default function PricingPreviewLight() {
-  const plans = [
-    {
-      name: "Free",
-      price: "$0",
-      period: "/month",
-      description: "Start testing WASP at zero risk.",
-      features: [
-        "1 Instagram account",
-        "Draft Mode only",
-        "50 AI responses/month",
-        "Brand personality analysis",
-        "Basic analytics",
-      ],
-      cta: "Start Free",
-      highlighted: false,
-    },
-    {
-      name: "Pro",
-      price: "$29",
-      period: "/month",
-      description: "For creators & brands serious about engagement.",
-      features: [
-        "Everything in Free",
-        "Unlimited AI responses",
-        "Auto Mode — set it & forget it",
-        "Full before/after analytics",
-        "Product catalog import",
-        "Priority response queue",
-      ],
-      cta: "Start Free Trial",
-      highlighted: true,
-      badge: "Most Popular",
-    },
-    {
-      name: "Agency",
-      price: "$99",
-      period: "/month",
-      description: "Manage multiple accounts from one dashboard.",
-      features: [
-        "Everything in Pro",
-        "Up to 5 Instagram accounts",
-        "Team member access",
-        "Agency dashboard",
-        "Priority support",
-      ],
-      cta: "Contact Us",
-      highlighted: false,
-    },
-  ];
+  const [annual, setAnnual] = useState(false);
 
   return (
-    <section className="py-16 sm:py-24 px-5 sm:px-6 bg-[#EDE8DE] border-t border-[#D5CFC3]">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-10 sm:mb-16 text-center">
-          <span className="text-xs text-[#5C6B00] font-semibold tracking-widest uppercase mb-4 block">
-            Pricing
-          </span>
+    <section
+      id="pricing"
+      className="px-6 py-24 sm:py-40"
+      style={{ backgroundColor: "#FAF8F5", borderTop: "1px solid #EBE5DC" }}
+    >
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-12 sm:mb-16">
+          <p className="text-xs text-[#888888] tracking-[0.18em] mb-6">pricing</p>
           <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+            className="text-[#1A1A1A] mb-8"
+            style={{
+              fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+              fontWeight: 500,
+              fontSize: "clamp(1.75rem, 4vw, 3rem)",
+              lineHeight: 1.1,
+              letterSpacing: "-0.02em",
+            }}
           >
-            Simple pricing,{" "}
-            <span className="text-[#5C6B00]">serious results</span>
+            Pick a plan. Change it later.
           </h2>
-          <p className="text-[#6B6058] mt-4 text-base sm:text-lg max-w-xl mx-auto">
-            Start free. Upgrade when you're hooked.
-          </p>
-        </div>
 
-        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-          {plans.map((plan, i) => (
-            <div
-              key={i}
-              className={`relative border rounded-2xl p-6 sm:p-8 flex flex-col ${
-                plan.highlighted
-                  ? "border-[#5C6B00]/40 bg-[#F5F0E8] shadow-md"
-                  : "border-[#D5CFC3] bg-[#F5F0E8]"
-              }`}
+          <div
+            className="inline-flex items-center gap-1 p-1 rounded-full border border-[#EBE5DC]"
+            style={{ backgroundColor: "#FFFFFF" }}
+          >
+            <button
+              onClick={() => setAnnual(false)}
+              className="text-sm px-4 py-1.5 rounded-full transition-colors"
+              style={{
+                backgroundColor: !annual ? "#1A1A1A" : "transparent",
+                color: !annual ? "#FFFFFF" : "#666666",
+              }}
             >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#1A1A1A] text-[#F5F0E8] text-xs font-black px-4 py-1 rounded-full tracking-wide">
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
-
-              <div className="mb-6">
-                <p className={`text-sm font-medium mb-1 ${plan.highlighted ? "text-[#5C6B00]" : "text-[#6B6058]"}`}>
-                  {plan.name}
-                </p>
-                <div className="flex items-end gap-1 mb-2">
-                  <span
-                    className="text-4xl font-black text-[#1A1A1A]"
-                    style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-                  >
-                    {plan.price}
-                  </span>
-                  <span className="text-[#9A9080] text-sm mb-1">{plan.period}</span>
-                </div>
-                <p className="text-sm text-[#9A9080]">{plan.description}</p>
-              </div>
-
-              <ul className="space-y-3 mb-8 flex-1">
-                {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-start gap-3 text-sm text-[#1A1A1A]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#5C6B00] mt-0.5 flex-shrink-0">
-                      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                      <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href="/signup"
-                className={`block text-center font-bold py-3 rounded-xl text-sm transition-colors duration-200 ${
-                  plan.highlighted
-                    ? "bg-[#1A1A1A] text-[#F5F0E8] hover:bg-[#D4FF00] hover:text-[#1A1A1A]"
-                    : "border border-[#D5CFC3] text-[#1A1A1A] hover:border-[#5C6B00] hover:text-[#5C6B00]"
-                }`}
+              Monthly
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className="text-sm px-4 py-1.5 rounded-full transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: annual ? "#1A1A1A" : "transparent",
+                color: annual ? "#FFFFFF" : "#666666",
+              }}
+            >
+              Annual
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: annual ? "rgba(255,255,255,0.15)" : "#EBE5DC",
+                  color: annual ? "#FFFFFF" : "#666666",
+                }}
               >
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
+                17% off
+              </span>
+            </button>
+          </div>
         </div>
 
-        <div className="text-center mt-8">
-          <Link href="/pricing" className="text-sm text-[#6B6058] hover:text-[#5C6B00] transition-colors">
-            View full pricing details →
-          </Link>
+        <div className="grid md:grid-cols-3 gap-5 sm:gap-6">
+          {plans.map((plan) => {
+            const price = annual ? plan.yearly : plan.monthly;
+            return (
+              <div
+                key={plan.name}
+                className="rounded-2xl border border-[#EBE5DC] p-7 sm:p-8 flex flex-col"
+                style={{ backgroundColor: "#FFFFFF" }}
+              >
+                <p className="text-sm font-medium text-[#1A1A1A] mb-2">{plan.name}</p>
+                <div className="flex items-end gap-1 mb-3">
+                  <span
+                    className="text-[#1A1A1A]"
+                    style={{
+                      fontFamily:
+                        "var(--font-playfair), 'Playfair Display', Georgia, serif",
+                      fontWeight: 500,
+                      fontSize: "2.75rem",
+                      lineHeight: 1,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    ${price}
+                  </span>
+                  <span className="text-sm text-[#888888] mb-1.5">/month</span>
+                </div>
+                <p
+                  className="text-sm text-[#666666] mb-6"
+                  style={{ lineHeight: 1.5 }}
+                >
+                  {plan.description}
+                </p>
+
+                <ul className="space-y-2.5 mb-8 flex-1">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-2.5 text-sm text-[#1A1A1A]"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        className="mt-1 flex-shrink-0"
+                        style={{ color: "#5B2B8C" }}
+                      >
+                        <path
+                          d="M3 8.5l3 3 7-7"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <span style={{ lineHeight: 1.45 }}>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/signup"
+                  className="block text-center text-sm font-medium py-3 rounded-full transition-opacity hover:opacity-90"
+                  style={{
+                    backgroundColor: plan.name === "Free" ? "#1A1A1A" : "#5B2B8C",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

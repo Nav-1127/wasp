@@ -7,44 +7,48 @@ export default function NavLight() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#D5CFC3] bg-[#F5F0E8]/90 backdrop-blur-sm">
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 border-b border-[#EBE5DC]"
+      style={{ backgroundColor: "rgba(250, 248, 245, 0.85)", backdropFilter: "blur(8px)" }}
+    >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           <span
-            className="text-2xl font-black tracking-tighter text-[#1A1A1A] group-hover:text-[#5C6B00] transition-colors duration-200"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+            className="text-xl font-semibold tracking-tight text-[#1A1A1A]"
+            style={{ fontFamily: "var(--font-inter), Inter, system-ui, sans-serif" }}
           >
-            WASP
+            Wasp
           </span>
-          <span className="text-xl leading-none">⚡</span>
+          <span className="text-base leading-none">⚡</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
           <Link
             href="/pricing"
-            className="text-sm text-[#6B6058] hover:text-[#1A1A1A] transition-colors duration-200"
+            className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
           >
             Pricing
           </Link>
-          <a
+          <Link
             href="/signup"
-            className="text-sm font-semibold bg-[#1A1A1A] text-[#F5F0E8] px-5 py-2.5 rounded-full hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors duration-200"
+            className="text-sm font-medium text-white px-5 py-2 rounded-full transition-colors"
+            style={{ backgroundColor: "#5B2B8C" }}
           >
-            Get Started
-          </a>
+            Start free
+          </Link>
         </div>
 
         <button
-          className="md:hidden text-[#6B6058] hover:text-[#1A1A1A] transition-colors"
+          className="md:hidden text-[#666666] hover:text-[#1A1A1A] transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
           {menuOpen ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12h18M3 6h18M3 18h18" />
             </svg>
           )}
@@ -52,21 +56,25 @@ export default function NavLight() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden border-t border-[#D5CFC3] bg-[#F5F0E8] px-6 py-4 flex flex-col gap-4">
+        <div
+          className="md:hidden border-t border-[#EBE5DC] px-6 py-4 flex flex-col gap-4"
+          style={{ backgroundColor: "#FAF8F5" }}
+        >
           <Link
             href="/pricing"
-            className="text-sm text-[#6B6058] hover:text-[#1A1A1A] transition-colors"
+            className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
             onClick={() => setMenuOpen(false)}
           >
             Pricing
           </Link>
-          <a
+          <Link
             href="/signup"
-            className="text-sm font-semibold bg-[#1A1A1A] text-[#F5F0E8] px-5 py-2.5 rounded-full text-center"
+            className="text-sm font-medium text-white px-5 py-2.5 rounded-full text-center"
+            style={{ backgroundColor: "#5B2B8C" }}
             onClick={() => setMenuOpen(false)}
           >
-            Get Started
-          </a>
+            Start free
+          </Link>
         </div>
       )}
     </nav>

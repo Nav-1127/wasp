@@ -7,7 +7,14 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ backgroundColor: "#F5F0E8", minHeight: "100vh" }}>
+    <div
+      style={{
+        backgroundColor: "#FAF8F5",
+        minHeight: "100vh",
+        fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+        color: "#1A1A1A",
+      }}
+    >
       <NavLight />
       <main className="flex-1">{children}</main>
       <FooterLight />

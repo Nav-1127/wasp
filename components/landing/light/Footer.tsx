@@ -2,42 +2,78 @@ import Link from "next/link";
 
 export default function FooterLight() {
   return (
-    <footer className="border-t border-[#D5CFC3] bg-[#F5F0E8] py-10 sm:py-12 px-5 sm:px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 sm:gap-10">
+    <footer
+      className="border-t border-[#EBE5DC] py-16 px-6"
+      style={{ backgroundColor: "#FAF8F5" }}
+    >
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <span
-                className="text-xl font-black text-[#1A1A1A] tracking-tighter"
-                style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+                className="text-lg font-semibold text-[#1A1A1A]"
+                style={{ fontFamily: "var(--font-inter), Inter, system-ui, sans-serif" }}
               >
-                WASP
+                Wasp
               </span>
-              <span className="text-lg leading-none">⚡</span>
+              <span className="text-base leading-none">⚡</span>
             </div>
-            <p className="text-[#9A9080] text-xs max-w-[200px]">AI Agent for Instagram Engagement</p>
+            <p
+              className="text-[#666666]"
+              style={{
+                fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+                fontStyle: "italic",
+                fontSize: "0.95rem",
+              }}
+            >
+              An AI engagement agent for Instagram.
+            </p>
           </div>
 
-          <div className="flex flex-wrap gap-x-8 gap-y-6 text-sm">
+          <div className="flex flex-wrap gap-x-10 gap-y-6 text-sm">
             <div className="flex flex-col gap-3">
-              <span className="text-xs text-[#9A9080] font-semibold uppercase tracking-widest">Product</span>
-              <Link href="/pricing" className="text-[#6B6058] hover:text-[#1A1A1A] transition-colors">Pricing</Link>
+              <span className="text-xs text-[#888888] tracking-[0.18em]">product</span>
+              <Link
+                href="/pricing"
+                className="text-[#1A1A1A] hover:opacity-70 transition-opacity"
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/signup"
+                className="text-[#1A1A1A] hover:opacity-70 transition-opacity"
+              >
+                Sign up
+              </Link>
             </div>
             <div className="flex flex-col gap-3">
-              <span className="text-xs text-[#9A9080] font-semibold uppercase tracking-widest">Legal</span>
-              <Link href="/privacy" className="text-[#6B6058] hover:text-[#1A1A1A] transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="text-[#6B6058] hover:text-[#1A1A1A] transition-colors">Terms of Service</Link>
-            </div>
-            <div className="flex flex-col gap-3">
-              <span className="text-xs text-[#9A9080] font-semibold uppercase tracking-widest">Connect</span>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-[#6B6058] hover:text-[#1A1A1A] transition-colors">Twitter / X</a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-[#6B6058] hover:text-[#1A1A1A] transition-colors">Instagram</a>
+              <span className="text-xs text-[#888888] tracking-[0.18em]">legal</span>
+              <Link
+                href="/privacy"
+                className="text-[#1A1A1A] hover:opacity-70 transition-opacity"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-[#1A1A1A] hover:opacity-70 transition-opacity"
+              >
+                Terms
+              </Link>
+              <Link
+                href="/cookies"
+                className="text-[#1A1A1A] hover:opacity-70 transition-opacity"
+              >
+                Cookies
+              </Link>
             </div>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-[#E5DFD5] flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[#9A9080] text-xs">© {new Date().getFullYear()} WASP. All rights reserved.</p>
+        <div className="mt-14 pt-6 border-t border-[#EBE5DC]">
+          <p className="text-[#888888] text-xs">
+            © {new Date().getFullYear()} Wasp. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect width="800" height="600" fill="#F2EDE3"/>
+  <g transform="translate(400 280)" text-anchor="middle" font-family="Georgia, serif">
+    <text font-size="36" fill="#1A1A1A" font-style="italic">Step 1</text>
+    <text y="36" font-size="16" fill="#888888" font-family="Inter, sans-serif">Instagram OAuth connect screen</text>
+  </g>
+</svg>
