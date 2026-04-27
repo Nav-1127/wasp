@@ -14,22 +14,20 @@ export default function HeroLight() {
           ai-native instagram engagement
         </p>
 
-        {/* Serif H1 */}
+        {/* Serif H1, both lines upright, no italic */}
         <h1
-          className="text-[#1A1A1A] mb-6 sm:mb-8"
+          className="text-[#1A1A1A] mb-6 sm:mb-8 mx-auto max-w-4xl"
           style={{
             fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
             fontWeight: 500,
-            fontSize: "clamp(2.25rem, 6vw, 4.5rem)",
-            lineHeight: 1.05,
+            fontSize: "clamp(2rem, 4.6vw, 3.5rem)",
+            lineHeight: 1.1,
             letterSpacing: "-0.02em",
           }}
         >
-          Your Instagram talks back.
+          Reply to every comment, DM, and story reply.
           <br />
-          <span style={{ fontStyle: "italic", fontWeight: 400 }}>
-            Wasp makes sure it sounds like you.
-          </span>
+          Without sounding like a bot.
         </h1>
 
         {/* Subhead */}
@@ -40,8 +38,7 @@ export default function HeroLight() {
             lineHeight: 1.55,
           }}
         >
-          An AI engagement agent that learns your content personality in 60 seconds,
-          then replies to every comment and DM the way you would.
+          WASP learns your brand voice in 60 seconds, then handles the engagement you don't have time for.
         </p>
 
         {/* Single CTA */}
@@ -75,7 +72,7 @@ export default function HeroLight() {
           >
             <Image
               src="/landing/hero-placeholder.svg"
-              alt="Wasp dashboard preview"
+              alt="WASP dashboard preview"
               fill
               priority
               style={{ objectFit: "cover" }}

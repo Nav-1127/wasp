@@ -1,5 +1,29 @@
 import Image from "next/image";
 
+const surfaces = [
+  {
+    label: "Comment",
+    image: "/landing/problem-comment-placeholder.svg",
+    alt: "Unanswered Instagram comment",
+  },
+  {
+    label: "DM",
+    image: "/landing/problem-dm-placeholder.svg",
+    alt: "Unread Instagram direct message",
+  },
+  {
+    label: "Story reply",
+    image: "/landing/problem-story-placeholder.svg",
+    alt: "Ignored Instagram story reply",
+  },
+];
+
+const stats = [
+  "Comments: most go unanswered after the first hour",
+  "DMs: 90% of leads go cold after 5 minutes",
+  "Story replies: opened, then forgotten",
+];
+
 export default function ProblemLight() {
   return (
     <section
@@ -19,33 +43,47 @@ export default function ProblemLight() {
             letterSpacing: "-0.02em",
           }}
         >
-          You're missing 80% of your comments.
+          Comments. DMs. Story replies. All going unanswered.
         </h2>
 
         <p
           className="text-[#666666] mb-12 sm:mb-16 max-w-2xl"
           style={{ fontSize: "clamp(1rem, 1.3vw, 1.125rem)", lineHeight: 1.55 }}
         >
-          Every unanswered comment is reach the algorithm quietly takes back. The cost
-          isn't theoretical — it shows up as fewer impressions on your next post.
+          The average creator misses 80% of their incoming engagement. Every miss is a customer, follower, or fan who didn't get a reply.
         </p>
 
-        {/* Single screenshot */}
-        {/* TODO: replace /landing/problem-placeholder.svg with a real Instagram comments screenshot */}
-        <div
-          className="relative mx-auto rounded-2xl overflow-hidden border border-[#EBE5DC]"
-          style={{
-            maxWidth: "900px",
-            aspectRatio: "1200 / 720",
-            backgroundColor: "#F2EDE3",
-          }}
-        >
-          <Image
-            src="/landing/problem-placeholder.svg"
-            alt="Unanswered comments piling up"
-            fill
-            style={{ objectFit: "cover" }}
-          />
+        {/* TODO: replace problem-*-placeholder.svg files with real Instagram screenshots (one each: comment, DM, story reply) */}
+        <div className="grid sm:grid-cols-3 gap-5 sm:gap-6 mb-14 sm:mb-16">
+          {surfaces.map((s) => (
+            <div
+              key={s.label}
+              className="relative rounded-2xl overflow-hidden border border-[#EBE5DC]"
+              style={{
+                aspectRatio: "3 / 4",
+                backgroundColor: "#F2EDE3",
+              }}
+            >
+              <Image
+                src={s.image}
+                alt={s.alt}
+                fill
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-3 max-w-2xl">
+          {stats.map((line) => (
+            <p
+              key={line}
+              className="text-[#1A1A1A]"
+              style={{ fontSize: "1.0625rem", lineHeight: 1.55 }}
+            >
+              {line}
+            </p>
+          ))}
         </div>
       </div>
     </section>

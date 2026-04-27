@@ -10,8 +10,8 @@ const steps = [
   },
   {
     number: "02",
-    title: "Wasp learns your voice.",
-    sub: "Reads your last 30 posts and synthesizes a content personality profile in 60 seconds.",
+    title: "WASP learns your voice.",
+    sub: "Reads your last 30 posts and synthesizes a brand voice profile in 60 seconds.",
     image: "/landing/step-2-placeholder.svg",
     alt: "Content personality analysis",
   },

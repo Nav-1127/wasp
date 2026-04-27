@@ -1,3 +1,4 @@
+// TODO: replace @sneakerhead_mike with real brand voice example once available
 export default function BeforeAfterLight() {
   return (
     <section
@@ -5,7 +6,7 @@ export default function BeforeAfterLight() {
       style={{ backgroundColor: "#FAF8F5", borderTop: "1px solid #EBE5DC" }}
     >
       <div className="max-w-5xl mx-auto">
-        <p className="text-xs text-[#888888] tracking-[0.18em] mb-6">content personality</p>
+        <p className="text-xs text-[#888888] tracking-[0.18em] mb-6">brand voice</p>
 
         <h2
           className="text-[#1A1A1A] mb-6 max-w-3xl"
@@ -17,9 +18,7 @@ export default function BeforeAfterLight() {
             letterSpacing: "-0.02em",
           }}
         >
-          It doesn't just reply.
-          <br />
-          <span style={{ fontStyle: "italic", fontWeight: 400 }}>It replies like you.</span>
+          It doesn't just reply. It replies like you.
         </h2>
 
         <p
@@ -30,7 +29,7 @@ export default function BeforeAfterLight() {
           the brand your followers actually follow.
         </p>
 
-        {/* The comment everyone is replying to */}
+        {/* TODO: replace @sneakerhead_mike with real brand voice example once available */}
         <div className="max-w-2xl mx-auto mb-10">
           <div
             className="rounded-2xl border border-[#EBE5DC] p-5 sm:p-6"
@@ -43,9 +42,7 @@ export default function BeforeAfterLight() {
           </div>
         </div>
 
-        {/* Before / After */}
         <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
-          {/* Generic AI */}
           <div
             className="rounded-2xl border border-[#EBE5DC] p-6 sm:p-7"
             style={{ backgroundColor: "#FFFFFF" }}
@@ -61,10 +58,9 @@ export default function BeforeAfterLight() {
               colorways. Please visit our website to make a purchase. We appreciate
               your support!
             </p>
-            <p className="text-xs text-[#999999]">— sounds like a help desk.</p>
+            <p className="text-xs text-[#999999]">Sounds like a help desk.</p>
           </div>
 
-          {/* Wasp reply */}
           <div
             className="rounded-2xl p-6 sm:p-7"
             style={{
@@ -82,11 +78,11 @@ export default function BeforeAfterLight() {
               className="text-[#1A1A1A] mb-4"
               style={{ fontSize: "1.0625rem", lineHeight: 1.55 }}
             >
-              appreciate you mike 🙏 limited run, link in bio — DMs open if your
+              appreciate you mike 🙏 limited run, link in bio. DMs open if your
               size sells out, we'll sort you out.
             </p>
             <p className="text-xs" style={{ color: "#5B2B8C" }}>
-              — same voice you use in your captions.
+              Same voice you use in your captions.
             </p>
           </div>
         </div>

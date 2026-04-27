@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Pricing — WASP",
+  title: "Pricing · WASP",
   description:
     "Simple, transparent pricing. Start free, upgrade when you're ready to go full auto-pilot.",
 };
@@ -17,56 +17,55 @@ const plans = [
       { text: "1 Instagram account", included: true },
       { text: "Draft Mode only (you approve every reply)", included: true },
       { text: "50 AI responses per month", included: true },
-      { text: "Brand personality analysis", included: true },
+      { text: "Brand voice analysis", included: true },
       { text: "Basic analytics", included: true },
       { text: "Auto Mode", included: false },
       { text: "Unlimited responses", included: false },
       { text: "Full analytics", included: false },
       { text: "Product catalog import", included: false },
     ],
-    cta: "Start Free",
+    cta: "Start free",
     ctaType: "secondary" as const,
     note: "No credit card required",
   },
   {
-    name: "Pro",
-    price: "$29",
+    name: "Creator",
+    price: "$19",
     period: "/month",
-    description: "For creators & brands that want 24/7 engagement on auto-pilot.",
-    badge: "Most Popular",
+    description: "For creators who want auto-reply on one account.",
     features: [
       { text: "1 Instagram account", included: true },
       { text: "Draft Mode + Auto Mode", included: true },
-      { text: "Unlimited AI responses", included: true },
-      { text: "Brand personality analysis", included: true },
-      { text: "Full before/after analytics", included: true },
-      { text: "Product catalog import", included: true },
-      { text: "Priority response queue", included: true },
-      { text: "Up to 5 accounts", included: false },
-      { text: "Team member access", included: false },
+      { text: "1,000 interactions per month", included: true },
+      { text: "Brand voice analysis", included: true },
+      { text: "Basic analytics", included: true },
+      { text: "Product catalog import", included: false },
+      { text: "Up to 3 accounts", included: false },
+      { text: "Story replies", included: false },
+      { text: "Comment-to-DM", included: false },
     ],
-    cta: "Start Free Trial",
+    cta: "Get started",
     ctaType: "primary" as const,
     note: "14-day free trial, no credit card",
   },
   {
-    name: "Agency",
-    price: "$99",
+    name: "Pro",
+    price: "$49",
     period: "/month",
-    description: "For agencies managing multiple accounts at scale.",
+    description: "For brands running engagement at scale.",
     features: [
-      { text: "Up to 5 Instagram accounts", included: true },
+      { text: "Up to 3 Instagram accounts", included: true },
       { text: "Draft Mode + Auto Mode", included: true },
-      { text: "Unlimited AI responses", included: true },
-      { text: "Brand personality per account", included: true },
+      { text: "5,000 interactions per month", included: true },
+      { text: "Brand voice per account", included: true },
       { text: "Full analytics per account", included: true },
       { text: "Product catalog import", included: true },
-      { text: "Team member access", included: true },
-      { text: "Agency dashboard", included: true },
+      { text: "Story replies", included: true },
+      { text: "Comment-to-DM", included: true },
       { text: "Priority support", included: true },
     ],
-    cta: "Contact Us",
-    ctaType: "secondary" as const,
+    cta: "Get started",
+    ctaType: "primary" as const,
     note: "Custom onboarding included",
   },
 ];
@@ -74,7 +73,7 @@ const plans = [
 const faqs = [
   {
     q: "What counts as an AI response?",
-    a: "Each time WASP generates a reply to a comment, DM, or story reply — that counts as one response. Approving, editing, or rejecting a draft doesn't cost extra.",
+    a: "Each time WASP generates a reply to a comment, DM, or story reply, that counts as one response. Approving, editing, or rejecting a draft doesn't cost extra.",
   },
   {
     q: "What is Draft Mode vs Auto Mode?",
@@ -86,7 +85,7 @@ const faqs = [
   },
   {
     q: "Does WASP sound like a bot?",
-    a: "It shouldn't. WASP analyzes your last 50 posts and replies to build a personality profile that matches your actual voice — slang, emoji habits, tone, everything. Most followers can't tell.",
+    a: "It shouldn't. WASP analyzes your last 50 posts and replies to build a brand voice profile that matches your actual voice (slang, emoji habits, tone, everything). Most followers can't tell.",
   },
   {
     q: "What Instagram account type do I need?",
@@ -94,147 +93,160 @@ const faqs = [
   },
   {
     q: "Is Stripe / payments live yet?",
-    a: "We're currently in early access. All signups start on Free. Pro and Agency tiers will be available when we launch billing.",
+    a: "We're currently in early access. All signups start on Free. Paid tiers will be available when we launch billing.",
   },
 ];
 
+const serif: React.CSSProperties = {
+  fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
+  fontWeight: 500,
+  letterSpacing: "-0.02em",
+};
+
 export default function PricingPage() {
   return (
-    <div className="pt-24 pb-24 px-6 bg-white">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
+    <div className="pt-32 pb-24 px-6">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <span className="text-xs text-[#5C6B00] font-semibold tracking-widest uppercase mb-4 block">
-            Pricing
-          </span>
+          <p className="text-xs text-[#888888] tracking-[0.18em] mb-6">pricing</p>
           <h1
-            className="text-5xl md:text-6xl font-black text-black leading-tight mb-4"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+            className="text-[#1A1A1A] mb-4"
+            style={{ ...serif, fontSize: "clamp(2.25rem, 5vw, 3.75rem)", lineHeight: 1.05 }}
           >
-            Simple pricing,{" "}
-            <span className="text-[#5C6B00]">serious results</span>
+            Simple pricing. Serious results.
           </h1>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+          <p className="text-[#666666] text-lg max-w-xl mx-auto" style={{ lineHeight: 1.55 }}>
             Start free. No credit card. Upgrade when WASP has already paid for itself.
           </p>
         </div>
 
-        {/* Plans grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-20">
-          {plans.map((plan, i) => (
+        <div className="grid md:grid-cols-3 gap-5 sm:gap-6 mb-20">
+          {plans.map((plan) => (
             <div
-              key={i}
-              className={`relative border rounded-2xl p-8 flex flex-col bg-white ${
-                plan.badge ? "border-black shadow-md" : "border-gray-200"
-              }`}
+              key={plan.name}
+              className="rounded-2xl border border-[#EBE5DC] p-7 sm:p-8 flex flex-col"
+              style={{ backgroundColor: "#FFFFFF" }}
             >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-black text-white text-xs font-black px-4 py-1 rounded-full tracking-wide">
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
-
-              {/* Plan header */}
               <div className="mb-6">
-                <p className="text-sm font-semibold mb-1 text-gray-500">{plan.name}</p>
+                <p className="text-sm font-medium mb-2 text-[#1A1A1A]">{plan.name}</p>
                 <div className="flex items-end gap-1 mb-3">
                   <span
-                    className="text-5xl font-black text-black"
-                    style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+                    className="text-[#1A1A1A]"
+                    style={{ ...serif, fontSize: "2.75rem", lineHeight: 1 }}
                   >
                     {plan.price}
                   </span>
-                  <span className="text-gray-400 text-sm mb-1.5">{plan.period}</span>
+                  <span className="text-[#888888] text-sm mb-1.5">{plan.period}</span>
                 </div>
-                <p className="text-sm text-gray-500">{plan.description}</p>
+                <p className="text-sm text-[#666666]" style={{ lineHeight: 1.5 }}>
+                  {plan.description}
+                </p>
               </div>
 
-              {/* Features */}
-              <ul className="space-y-3 mb-8 flex-1">
-                {plan.features.map((feature, j) => (
+              <ul className="space-y-2.5 mb-8 flex-1">
+                {plan.features.map((feature) => (
                   <li
-                    key={j}
-                    className={`flex items-start gap-3 text-sm ${
-                      feature.included ? "text-black" : "text-gray-300"
+                    key={feature.text}
+                    className={`flex items-start gap-2.5 text-sm ${
+                      feature.included ? "text-[#1A1A1A]" : "text-[#BBBBBB]"
                     }`}
                   >
                     {feature.included ? (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#5C6B00] mt-0.5 flex-shrink-0">
-                        <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                        <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        className="mt-1 flex-shrink-0"
+                        style={{ color: "#5B2B8C" }}
+                      >
+                        <path
+                          d="M3 8.5l3 3 7-7"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-gray-300 mt-0.5 flex-shrink-0">
-                        <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                        <path d="M6 10l4-4M10 10L6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        className="text-[#DDDDDD] mt-1 flex-shrink-0"
+                      >
+                        <path
+                          d="M5 8h6"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                        />
                       </svg>
                     )}
-                    {feature.text}
+                    <span style={{ lineHeight: 1.45 }}>{feature.text}</span>
                   </li>
                 ))}
               </ul>
 
-              {/* CTA */}
               <div>
                 <Link
                   href="/signup"
-                  className={`block text-center font-bold py-3.5 rounded-xl text-sm transition-colors duration-200 mb-2 ${
-                    plan.ctaType === "primary"
-                      ? "bg-black text-white hover:bg-[#5C6B00]"
-                      : "border border-gray-200 text-black hover:border-black"
-                  }`}
+                  className="block text-center text-sm font-medium py-3 rounded-full transition-opacity hover:opacity-90 mb-2"
+                  style={{
+                    backgroundColor: plan.ctaType === "primary" ? "#5B2B8C" : "#1A1A1A",
+                    color: "#FFFFFF",
+                  }}
                 >
                   {plan.cta}
                 </Link>
                 {plan.note && (
-                  <p className="text-center text-xs text-gray-400">{plan.note}</p>
+                  <p className="text-center text-xs text-[#888888]">{plan.note}</p>
                 )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* FAQ */}
-        <div className="bg-white rounded-2xl p-10 mt-4">
+        <div
+          className="rounded-2xl p-10 border border-[#EBE5DC]"
+          style={{ backgroundColor: "#FFFFFF" }}
+        >
           <h2
-            className="text-3xl font-black text-black mb-10"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+            className="text-[#1A1A1A] mb-10"
+            style={{ ...serif, fontSize: "1.75rem" }}
           >
             Frequently asked questions
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
-            {faqs.map((faq, i) => (
-              <div key={i} className="border-b border-gray-200 pb-8">
-                <h3
-                  className="text-base font-bold text-black mb-3"
-                  style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
-                >
-                  {faq.q}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+            {faqs.map((faq) => (
+              <div key={faq.q} className="border-b border-[#EBE5DC] pb-8">
+                <h3 className="text-base font-medium text-[#1A1A1A] mb-3">{faq.q}</h3>
+                <p className="text-sm text-[#666666] leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Bottom CTA */}
-        <div className="mt-8 text-center bg-white rounded-2xl p-12">
+        <div
+          className="mt-8 text-center rounded-2xl p-12 border border-[#EBE5DC]"
+          style={{ backgroundColor: "#FFFFFF" }}
+        >
           <h2
-            className="text-3xl md:text-4xl font-black text-black mb-4"
-            style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+            className="text-[#1A1A1A] mb-4"
+            style={{ ...serif, fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)", lineHeight: 1.1 }}
           >
             Ready to let WASP handle it?
           </h2>
-          <p className="text-gray-500 mb-8 max-w-md mx-auto">
+          <p className="text-[#666666] mb-8 max-w-md mx-auto">
             Start free. No credit card required. Connect your Instagram in minutes.
           </p>
           <Link
             href="/signup"
-            className="inline-block bg-[#D4FF00] text-[#0A0A0A] font-bold px-10 py-4 rounded-full text-sm hover:bg-white transition-colors"
+            className="inline-block text-white text-sm font-medium rounded-full transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#5B2B8C", padding: "14px 32px" }}
           >
-            Get Started Free
+            Start free
           </Link>
         </div>
       </div>

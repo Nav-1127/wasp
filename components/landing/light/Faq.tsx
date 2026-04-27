@@ -5,15 +5,15 @@ import { useState } from "react";
 const faqs = [
   {
     q: "Is this safe for my Instagram account?",
-    a: "Yes. Wasp uses Instagram's official Business Login API — the same API ManyChat and Sprout use. No password sharing, no scraping, no automation that violates Meta's terms. You can disconnect anytime from settings.",
+    a: "Yes. WASP uses Instagram's official Business Login API, the same API ManyChat and Sprout use. No password sharing, no scraping, no automation that violates Meta's terms. You can disconnect anytime from settings.",
   },
   {
     q: "How is this different from ManyChat?",
-    a: "ManyChat is a flow builder — you draw if/then trees by hand. Wasp is an agent — it reads your posts and replies in your voice. No flows to build, no keywords to map.",
+    a: "ManyChat is a flow builder. You draw if/then trees by hand. WASP is an agent. It reads your posts and replies in your voice. No flows to build, no keywords to map.",
   },
   {
     q: "What happens if I don't like a reply?",
-    a: "In draft mode every reply waits for your approval. Reject it, edit it, or skip it. Wasp learns from your edits over time so the next draft sounds more like you.",
+    a: "In draft mode every reply waits for your approval. Reject it, edit it, or skip it. WASP learns from your edits over time so the next draft sounds more like you.",
   },
   {
     q: "Can I cancel anytime?",
@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: "Does the AI learn from my edits?",
-    a: "Yes. Every approved edit feeds back into your content personality profile. The longer you use Wasp, the closer it sounds to you.",
+    a: "Yes. Every approved edit feeds back into your brand voice profile. The longer you use WASP, the closer it sounds to you.",
   },
 ];
 

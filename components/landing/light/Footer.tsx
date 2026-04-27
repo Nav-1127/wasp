@@ -9,14 +9,18 @@ export default function FooterLight() {
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10">
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center mb-3">
               <span
-                className="text-lg font-semibold text-[#1A1A1A]"
-                style={{ fontFamily: "var(--font-inter), Inter, system-ui, sans-serif" }}
+                className="text-[#1A1A1A]"
+                style={{
+                  fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+                  fontWeight: 700,
+                  fontSize: "1.375rem",
+                  letterSpacing: "0.1em",
+                }}
               >
-                Wasp
+                WASP
               </span>
-              <span className="text-base leading-none">⚡</span>
             </div>
             <p
               className="text-[#666666]"
@@ -72,7 +76,7 @@ export default function FooterLight() {
 
         <div className="mt-14 pt-6 border-t border-[#EBE5DC]">
           <p className="text-[#888888] text-xs">
-            © {new Date().getFullYear()} Wasp. All rights reserved.
+            © {new Date().getFullYear()} WASP. All rights reserved.
           </p>
         </div>
       </div>

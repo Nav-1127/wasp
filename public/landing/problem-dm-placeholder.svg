@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F2EDE3"/>
+  <g transform="translate(300 400)" text-anchor="middle" font-family="Georgia, serif">
+    <text font-size="32" fill="#1A1A1A" font-style="italic">DM</text>
+    <text y="36" font-size="14" fill="#888888" font-family="Inter, sans-serif">unread direct message screenshot</text>
+  </g>
+</svg>

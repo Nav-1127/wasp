@@ -59,15 +59,18 @@ function ConfirmForm() {
       className="min-h-screen flex flex-col items-center justify-center px-5 py-12"
       style={{ backgroundColor: "#F5F0E8" }}
     >
-      {/* Logo */}
-      <a href="/" className="mb-10 flex items-center gap-1.5">
+      <a href="/" className="mb-10 flex items-center">
         <span
-          className="text-4xl font-black tracking-tighter text-[#1A1A1A]"
-          style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+          className="text-[#1A1A1A]"
+          style={{
+            fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+            fontWeight: 700,
+            fontSize: "2rem",
+            letterSpacing: "0.1em",
+          }}
         >
           WASP
         </span>
-        <span className="text-2xl leading-none">⚡</span>
       </a>
 
       <div className="w-full max-w-md">

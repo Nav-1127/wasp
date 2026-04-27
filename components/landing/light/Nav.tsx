@@ -12,14 +12,18 @@ export default function NavLight() {
       style={{ backgroundColor: "rgba(250, 248, 245, 0.85)", backdropFilter: "blur(8px)" }}
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center group">
           <span
-            className="text-xl font-semibold tracking-tight text-[#1A1A1A]"
-            style={{ fontFamily: "var(--font-inter), Inter, system-ui, sans-serif" }}
+            className="text-[#1A1A1A]"
+            style={{
+              fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+              fontWeight: 700,
+              fontSize: "1.5rem",
+              letterSpacing: "0.1em",
+            }}
           >
-            Wasp
+            WASP
           </span>
-          <span className="text-base leading-none">⚡</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
