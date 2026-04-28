@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, Space_Grotesk, Playfair_Display, Inter, Geist_Mono } from "next/font/google";
+import { Syne, Space_Grotesk, Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
 const syne = Syne({
@@ -24,22 +24,10 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-// Variable Inter with opsz axis — lets us use display-cut proportions
-// (opsz: 32) on the wordmark while body text uses default optical size.
 const inter = Inter({
   subsets: ["latin"],
-  axes: ["opsz"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-// Geist Mono — experimental wordmark font on Nav + Footer only (v3).
-// May or may not stick. If kept, propagate to auth/layout, auth/confirm,
-// signed-out, not-found and remove Inter Display wordmark.
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-geist-mono",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -73,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${spaceGrotesk.variable} ${playfair.variable} ${inter.variable} ${geistMono.variable}`}
+      className={`${syne.variable} ${spaceGrotesk.variable} ${playfair.variable} ${inter.variable}`}
     >
       <body className="min-h-screen flex flex-col">{children}</body>
     </html>

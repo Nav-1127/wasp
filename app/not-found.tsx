@@ -33,11 +33,11 @@ export default function NotFound() {
           <span
             className="text-[#1A1A1A]"
             style={{
-              fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
-              fontWeight: 800,
-              fontSize: "1.5rem",
+              fontFamily: "var(--font-space), 'Space Grotesk', system-ui, sans-serif",
+              fontWeight: 700,
+              fontSize: "2rem",
               letterSpacing: "0.05em",
-              fontVariationSettings: '"opsz" 32',
+              lineHeight: 1,
             }}
           >
             WASP

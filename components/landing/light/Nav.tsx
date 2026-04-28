@@ -87,13 +87,13 @@ export default function NavLight() {
   );
 }
 
-/* Wordmark spec (v4 — EXPERIMENTAL on Nav + Footer only):
- * font-family: Space Grotesk
- * font-weight: 700 (Bold)
- * font-size: 2rem (Nav) / 2rem (Footer) — bumped from 1.5rem / 1.375rem
- * letter-spacing: 0.05em
- * line-height: 1 (so vertical centering works at the larger size)
- * Decision pending Nav review. Auth surfaces still use Inter Display (v2).
- * If finalized, propagate to: app/(auth)/layout.tsx,
- *   app/auth/confirm/page.tsx, app/signed-out/page.tsx, app/not-found.tsx
+/* Wordmark spec (v5 — LOCKED across all in-scope surfaces):
+ *   font-family: Space Grotesk (var(--font-space))
+ *   font-weight: 700 (Bold)
+ *   font-size: 2rem
+ *   letter-spacing: 0.05em
+ *   line-height: 1
+ * Applied identically in: Nav, Footer, app/(auth)/layout.tsx,
+ *   app/auth/confirm/page.tsx, app/signed-out/page.tsx, app/not-found.tsx.
+ * Do not alter without explicit Nav approval.
  */
