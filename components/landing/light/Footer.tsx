@@ -13,11 +13,11 @@ export default function FooterLight() {
               <span
                 className="text-[#1A1A1A]"
                 style={{
-                  fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
-                  fontWeight: 800,
+                  fontFamily:
+                    "var(--font-geist-mono), 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                  fontWeight: 700,
                   fontSize: "1.375rem",
                   letterSpacing: "0.05em",
-                  fontVariationSettings: '"opsz" 32',
                 }}
               >
                 WASP

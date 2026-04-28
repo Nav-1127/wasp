@@ -16,11 +16,11 @@ export default function NavLight() {
           <span
             className="text-[#1A1A1A]"
             style={{
-              fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
-              fontWeight: 800,
+              fontFamily:
+                "var(--font-geist-mono), 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontWeight: 700,
               fontSize: "1.5rem",
               letterSpacing: "0.05em",
-              fontVariationSettings: '"opsz" 32',
             }}
           >
             WASP
@@ -86,9 +86,12 @@ export default function NavLight() {
   );
 }
 
-/* Wordmark spec applied above (v2):
- * font-family: Inter (variable, opsz axis enabled in app/layout.tsx)
- * font-weight: 800
+/* Wordmark spec (v3 — EXPERIMENTAL on Nav + Footer only):
+ * font-family: Geist Mono
+ * font-weight: 700
  * letter-spacing: 0.05em
- * font-variation-settings: "opsz" 32 (display-cut proportions)
+ * Decision pending Nav review. Auth surfaces still use Inter Display (v2)
+ * for A/B comparison. If Geist Mono is kept, propagate to:
+ *   app/(auth)/layout.tsx, app/auth/confirm/page.tsx,
+ *   app/signed-out/page.tsx, app/not-found.tsx
  */
