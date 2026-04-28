@@ -13,16 +13,15 @@ export default function HeroLight() {
           ai-native instagram engagement
         </p>
 
-        {/* Serif H1, both lines upright, no italic. Sized to fit on 2 lines at >=1280px desktop. */}
+        {/* Serif H1 (v8): bolder + slightly larger so the headline dominates the hero.
+            Container widened max-w-4xl → max-w-5xl to compensate for the wider glyphs
+            at weight 700 and keep both lines on one row at >=1280px desktop. */}
         <h1
-          className="text-[#1A1A1A] mb-6 sm:mb-8 mx-auto max-w-4xl"
+          className="text-[#0A0A0A] mb-6 sm:mb-8 mx-auto max-w-5xl"
           style={{
             fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
-            fontWeight: 500,
-            // Reduced max from 3.5rem (56px) to 3rem (48px) so line 1
-            // ("Reply to every comment, DM, and story.") fits on one line
-            // inside max-w-4xl at desktop widths.
-            fontSize: "clamp(1.875rem, 4vw, 3rem)",
+            fontWeight: 700,
+            fontSize: "clamp(2rem, 4.4vw, 3.25rem)",
             lineHeight: 1.1,
             letterSpacing: "-0.02em",
           }}
@@ -34,7 +33,7 @@ export default function HeroLight() {
 
         {/* Subhead */}
         <p
-          className="text-[#666666] mx-auto mb-10 sm:mb-12 max-w-2xl"
+          className="text-[#777777] mx-auto mb-10 sm:mb-12 max-w-2xl"
           style={{
             fontSize: "clamp(1rem, 1.4vw, 1.2rem)",
             lineHeight: 1.55,

@@ -5,13 +5,12 @@ import BeforeAfterLight from "@/components/landing/light/BeforeAfter";
 import PricingPreviewLight from "@/components/landing/light/PricingPreview";
 import FaqLight from "@/components/landing/light/Faq";
 
-// Site-wide dot grid (v7) — opacity bumped from 3% → 20%. Dropping the
-// "barely perceptible" goal in favor of a clearly visible graph-paper
-// texture. Dot size and spacing unchanged. Pricing/privacy/terms/cookies
-// pages still inherit the plain marketing layout bg (no pattern).
+// Site-wide dot grid (v8) — opacity dialed back from 20% → 10% so the
+// pattern reads as supporting texture rather than competing with the H1.
+// Visible but quiet. Dot size and spacing unchanged.
 const landingPattern: React.CSSProperties = {
   backgroundImage:
-    "radial-gradient(circle, rgba(26, 26, 26, 0.20) 1.25px, transparent 1.25px)",
+    "radial-gradient(circle, rgba(26, 26, 26, 0.10) 1.25px, transparent 1.25px)",
   backgroundSize: "24px 24px",
 };
 
