@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · WASP",
+  title: "Privacy Policy — WASP",
   description: "WASP Privacy Policy",
 };
 
@@ -70,12 +70,12 @@ word-break: break-word !important;
 
 export default function PrivacyPage() {
   return (
-    <div className="pt-32 pb-24 px-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-12">
+    <div className="pt-24 pb-24 px-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
           <Link
             href="/"
-            className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors inline-flex items-center gap-2"
+            className="text-sm text-[#6B6B6B] hover:text-[#D4FF00] transition-colors inline-flex items-center gap-2"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M9 3L5 7l4 4" strokeLinecap="round" strokeLinejoin="round" />
@@ -84,8 +84,7 @@ export default function PrivacyPage() {
           </Link>
         </div>
         <div
-          className="rounded-2xl p-8 md:p-12 border border-[#EBE5DC]"
-          style={{ backgroundColor: "#FFFFFF" }}
+          className="bg-white rounded-2xl p-8 md:p-12"
           dangerouslySetInnerHTML={{ __html: termlyContent }}
         />
       </div>
