@@ -64,12 +64,6 @@ export default function FooterLight() {
               >
                 Terms
               </Link>
-              <Link
-                href="/cookies"
-                className="text-[#1A1A1A] hover:opacity-70 transition-opacity"
-              >
-                Cookies
-              </Link>
             </div>
           </div>
         </div>
