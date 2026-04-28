@@ -14,10 +14,11 @@ export default function FooterLight() {
                 className="text-[#1A1A1A]"
                 style={{
                   fontFamily:
-                    "var(--font-geist-mono), 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                    "var(--font-space), 'Space Grotesk', system-ui, sans-serif",
                   fontWeight: 700,
-                  fontSize: "1.375rem",
+                  fontSize: "2rem",
                   letterSpacing: "0.05em",
+                  lineHeight: 1,
                 }}
               >
                 WASP

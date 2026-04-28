@@ -17,10 +17,11 @@ export default function NavLight() {
             className="text-[#1A1A1A]"
             style={{
               fontFamily:
-                "var(--font-geist-mono), 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                "var(--font-space), 'Space Grotesk', system-ui, sans-serif",
               fontWeight: 700,
-              fontSize: "1.5rem",
+              fontSize: "2rem",
               letterSpacing: "0.05em",
+              lineHeight: 1,
             }}
           >
             WASP
@@ -86,12 +87,13 @@ export default function NavLight() {
   );
 }
 
-/* Wordmark spec (v3 — EXPERIMENTAL on Nav + Footer only):
- * font-family: Geist Mono
- * font-weight: 700
+/* Wordmark spec (v4 — EXPERIMENTAL on Nav + Footer only):
+ * font-family: Space Grotesk
+ * font-weight: 700 (Bold)
+ * font-size: 2rem (Nav) / 2rem (Footer) — bumped from 1.5rem / 1.375rem
  * letter-spacing: 0.05em
- * Decision pending Nav review. Auth surfaces still use Inter Display (v2)
- * for A/B comparison. If Geist Mono is kept, propagate to:
- *   app/(auth)/layout.tsx, app/auth/confirm/page.tsx,
- *   app/signed-out/page.tsx, app/not-found.tsx
+ * line-height: 1 (so vertical centering works at the larger size)
+ * Decision pending Nav review. Auth surfaces still use Inter Display (v2).
+ * If finalized, propagate to: app/(auth)/layout.tsx,
+ *   app/auth/confirm/page.tsx, app/signed-out/page.tsx, app/not-found.tsx
  */
