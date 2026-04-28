@@ -6,7 +6,13 @@ export default function HeroLight() {
     <section
       id="hero"
       className="px-6 pt-32 sm:pt-40 pb-20 sm:pb-32"
-      style={{ backgroundColor: "#FAF8F5" }}
+      style={{
+        backgroundColor: "#FAF8F5",
+        // Subtle dot grid — 1.25px dots, 24px spacing, ~4% opacity
+        backgroundImage:
+          "radial-gradient(circle, rgba(26, 26, 26, 0.04) 1.25px, transparent 1.25px)",
+        backgroundSize: "24px 24px",
+      }}
     >
       <div className="max-w-5xl mx-auto text-center">
         {/* Eyebrow */}
@@ -14,18 +20,21 @@ export default function HeroLight() {
           ai-native instagram engagement
         </p>
 
-        {/* Serif H1, both lines upright, no italic */}
+        {/* Serif H1, both lines upright, no italic. Sized to fit on 2 lines at >=1280px desktop. */}
         <h1
           className="text-[#1A1A1A] mb-6 sm:mb-8 mx-auto max-w-4xl"
           style={{
             fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
             fontWeight: 500,
-            fontSize: "clamp(2rem, 4.6vw, 3.5rem)",
+            // Reduced max from 3.5rem (56px) to 3rem (48px) so line 1
+            // ("Reply to every comment, DM, and story.") fits on one line
+            // inside max-w-4xl at desktop widths.
+            fontSize: "clamp(1.875rem, 4vw, 3rem)",
             lineHeight: 1.1,
             letterSpacing: "-0.02em",
           }}
         >
-          Reply to every comment, DM, and story reply.
+          Reply to every comment, DM, and story.
           <br />
           Without sounding like a bot.
         </h1>

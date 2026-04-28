@@ -24,9 +24,11 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+// Variable Inter with opsz axis — lets us use display-cut proportions
+// (opsz: 32) on the wordmark while body text uses default optical size.
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  axes: ["opsz"],
   variable: "--font-inter",
   display: "swap",
 });
