@@ -31,7 +31,7 @@ export default function FaqLight() {
   return (
     <section
       className="px-6 py-24 sm:py-40"
-      style={{ backgroundColor: "#FAF8F5", borderTop: "1px solid #EBE5DC" }}
+      style={{ borderTop: "1px solid #EBE5DC" }}
     >
       <div className="max-w-3xl mx-auto">
         <p className="text-xs text-[#888888] tracking-[0.18em] mb-6">questions</p>

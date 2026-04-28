@@ -6,13 +6,6 @@ export default function HeroLight() {
     <section
       id="hero"
       className="px-6 pt-32 sm:pt-40 pb-20 sm:pb-32"
-      style={{
-        backgroundColor: "#FAF8F5",
-        // Subtle dot grid — 1.25px dots, 24px spacing, ~4% opacity
-        backgroundImage:
-          "radial-gradient(circle, rgba(26, 26, 26, 0.04) 1.25px, transparent 1.25px)",
-        backgroundSize: "24px 24px",
-      }}
     >
       <div className="max-w-5xl mx-auto text-center">
         {/* Eyebrow */}

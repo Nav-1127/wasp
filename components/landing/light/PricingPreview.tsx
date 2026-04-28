@@ -63,7 +63,7 @@ export default function PricingPreviewLight() {
     <section
       id="pricing"
       className="px-6 py-24 sm:py-40"
-      style={{ backgroundColor: "#FAF8F5", borderTop: "1px solid #EBE5DC" }}
+      style={{ borderTop: "1px solid #EBE5DC" }}
     >
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
