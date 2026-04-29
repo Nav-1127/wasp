@@ -546,7 +546,7 @@ function Caption({ scene, progress }: { scene: number; progress: number }) {
   else if (progress > 0.82) op = (1 - progress) / 0.18;
 
   return (
-    <div className="wasp-demo-caption" style={{ display: "flex", flexDirection: "column" }}>
+    <div className="wasp-demo-caption" style={{ display: "flex", flexDirection: "column", paddingTop: 40 }}>
 
       {/* Scene counter */}
       <div style={{
@@ -623,12 +623,13 @@ export default function DemoSectionLight() {
           .wasp-demo-caption { order: -1; text-align: center; }
           .wasp-demo-caption .wasp-demo-prog-bar { margin-left: auto; margin-right: auto; }
           .wasp-demo-inner { padding: 0 24px !important; }
-          .wasp-demo-header { padding: 48px 24px 36px !important; }
+          .wasp-demo-header { padding: 40px 24px 28px !important; }
+          .wasp-demo-caption { padding-top: 0 !important; }
         }
       `}</style>
 
       {/* Section header */}
-      <div className="wasp-demo-header" style={{ textAlign: "center", padding: "64px 48px 48px" }}>
+      <div className="wasp-demo-header" style={{ textAlign: "center", padding: "56px 48px 40px" }}>
         <div style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(10,10,10,0.35)", marginBottom: 14 }}>
           Product demo
         </div>
@@ -648,7 +649,7 @@ export default function DemoSectionLight() {
 
       {/* 2-col grid: caption left, IG window right */}
       <div className="wasp-demo-inner" style={{ maxWidth: 1080, margin: "0 auto", padding: "0 48px" }}>
-        <div className="wasp-demo-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center" }}>
+        <div className="wasp-demo-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "flex-start" }}>
           <Caption scene={scene} progress={progress} />
           <div style={{ display: "flex", justifyContent: "center" }}>
             <IGShell>
