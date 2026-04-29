@@ -546,7 +546,7 @@ function Caption({ scene, progress }: { scene: number; progress: number }) {
   else if (progress > 0.82) op = (1 - progress) / 0.18;
 
   return (
-    <div className="wasp-demo-caption" style={{ display: "flex", flexDirection: "column", paddingTop: 40 }}>
+    <div className="wasp-demo-caption" style={{ display: "flex", flexDirection: "column" }}>
 
       {/* Scene counter */}
       <div style={{
@@ -562,7 +562,7 @@ function Caption({ scene, progress }: { scene: number; progress: number }) {
       <div key={scene} style={{
         fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
         fontWeight: 700,
-        fontSize: isOutcome ? "clamp(1.55rem,2.8vw,2.2rem)" : "clamp(1.8rem,3.2vw,2.6rem)",
+        fontSize: isOutcome ? "clamp(1.75rem,3vw,2.4rem)" : "clamp(2rem,3.6vw,2.9rem)",
         lineHeight: 1.18,
         color: "#0A0A0A",
         letterSpacing: "-0.02em",
@@ -624,7 +624,6 @@ export default function DemoSectionLight() {
           .wasp-demo-caption .wasp-demo-prog-bar { margin-left: auto; margin-right: auto; }
           .wasp-demo-inner { padding: 0 24px !important; }
           .wasp-demo-header { padding: 40px 24px 28px !important; }
-          .wasp-demo-caption { padding-top: 0 !important; }
         }
       `}</style>
 
@@ -649,7 +648,7 @@ export default function DemoSectionLight() {
 
       {/* 2-col grid: caption left, IG window right */}
       <div className="wasp-demo-inner" style={{ maxWidth: 1080, margin: "0 auto", padding: "0 48px" }}>
-        <div className="wasp-demo-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "flex-start" }}>
+        <div className="wasp-demo-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center" }}>
           <Caption scene={scene} progress={progress} />
           <div style={{ display: "flex", justifyContent: "center" }}>
             <IGShell>
