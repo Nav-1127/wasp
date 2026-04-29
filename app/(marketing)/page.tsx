@@ -1,4 +1,5 @@
 import HeroLight from "@/components/landing/light/Hero";
+import DemoSectionLight from "@/components/landing/light/DemoSection";
 import ProblemLight from "@/components/landing/light/Problem";
 import HowItWorksLight from "@/components/landing/light/HowItWorks";
 import BeforeAfterLight from "@/components/landing/light/BeforeAfter";
@@ -18,6 +19,7 @@ export default function LandingPage() {
   return (
     <div style={landingPattern}>
       <HeroLight />
+      <DemoSectionLight />
       <ProblemLight />
       <HowItWorksLight />
       <BeforeAfterLight />
