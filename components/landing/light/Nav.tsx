@@ -3,97 +3,178 @@
 import Link from "next/link";
 import { useState } from "react";
 
+/* Nav — v10 (matches Claude Design WASP Hero v4 nav)
+ * Wordmark: Space Grotesk Bold 1.875rem 0.05em
+ * Links: How it works (anchor scroll), Pricing, Sign up free
+ * CTA: dark ink #0A0A0A bg, white text
+ * Sticky positioned so it stays visible while the rest of the page scrolls.
+ * (CD's design has it inline-non-fixed; we keep sticky for UX so visitors
+ * always have a way back to nav while exploring deeper sections.)
+ */
+
 export default function NavLight() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 border-b border-[#EBE5DC]"
-      style={{ backgroundColor: "rgba(250, 248, 245, 0.85)", backdropFilter: "blur(8px)" }}
+      style={{
+        position: "sticky",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 48px",
+        height: 60,
+        borderBottom: "1px solid #EBE5DC",
+        background: "#FAF8F5",
+      }}
     >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center group">
-          <span
-            className="text-[#1A1A1A]"
-            style={{
-              fontFamily:
-                "var(--font-space), 'Space Grotesk', system-ui, sans-serif",
-              fontWeight: 700,
-              fontSize: "2rem",
-              letterSpacing: "0.05em",
-              lineHeight: 1,
-            }}
-          >
-            WASP
-          </span>
-        </Link>
-
-        <div className="hidden md:flex items-center gap-8">
-          <Link
-            href="/pricing"
-            className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/signup"
-            className="text-sm font-medium text-white px-5 py-2 rounded-full transition-colors"
-            style={{ backgroundColor: "#5B2B8C" }}
-          >
-            Start free
-          </Link>
-        </div>
-
-        <button
-          className="md:hidden text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
+      <Link href="/" style={{ textDecoration: "none" }}>
+        <span
+          style={{
+            fontFamily:
+              "var(--font-space), 'Space Grotesk', system-ui, sans-serif",
+            fontWeight: 700,
+            fontSize: "1.875rem",
+            letterSpacing: "0.05em",
+            color: "#0A0A0A",
+            textTransform: "uppercase",
+            lineHeight: 1,
+          }}
         >
-          {menuOpen ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 12h18M3 6h18M3 18h18" />
-            </svg>
-          )}
-        </button>
+          WASP
+        </span>
+      </Link>
+
+      <div className="wasp-nav-links">
+        <a
+          href="#how-it-works"
+          style={{
+            fontSize: "0.875rem",
+            color: "#777",
+            cursor: "pointer",
+            textDecoration: "none",
+          }}
+        >
+          How it works
+        </a>
+        <Link
+          href="/pricing"
+          style={{
+            fontSize: "0.875rem",
+            color: "#777",
+            cursor: "pointer",
+            textDecoration: "none",
+          }}
+        >
+          Pricing
+        </Link>
+        <Link
+          href="/signup"
+          style={{
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            color: "#FAF8F5",
+            background: "#0A0A0A",
+            padding: "8px 18px",
+            borderRadius: 6,
+            cursor: "pointer",
+            textDecoration: "none",
+          }}
+        >
+          Sign up free
+        </Link>
       </div>
+
+      <button
+        className="wasp-nav-burger"
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="Toggle menu"
+        style={{
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          color: "#0A0A0A",
+        }}
+      >
+        {menuOpen ? (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 12h18M3 6h18M3 18h18" />
+          </svg>
+        )}
+      </button>
 
       {menuOpen && (
         <div
-          className="md:hidden border-t border-[#EBE5DC] px-6 py-4 flex flex-col gap-4"
-          style={{ backgroundColor: "#FAF8F5" }}
+          className="wasp-nav-mobile"
+          style={{
+            position: "absolute",
+            top: 60,
+            left: 0,
+            right: 0,
+            background: "#FAF8F5",
+            borderTop: "1px solid #EBE5DC",
+            borderBottom: "1px solid #EBE5DC",
+            padding: "16px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
         >
+          <a
+            href="#how-it-works"
+            onClick={() => setMenuOpen(false)}
+            style={{ fontSize: "0.875rem", color: "#0A0A0A", textDecoration: "none" }}
+          >
+            How it works
+          </a>
           <Link
             href="/pricing"
-            className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
             onClick={() => setMenuOpen(false)}
+            style={{ fontSize: "0.875rem", color: "#0A0A0A", textDecoration: "none" }}
           >
             Pricing
           </Link>
           <Link
             href="/signup"
-            className="text-sm font-medium text-white px-5 py-2.5 rounded-full text-center"
-            style={{ backgroundColor: "#5B2B8C" }}
             onClick={() => setMenuOpen(false)}
+            style={{
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              color: "#FAF8F5",
+              background: "#0A0A0A",
+              padding: "10px 18px",
+              borderRadius: 6,
+              textDecoration: "none",
+              textAlign: "center",
+            }}
           >
-            Start free
+            Sign up free
           </Link>
         </div>
       )}
+
+      <style>{`
+        .wasp-nav-links {
+          display: flex;
+          gap: 28px;
+          align-items: center;
+        }
+        .wasp-nav-burger { display: none; }
+
+        @media (max-width: 768px) {
+          nav { padding: 0 20px !important; }
+          .wasp-nav-links { display: none; }
+          .wasp-nav-burger { display: flex; }
+        }
+      `}</style>
     </nav>
   );
 }
-
-/* Wordmark spec (v5 — LOCKED across all in-scope surfaces):
- *   font-family: Space Grotesk (var(--font-space))
- *   font-weight: 700 (Bold)
- *   font-size: 2rem
- *   letter-spacing: 0.05em
- *   line-height: 1
- * Applied identically in: Nav, Footer, app/(auth)/layout.tsx,
- *   app/auth/confirm/page.tsx, app/signed-out/page.tsx, app/not-found.tsx.
- * Do not alter without explicit Nav approval.
- */

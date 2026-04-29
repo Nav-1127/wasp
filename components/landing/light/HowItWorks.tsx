@@ -27,7 +27,8 @@ const steps = [
 export default function HowItWorksLight() {
   return (
     <section
-      className="px-6 py-24 sm:py-40"
+      id="how-it-works"
+      className="px-6 py-24 sm:py-40 scroll-mt-20"
       style={{ borderTop: "1px solid #EBE5DC" }}
     >
       <div className="max-w-5xl mx-auto">
