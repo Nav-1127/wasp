@@ -436,6 +436,7 @@ function AnimatedComments() {
 function IGPostWindow() {
   return (
     <div
+      className="wasp-ig-window"
       style={{
         width: 318,
         background: "#fff",
@@ -667,14 +668,14 @@ export default function HeroLight() {
 
           .wasp-hero-split {
             display: grid;
-            grid-template-columns: 70fr 30fr;
+            grid-template-columns: 60fr 40fr;
             flex: 1;
           }
           .wasp-hero-left {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 52px 12px 52px 48px;
+            padding: 52px 24px 52px 48px;
             background-image: radial-gradient(circle, rgba(26,26,26,0.10) 1.25px, transparent 1.25px);
             background-size: 24px 24px;
           }
@@ -688,18 +689,56 @@ export default function HeroLight() {
             background: #FAF8F5;
           }
 
-          @media (max-width: 900px) {
+          /* Tablet — stack vertically, recover natural H1 wrapping */
+          @media (max-width: 1024px) {
             .wasp-hero-split {
               grid-template-columns: 1fr;
             }
             .wasp-hero-left {
-              padding: 48px 24px 32px;
+              padding: 48px 32px 32px;
+              align-items: flex-start;
               text-align: left;
             }
             .wasp-hero-right {
               border-left: none;
               border-top: 1px solid #EBE5DC;
               padding: 32px 16px 48px;
+            }
+            /* Allow H1 line 1 to wrap on smaller viewports — nowrap was a desktop-only fix */
+            .wasp-hero-h1-line1 {
+              white-space: normal !important;
+            }
+          }
+
+          /* Mobile — tighter padding, smaller H1, IG window scales down */
+          @media (max-width: 640px) {
+            .wasp-hero-left {
+              padding: 36px 20px 24px;
+            }
+            .wasp-hero-right {
+              padding: 24px 12px 36px;
+            }
+            .wasp-hero-h1 {
+              font-size: clamp(1.875rem, 8vw, 2.5rem) !important;
+              line-height: 1.1 !important;
+            }
+            .wasp-hero-sub {
+              font-size: 0.9375rem !important;
+              max-width: none !important;
+            }
+            .wasp-ig-window {
+              width: 100% !important;
+              max-width: 340px !important;
+            }
+          }
+
+          /* Very narrow (iPhone SE territory) */
+          @media (max-width: 380px) {
+            .wasp-hero-h1 {
+              font-size: 1.75rem !important;
+            }
+            .wasp-ig-window {
+              max-width: 100% !important;
             }
           }
         `}
@@ -722,6 +761,7 @@ export default function HeroLight() {
           </div>
 
           <h1
+            className="wasp-hero-h1"
             style={{
               fontFamily:
                 "var(--font-playfair), 'Playfair Display', Georgia, serif",
@@ -733,7 +773,7 @@ export default function HeroLight() {
               marginBottom: 20,
             }}
           >
-            <span style={{ whiteSpace: "nowrap" }}>
+            <span className="wasp-hero-h1-line1" style={{ whiteSpace: "nowrap" }}>
               Your Instagram, on autopilot.
             </span>
             <br />
@@ -743,6 +783,7 @@ export default function HeroLight() {
           </h1>
 
           <p
+            className="wasp-hero-sub"
             style={{
               fontSize: "1rem",
               color: "#777",
