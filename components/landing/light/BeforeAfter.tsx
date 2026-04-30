@@ -21,7 +21,7 @@ export default function BeforeAfterLight() {
             maxWidth: 780,
           }}
         >
-          It doesn&apos;t just reply.{" "}
+          Sounds exactly{" "}
           <span
             style={{
               background: "rgba(240, 210, 80, 0.42)",
@@ -29,8 +29,10 @@ export default function BeforeAfterLight() {
               padding: "0 6px",
             }}
           >
-            It replies like you.
+            like you.
           </span>
+          <br />
+          Every time.
         </h2>
 
         {/* Subheading */}
@@ -137,7 +139,8 @@ export default function BeforeAfterLight() {
           {/* WASP reply */}
           <div
             style={{
-              background: "#0A0A0A",
+              background: "#FFFFFF",
+              border: "2px solid rgba(240, 210, 80, 0.75)",
               borderRadius: 18,
               padding: "36px 36px 28px",
               display: "flex",
@@ -151,7 +154,7 @@ export default function BeforeAfterLight() {
                 fontSize: 10,
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: "rgba(255,255,255,0.35)",
+                color: "rgba(10,10,10,0.45)",
                 marginBottom: 20,
               }}
             >
@@ -161,7 +164,7 @@ export default function BeforeAfterLight() {
               style={{
                 fontSize: "1rem",
                 lineHeight: 1.65,
-                color: "#FAF8F5",
+                color: "#0A0A0A",
                 flex: 1,
                 marginBottom: 20,
               }}
@@ -173,7 +176,7 @@ export default function BeforeAfterLight() {
               style={{
                 fontFamily: "Inter, sans-serif",
                 fontSize: 12,
-                color: "rgba(255,255,255,0.4)",
+                color: "rgba(10,10,10,0.4)",
                 fontStyle: "italic",
               }}
             >
