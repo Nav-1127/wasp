@@ -387,7 +387,7 @@ function AnimatedComments() {
     <div
       ref={scrollRef}
       style={{
-        height: 200,
+        height: 230,
         overflowY: "scroll",
         scrollbarWidth: "none",
         flexShrink: 0,
@@ -438,7 +438,7 @@ function IGPostWindow() {
     <div
       className="wasp-ig-window"
       style={{
-        width: 318,
+        width: 380,
         background: "#fff",
         borderRadius: 16,
         overflow: "hidden",
@@ -535,7 +535,7 @@ function IGPostWindow() {
       <div
         style={{
           width: "100%",
-          height: 190,
+          height: 220,
           background: "#DDD5C8",
           flexShrink: 0,
           position: "relative",
@@ -728,7 +728,7 @@ export default function HeroLight() {
             }
             .wasp-ig-window {
               width: 100% !important;
-              max-width: 340px !important;
+              max-width: 380px !important;
             }
           }
 

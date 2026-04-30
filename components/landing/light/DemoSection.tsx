@@ -141,7 +141,7 @@ function Avatar({ initial, bg, size = 26 }: { initial: string; bg: string; size?
 ───────────────────────────────────────────────── */
 function IGShell({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ width: 318, background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 6px rgba(0,0,0,0.04),0 10px 32px rgba(0,0,0,0.11),0 28px 72px rgba(0,0,0,0.07)", display: "flex", flexDirection: "column" }}>
+    <div className="wasp-demo-ig-window" style={{ width: 360, background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 6px rgba(0,0,0,0.04),0 10px 32px rgba(0,0,0,0.11),0 28px 72px rgba(0,0,0,0.07)", display: "flex", flexDirection: "column" }}>
 
       {/* Post header */}
       <div style={{ display: "flex", alignItems: "center", padding: "10px 12px", gap: 10, flexShrink: 0 }}>
@@ -156,7 +156,7 @@ function IGShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Photo */}
-      <div style={{ position: "relative", width: "100%", height: 155, flexShrink: 0, background: "#DDD5C8" }}>
+      <div style={{ position: "relative", width: "100%", height: 185, flexShrink: 0, background: "#DDD5C8" }}>
         <Image
           src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=636&h=310&fit=crop&q=80&auto=format"
           alt="northform drop 06 hoodie"
@@ -277,7 +277,7 @@ function S0() {
 
   return (
     <>
-      <div ref={ref} className="wasp-demo-no-sb" style={{ height: 230, overflowY: "scroll", flexShrink: 0 }}>
+      <div ref={ref} className="wasp-demo-no-sb" style={{ height: 255, overflowY: "scroll", flexShrink: 0 }}>
         {EXTENDED.map(c => <CRow key={c.id} c={c} />)}
         {EXTENDED.slice(0, 8).map(c => <CRow key={`x${c.id}`} c={c} />)}
       </div>
@@ -294,7 +294,7 @@ function S1({ progress }: { progress: number }) {
   return (
     <>
       <div style={{ position: "relative", flexShrink: 0 }}>
-        <div className="wasp-demo-no-sb" style={{ height: 230, overflowY: "hidden" }}>
+        <div className="wasp-demo-no-sb" style={{ height: 255, overflowY: "hidden" }}>
           {CORE.map(c => <CRow key={c.id} c={c} />)}
         </div>
         {!shimmered && (
@@ -319,7 +319,7 @@ function S2({ progress }: { progress: number }) {
   const highPos = [1, 3, 5, 8, 9];
   return (
     <>
-      <div className="wasp-demo-no-sb" style={{ height: 230, overflowY: "hidden", flexShrink: 0 }}>
+      <div className="wasp-demo-no-sb" style={{ height: 255, overflowY: "hidden", flexShrink: 0 }}>
         {CORE.map((c, i) => {
           const hIdx = highPos.indexOf(i);
           const glow = hIdx >= 0 && progress >= (hIdx / (highPos.length - 1)) * 0.65;
@@ -351,7 +351,7 @@ function S3({ progress }: { progress: number }) {
 
   return (
     <>
-      <div ref={ref} className="wasp-demo-no-sb" style={{ height: 230, overflowY: "scroll", flexShrink: 0 }}>
+      <div ref={ref} className="wasp-demo-no-sb" style={{ height: 255, overflowY: "scroll", flexShrink: 0 }}>
         {CORE.map(c => (
           <CRow
             key={c.id} c={c}
@@ -418,7 +418,7 @@ function S4({ progress }: { progress: number }) {
   const eased = slide < 0.5 ? 2 * slide * slide : -1 + (4 - 2 * slide) * slide;
 
   return (
-    <div style={{ height: 230, overflow: "hidden", flexShrink: 0, position: "relative" }}>
+    <div style={{ height: 255, overflow: "hidden", flexShrink: 0, position: "relative" }}>
       <div style={{ position: "absolute", inset: 0, transform: `translateX(${-eased * 100}%)` }}>
         <div className="wasp-demo-no-sb" style={{ height: "100%", overflowY: "hidden", paddingTop: 4 }}>
           {CORE.slice(5, 8).map(c => <CRow key={c.id} c={c} />)}
@@ -441,7 +441,7 @@ function S5({ progress }: { progress: number }) {
   const showSent = elapsed >= 5.1;
 
   return (
-    <div style={{ height: 230, overflow: "hidden", flexShrink: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
+    <div style={{ height: 255, overflow: "hidden", flexShrink: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
 
       {/* Panel header */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -506,7 +506,7 @@ function S5({ progress }: { progress: number }) {
 function S6() {
   return (
     <>
-      <div className="wasp-demo-no-sb" style={{ height: 230, overflowY: "hidden", flexShrink: 0 }}>
+      <div className="wasp-demo-no-sb" style={{ height: 255, overflowY: "hidden", flexShrink: 0 }}>
         {CORE.map(c => (
           <CRow key={c.id} c={c} glow={c.intent === "high"} replyVisible={!!c.reply} replyText={c.reply || ""} />
         ))}
@@ -624,6 +624,10 @@ export default function DemoSectionLight() {
           .wasp-demo-caption .wasp-demo-prog-bar { margin-left: auto; margin-right: auto; }
           .wasp-demo-inner { padding: 0 24px !important; }
           .wasp-demo-header { padding: 40px 24px 28px !important; }
+          .wasp-demo-ig-window { width: 100% !important; max-width: 360px !important; margin: 0 auto; }
+        }
+        @media (max-width: 400px) {
+          .wasp-demo-ig-window { max-width: 100% !important; }
         }
       `}</style>
 
