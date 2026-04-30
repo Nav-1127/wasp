@@ -19,8 +19,8 @@ export default function LandingPage() {
   return (
     <div style={landingPattern}>
       <HeroLight />
-      <DemoSectionLight />
       <ProblemLight />
+      <DemoSectionLight />
       <HowItWorksLight />
       <BeforeAfterLight />
       <PricingPreviewLight />
