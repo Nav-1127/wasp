@@ -217,7 +217,7 @@ function CRowPriority({ c, glow = false, badge }: { c: CommentItem; glow?: boole
 }
 
 /* Sensitivity badge variant */
-function CRowSensitive({ c, showBadge }: { c: CommentItem; showBadge: boolean }) {
+function CRowSensitive({ c, showBadge, showDraft }: { c: CommentItem; showBadge: boolean; showDraft: boolean }) {
   return (
     <div style={{ background: showBadge ? "rgba(217,119,6,0.05)" : "transparent", borderLeft: showBadge ? "2px solid rgba(217,119,6,0.3)" : "2px solid transparent", transition: "background 0.55s ease, border-color 0.55s ease" }}>
       <div style={{ display: "flex", gap: 8, padding: "6px 12px 2px", alignItems: "flex-start" }}>
@@ -228,6 +228,13 @@ function CRowSensitive({ c, showBadge }: { c: CommentItem; showBadge: boolean })
         </div>
         <div style={{ opacity: showBadge ? 1 : 0, transform: showBadge ? "translateX(0)" : "translateX(8px)", transition: "opacity 0.4s ease, transform 0.4s ease", background: "rgba(217,119,6,0.1)", border: "1px solid rgba(217,119,6,0.3)", borderRadius: 10, padding: "2px 8px", fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 500, color: "#B45309", flexShrink: 0, marginTop: 3, whiteSpace: "nowrap" }}>
           sensitive
+        </div>
+      </div>
+      {/* Draft held for review */}
+      <div style={{ padding: "2px 12px 6px 44px", maxHeight: showDraft ? 32 : 0, overflow: "hidden", opacity: showDraft ? 1 : 0, transition: "max-height 0.4s ease, opacity 0.4s ease" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#B45309" strokeWidth="2"/><path d="M12 7v5l3 3" stroke="#B45309" strokeWidth="2" strokeLinecap="round"/></svg>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#B45309" }}>Reply drafted — awaiting your approval</span>
         </div>
       </div>
     </div>
@@ -325,17 +332,19 @@ function S2({ progress }: { progress: number }) {
    SCENE 3 — Sensitivity routing
 ───────────────────────────────────────────────── */
 function S3({ progress }: { progress: number }) {
-  const elapsed   = progress * 6;
-  const showFirst = elapsed >= 1.4;
-  const showSecond = elapsed >= 3.0;
+  const elapsed        = progress * 6;
+  const showBadge1     = elapsed >= 1.2;
+  const showDraft1     = elapsed >= 2.2;
+  const showBadge2     = elapsed >= 3.4;
+  const showDraft2     = elapsed >= 4.4;
   return (
     <>
       <div className="wasp-demo-no-sb wasp-demo-area" style={{ overflowY: "hidden", flexShrink: 0 }}>
         {CORE.slice(0, 2).map(c => <CRow key={c.id} c={c} />)}
-        <CRowSensitive c={SENSITIVE_A} showBadge={showFirst} />
+        <CRowSensitive c={SENSITIVE_A} showBadge={showBadge1} showDraft={showDraft1} />
         {CORE.slice(2, 5).map(c => <CRow key={c.id} c={c} />)}
-        <CRowSensitive c={SENSITIVE_B} showBadge={showSecond} />
-        {CORE.slice(5, 8).map(c => <CRow key={c.id} c={c} />)}
+        <CRowSensitive c={SENSITIVE_B} showBadge={showBadge2} showDraft={showDraft2} />
+        {CORE.slice(5, 7).map(c => <CRow key={c.id} c={c} />)}
       </div>
       <AddCommentBar />
     </>
@@ -504,7 +513,7 @@ function ProgressBar({ scene, progress, onJump }: { scene: number; progress: num
         return (
           <div key={i} onClick={() => onJump(i)} style={{ flex: 1, cursor: "pointer" }}>
             <div style={{ height: 3, background: "rgba(10,10,10,0.1)", borderRadius: 2, overflow: "hidden", marginBottom: 7 }}>
-              <div style={{ height: "100%", width: `${fill * 100}%`, background: isDone ? "rgba(10,10,10,0.45)" : "#0A0A0A", borderRadius: 2, transition: isActive ? "width 0.1s linear" : "width 0.3s ease" }} />
+              <div style={{ height: "100%", width: `${fill * 100}%`, background: isDone ? "rgba(10,10,10,0.45)" : "#0A0A0A", borderRadius: 2, transition: isActive ? "none" : "width 0.3s ease" }} />
             </div>
             <div className="wasp-demo-seg-label" style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: isActive ? "#0A0A0A" : "rgba(10,10,10,0.35)", fontWeight: isActive ? 600 : 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {label}
