@@ -444,8 +444,8 @@ function IGDesktopWindow() {
         boxShadow:
           "0 2px 6px rgba(0,0,0,0.04), 0 10px 32px rgba(0,0,0,0.11), 0 28px 72px rgba(0,0,0,0.07)",
         width: "100%",
-        maxWidth: 960,
-        height: 520,
+        maxWidth: 1060,
+        height: 580,
       }}
     >
       {/* Left: post image */}
@@ -575,6 +575,7 @@ function IGDesktopWindow() {
             <ActionIcons />
           </div>
           <div
+            className="wasp-ig-action-meta"
             style={{
               fontFamily: igFont,
               fontSize: 13,
@@ -586,6 +587,7 @@ function IGDesktopWindow() {
             12,847 likes
           </div>
           <div
+            className="wasp-ig-action-meta"
             style={{
               fontFamily: igFont,
               fontSize: 13,
@@ -673,12 +675,13 @@ export default function HeroLight() {
           .wasp-hero-window-wrap { padding: 0 32px 60px; }
         }
         @media (max-width: 768px) {
-          .wasp-hero-center { padding: 52px 24px 36px; }
-          .wasp-hero-window-wrap { padding: 0 16px 48px; }
+          .wasp-hero-center { padding: 52px 16px 36px; }
+          .wasp-hero-window-wrap { padding: 0 12px 48px; }
           .wasp-hero-h1 {
-            font-size: clamp(1.625rem, 6.5vw, 2.25rem) !important;
-            line-height: 1.08 !important;
+            font-size: clamp(1.3rem, 5.5vw, 1.875rem) !important;
+            line-height: 1.1 !important;
           }
+          .wasp-hero-h1 mark { padding: 1px 4px !important; }
           .wasp-hero-sub { font-size: 0.9375rem !important; }
           .wasp-ig-desktop { flex-direction: column !important; height: auto !important; }
           .wasp-ig-desktop-image {
@@ -688,13 +691,14 @@ export default function HeroLight() {
             border-bottom: 1px solid #dbdbdb !important;
           }
           .wasp-ig-desktop-panel {
-            height: 420px !important;
+            height: 480px !important;
             display: flex !important;
             flex-direction: column !important;
           }
+          .wasp-ig-action-meta { display: none !important; }
         }
         @media (max-width: 380px) {
-          .wasp-hero-h1 { font-size: 1.4rem !important; }
+          .wasp-hero-h1 { font-size: clamp(1.1rem, 5.5vw, 1.4rem) !important; }
         }
       `}</style>
 
@@ -719,7 +723,7 @@ export default function HeroLight() {
             fontFamily:
               "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
             fontWeight: 800,
-            fontSize: "clamp(2.25rem, 3.6vw, 3.25rem)",
+            fontSize: "clamp(2.75rem, 4.5vw, 3.75rem)",
             lineHeight: 1.05,
             letterSpacing: "-0.025em",
             color: "#0A0A0A",
