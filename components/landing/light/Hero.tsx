@@ -463,7 +463,7 @@ function IGDesktopWindow() {
           alt="northform drop 06 hoodie"
           fill
           sizes="528px"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "cover", objectPosition: "center 65%" }}
           priority
         />
       </div>
