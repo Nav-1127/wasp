@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
-/* Nav — v10 (matches Claude Design WASP Hero v4 nav)
- * Wordmark: Space Grotesk Bold 1.875rem 0.05em
+/* Nav — v10.3 (font update 2026-04-30)
+ * Wordmark: Syne ExtraBold 1.875rem 0.04em
  * Links: How it works (anchor scroll), Pricing, Sign up free
  * CTA: dark ink #0A0A0A bg, white text
  * Sticky positioned so it stays visible while the rest of the page scrolls.
@@ -36,10 +36,10 @@ export default function NavLight() {
         <span
           style={{
             fontFamily:
-              "var(--font-space), 'Space Grotesk', system-ui, sans-serif",
-            fontWeight: 700,
+              "var(--font-syne), 'Syne', system-ui, sans-serif",
+            fontWeight: 800,
             fontSize: "1.875rem",
-            letterSpacing: "0.05em",
+            letterSpacing: "0.04em",
             color: "#0A0A0A",
             textTransform: "uppercase",
             lineHeight: 1,

@@ -719,8 +719,8 @@ export default function HeroLight() {
               padding: 24px 12px 36px;
             }
             .wasp-hero-h1 {
-              font-size: clamp(1.5rem, 6vw, 2.25rem) !important;
-              line-height: 1.1 !important;
+              font-size: clamp(1.75rem, 7vw, 2.5rem) !important;
+              line-height: 1.08 !important;
             }
             .wasp-hero-sub {
               font-size: 0.9375rem !important;
@@ -735,7 +735,7 @@ export default function HeroLight() {
           /* Very narrow (iPhone SE territory) */
           @media (max-width: 380px) {
             .wasp-hero-h1 {
-              font-size: 1.375rem !important;
+              font-size: 1.5rem !important;
             }
             .wasp-ig-window {
               max-width: 100% !important;
@@ -764,11 +764,11 @@ export default function HeroLight() {
             className="wasp-hero-h1"
             style={{
               fontFamily:
-                "var(--font-playfair), 'Playfair Display', Georgia, serif",
-              fontWeight: 700,
-              fontSize: "clamp(2.25rem, 4.6vw, 3.75rem)",
-              lineHeight: 1.08,
-              letterSpacing: "-0.02em",
+                "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+              fontWeight: 800,
+              fontSize: "clamp(2.75rem, 5vw, 4.25rem)",
+              lineHeight: 1.05,
+              letterSpacing: "-0.025em",
               color: "#0A0A0A",
               marginBottom: 20,
             }}
@@ -777,7 +777,14 @@ export default function HeroLight() {
               Your Instagram, on autopilot.
             </span>
             <br />
-            <em style={{ fontStyle: "italic" }}>
+            <em
+              style={{
+                fontStyle: "italic",
+                fontFamily:
+                  "var(--font-playfair), 'Playfair Display', Georgia, serif",
+                fontWeight: 700,
+              }}
+            >
               Without sounding like a bot.
             </em>
           </h1>
