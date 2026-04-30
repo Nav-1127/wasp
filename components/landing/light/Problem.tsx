@@ -8,22 +8,6 @@ export default function ProblemLight() {
     <section style={{ background: "#FAF8F5" }}>
       <div className="wasp-problem-wrap">
 
-        {/* Eyebrow */}
-        <p
-          style={{
-            fontFamily: "var(--font-syne), 'Syne', sans-serif",
-            fontWeight: 800,
-            fontSize: 11,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            opacity: 0.38,
-            marginBottom: 24,
-            color: "#0A0A0A",
-          }}
-        >
-          The Cost of Inaction
-        </p>
-
         {/* Headline */}
         <h2
           className="wasp-problem-headline"
@@ -203,7 +187,6 @@ export default function ProblemLight() {
               color: "#0A0A0A",
             }}
           >
-            Stop leaving{" "}
             <span
               style={{
                 background: "rgba(240, 210, 80, 0.42)",
@@ -211,9 +194,9 @@ export default function ProblemLight() {
                 padding: "0 6px",
               }}
             >
-              revenue
+              Stop leaving
             </span>{" "}
-            in your comments and DMs.
+            revenue in your comments and DMs.
           </p>
           <p
             style={{
@@ -225,7 +208,9 @@ export default function ProblemLight() {
               color: "#0A0A0A",
             }}
           >
-            Every unanswered question is a buyer you lost. WASP catches them all, replies instantly, and never takes a day off.
+            Every unanswered question is a buyer you lost.{" "}
+            <br />
+            WASP catches them all, replies instantly, and never takes a day off.
           </p>
         </div>
 
@@ -235,7 +220,7 @@ export default function ProblemLight() {
         .wasp-problem-wrap {
           max-width: 1120px;
           margin: 0 auto;
-          padding: 120px 40px 140px;
+          padding: 64px 40px 140px;
         }
         .wasp-problem-headline {
           font-size: clamp(38px, 5.5vw, 66px);
@@ -287,7 +272,7 @@ export default function ProblemLight() {
             grid-template-columns: 1fr;
           }
           .wasp-problem-wrap {
-            padding: 80px 24px 100px;
+            padding: 40px 24px 80px;
           }
           .wasp-closer-card {
             padding: 40px 32px !important;
