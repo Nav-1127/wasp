@@ -387,7 +387,7 @@ function AnimatedComments({ desktop }: { desktop?: boolean }) {
     <div
       ref={scrollRef}
       style={{
-        ...(desktop ? { flex: 1, minHeight: 0 } : { height: 230, flexShrink: 0 }),
+        ...(desktop ? { flex: 1, minHeight: 160 } : { height: 230, flexShrink: 0 }),
         overflowY: "scroll",
         scrollbarWidth: "none",
         position: "relative",
@@ -477,7 +477,6 @@ function IGDesktopWindow() {
           display: "flex",
           flexDirection: "column",
           minWidth: 0,
-          height: "100%",
         }}
       >
         {/* Header */}
@@ -658,7 +657,7 @@ export default function HeroLight() {
         .wasp-hero-center {
           text-align: center;
           padding: 80px 48px 56px;
-          max-width: 860px;
+          max-width: 1060px;
           width: 100%;
           box-sizing: border-box;
         }
@@ -674,24 +673,28 @@ export default function HeroLight() {
           .wasp-hero-window-wrap { padding: 0 32px 60px; }
         }
         @media (max-width: 768px) {
-          .wasp-hero-center { padding: 52px 24px 40px; }
+          .wasp-hero-center { padding: 52px 24px 36px; }
           .wasp-hero-window-wrap { padding: 0 16px 48px; }
           .wasp-hero-h1 {
-            font-size: clamp(1.75rem, 7vw, 2.5rem) !important;
+            font-size: clamp(1.625rem, 6.5vw, 2.25rem) !important;
             line-height: 1.08 !important;
           }
           .wasp-hero-sub { font-size: 0.9375rem !important; }
           .wasp-ig-desktop { flex-direction: column !important; height: auto !important; }
           .wasp-ig-desktop-image {
             width: 100% !important;
-            height: 260px !important;
+            height: 240px !important;
             border-right: none !important;
             border-bottom: 1px solid #dbdbdb !important;
           }
-          .wasp-ig-desktop-panel { height: 400px !important; }
+          .wasp-ig-desktop-panel {
+            height: 420px !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
         }
         @media (max-width: 380px) {
-          .wasp-hero-h1 { font-size: 1.5rem !important; }
+          .wasp-hero-h1 { font-size: 1.4rem !important; }
         }
       `}</style>
 
@@ -716,7 +719,7 @@ export default function HeroLight() {
             fontFamily:
               "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
             fontWeight: 800,
-            fontSize: "clamp(2.75rem, 5vw, 4.25rem)",
+            fontSize: "clamp(2.25rem, 3.6vw, 3.25rem)",
             lineHeight: 1.05,
             letterSpacing: "-0.025em",
             color: "#0A0A0A",
