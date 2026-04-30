@@ -371,7 +371,7 @@ function CommentEntry({ entry, isNew }: { entry: Entry; isNew: boolean }) {
   );
 }
 
-function AnimatedComments() {
+function AnimatedComments({ desktop }: { desktop?: boolean }) {
   const entries = useCommentTimeline();
   const scrollRef = useRef<HTMLDivElement>(null);
   const prevLen = useRef(0);
@@ -387,10 +387,9 @@ function AnimatedComments() {
     <div
       ref={scrollRef}
       style={{
-        height: 230,
+        ...(desktop ? { flex: 1, minHeight: 0 } : { height: 230, flexShrink: 0 }),
         overflowY: "scroll",
         scrollbarWidth: "none",
-        flexShrink: 0,
         position: "relative",
       }}
       className="wasp-no-scrollbar"
@@ -433,218 +432,205 @@ function AnimatedComments() {
   );
 }
 
-function IGPostWindow() {
+function IGDesktopWindow() {
   return (
     <div
-      className="wasp-ig-window"
+      className="wasp-ig-desktop"
       style={{
-        width: 360,
+        display: "flex",
         background: "#fff",
         borderRadius: 16,
         overflow: "hidden",
         boxShadow:
           "0 2px 6px rgba(0,0,0,0.04), 0 10px 32px rgba(0,0,0,0.11), 0 28px 72px rgba(0,0,0,0.07)",
-        display: "flex",
-        flexDirection: "column",
+        width: "100%",
+        maxWidth: 960,
+        height: 520,
       }}
     >
-      {/* Post header */}
+      {/* Left: post image */}
       <div
+        className="wasp-ig-desktop-image"
         style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "10px 12px",
-          gap: 10,
-          flexShrink: 0,
-        }}
-      >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: "50%",
-            background:
-              "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)",
-            padding: 2,
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: "50%",
-              background: "#1C1C1E",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: igFont,
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#fff",
-              border: "2.5px solid #fff",
-            }}
-          >
-            N
-          </div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontFamily: igFont,
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#000",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              lineHeight: 1.2,
-            }}
-          >
-            northform <VerifiedBadge />
-          </div>
-          <div
-            style={{
-              fontFamily: igFont,
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#0095F6",
-              cursor: "pointer",
-              lineHeight: 1.2,
-            }}
-          >
-            Following
-          </div>
-        </div>
-        <div
-          style={{
-            fontSize: 18,
-            color: "#000",
-            cursor: "pointer",
-            fontFamily: igFont,
-            letterSpacing: -1,
-          }}
-        >
-          ···
-        </div>
-      </div>
-
-      {/* Post image — Unsplash URL with native <img> for the onError fallback,
-          wrapped in next/image is non-trivial because the fallback flips display
-          on load failure. Native img is fine here, just one image. */}
-      <div
-        style={{
-          width: "100%",
-          height: 185,
-          background: "#DDD5C8",
+          width: "55%",
           flexShrink: 0,
           position: "relative",
+          borderRight: "1px solid #dbdbdb",
         }}
       >
         <Image
           src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=696&h=380&fit=crop&q=80&auto=format"
           alt="northform drop 06 hoodie"
           fill
-          sizes="318px"
+          sizes="528px"
           style={{ objectFit: "cover" }}
           unoptimized
           priority
         />
       </div>
 
-      {/* Actions */}
+      {/* Right: comments panel */}
       <div
+        className="wasp-ig-desktop-panel"
         style={{
+          flex: 1,
           display: "flex",
-          alignItems: "center",
-          padding: "10px 12px 6px",
-          flexShrink: 0,
+          flexDirection: "column",
+          minWidth: 0,
+          height: "100%",
         }}
       >
-        <ActionIcons />
-      </div>
-
-      {/* Engagement */}
-      <div
-        style={{
-          padding: "0 12px 3px",
-          fontFamily: igFont,
-          fontSize: 13,
-          fontWeight: 600,
-          color: "#000",
-          flexShrink: 0,
-        }}
-      >
-        12,847 likes
-      </div>
-      <div
-        style={{
-          padding: "0 12px 3px",
-          fontFamily: igFont,
-          fontSize: 13,
-          lineHeight: 1.4,
-          color: "#000",
-          flexShrink: 0,
-        }}
-      >
-        <span style={{ fontWeight: 600 }}>northform</span> drop 06 ・ french
-        terry hoodie. organic cotton, 300gsm. thursday 11am EST 🤎
-      </div>
-      <div
-        style={{
-          padding: "0 12px 6px",
-          fontFamily: igFont,
-          fontSize: 13,
-          color: "#8e8e8e",
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
-      >
-        View all 8,492 comments
-      </div>
-      <div style={{ height: 1, background: "#dbdbdb", flexShrink: 0 }} />
-
-      {/* Animated comments */}
-      <AnimatedComments />
-
-      {/* Add comment */}
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          padding: "8px 12px 10px",
-          borderTop: "1px solid #dbdbdb",
-          flexShrink: 0,
-        }}
-      >
+        {/* Header */}
         <div
           style={{
-            width: 26,
-            height: 26,
-            borderRadius: "50%",
-            background: "#E8E0D4",
+            display: "flex",
+            alignItems: "center",
+            padding: "14px 16px",
+            gap: 10,
+            borderBottom: "1px solid #dbdbdb",
             flexShrink: 0,
           }}
-        />
+        >
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: "50%",
+              background: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)",
+              padding: 2,
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                background: "#1C1C1E",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: igFont,
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#fff",
+                border: "2.5px solid #fff",
+              }}
+            >
+              N
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontFamily: igFont,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#000",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                lineHeight: 1.2,
+              }}
+            >
+              northform <VerifiedBadge />
+            </div>
+            <div
+              style={{
+                fontFamily: igFont,
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#0095F6",
+                cursor: "pointer",
+                lineHeight: 1.2,
+              }}
+            >
+              Following
+            </div>
+          </div>
+          <div
+            style={{
+              fontSize: 18,
+              color: "#000",
+              cursor: "pointer",
+              fontFamily: igFont,
+              letterSpacing: -1,
+            }}
+          >
+            ···
+          </div>
+        </div>
+
+        {/* Scrollable animated comments */}
+        <AnimatedComments desktop />
+
+        {/* Action bar */}
         <div
           style={{
-            flex: 1,
-            fontFamily: igFont,
-            fontSize: 13,
-            color: "#8e8e8e",
+            padding: "10px 16px 6px",
+            borderTop: "1px solid #dbdbdb",
+            flexShrink: 0,
           }}
         >
-          Add a comment…
+          <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 8 }}>
+            <ActionIcons />
+          </div>
+          <div
+            style={{
+              fontFamily: igFont,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#000",
+              marginBottom: 3,
+            }}
+          >
+            12,847 likes
+          </div>
+          <div
+            style={{
+              fontFamily: igFont,
+              fontSize: 13,
+              lineHeight: 1.4,
+              color: "#000",
+            }}
+          >
+            <span style={{ fontWeight: 600 }}>northform</span> drop 06 ・ french
+            terry hoodie. organic cotton, 300gsm. thursday 11am EST 🤎
+          </div>
         </div>
-        <span style={{ fontSize: 15, cursor: "pointer" }}>☺</span>
+
+        {/* Add comment */}
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+            padding: "8px 16px 10px",
+            borderTop: "1px solid #dbdbdb",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: "50%",
+              background: "#E8E0D4",
+              flexShrink: 0,
+            }}
+          />
+          <div style={{ flex: 1, fontFamily: igFont, fontSize: 13, color: "#8e8e8e" }}>
+            Add a comment…
+          </div>
+          <span style={{ fontSize: 15, cursor: "pointer" }}>☺</span>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ────────────────────────────────────────────
-   HERO ROOT
+   HERO ROOT — v10.3 centered layout
    ──────────────────────────────────────────── */
 export default function HeroLight() {
   return (
@@ -653,199 +639,163 @@ export default function HeroLight() {
       style={{
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
         width: "100%",
         minHeight: "calc(100vh - 60px)",
         background: "#FAF8F5",
+        backgroundImage:
+          "radial-gradient(circle, rgba(26,26,26,0.10) 1.25px, transparent 1.25px)",
+        backgroundSize: "24px 24px",
       }}
     >
-      <style>
-        {`
-          @keyframes wasp-entrySlide {
-            from { opacity: 0; transform: translateY(6px); }
-            to   { opacity: 1; transform: translateY(0); }
-          }
-          .wasp-no-scrollbar::-webkit-scrollbar { display: none; }
+      <style>{`
+        @keyframes wasp-entrySlide {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .wasp-no-scrollbar::-webkit-scrollbar { display: none; }
 
-          .wasp-hero-split {
-            display: grid;
-            grid-template-columns: 60fr 40fr;
-            flex: 1;
-          }
-          .wasp-hero-left {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 52px 24px 52px 48px;
-            background-image: radial-gradient(circle, rgba(26,26,26,0.10) 1.25px, transparent 1.25px);
-            background-size: 24px 24px;
-          }
-          .wasp-hero-right {
-            border-left: 1px solid #EBE5DC;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 16px;
-            overflow: hidden;
-            background: #FAF8F5;
-          }
+        .wasp-hero-center {
+          text-align: center;
+          padding: 80px 48px 56px;
+          max-width: 860px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .wasp-hero-window-wrap {
+          padding: 0 48px 80px;
+          display: flex;
+          justify-content: center;
+          width: 100%;
+          box-sizing: border-box;
+        }
 
-          /* Tablet — stack vertically, recover natural H1 wrapping */
-          @media (max-width: 1024px) {
-            .wasp-hero-split {
-              grid-template-columns: 1fr;
-            }
-            .wasp-hero-left {
-              padding: 48px 32px 32px;
-              align-items: flex-start;
-              text-align: left;
-            }
-            .wasp-hero-right {
-              border-left: none;
-              border-top: 1px solid #EBE5DC;
-              padding: 32px 16px 48px;
-            }
-            /* Allow H1 line 1 to wrap on smaller viewports — nowrap was a desktop-only fix */
-            .wasp-hero-h1-line1 {
-              white-space: normal !important;
-            }
+        @media (max-width: 1024px) {
+          .wasp-hero-window-wrap { padding: 0 32px 60px; }
+        }
+        @media (max-width: 768px) {
+          .wasp-hero-center { padding: 52px 24px 40px; }
+          .wasp-hero-window-wrap { padding: 0 16px 48px; }
+          .wasp-hero-h1 {
+            font-size: clamp(1.75rem, 7vw, 2.5rem) !important;
+            line-height: 1.08 !important;
           }
-
-          /* Mobile — tighter padding, smaller H1, IG window scales down */
-          @media (max-width: 640px) {
-            .wasp-hero-left {
-              padding: 36px 20px 24px;
-            }
-            .wasp-hero-right {
-              padding: 24px 12px 36px;
-            }
-            .wasp-hero-h1 {
-              font-size: clamp(1.75rem, 7vw, 2.5rem) !important;
-              line-height: 1.08 !important;
-            }
-            .wasp-hero-sub {
-              font-size: 0.9375rem !important;
-              max-width: none !important;
-            }
-            .wasp-ig-window {
-              width: 100% !important;
-              max-width: 360px !important;
-            }
+          .wasp-hero-sub { font-size: 0.9375rem !important; }
+          .wasp-ig-desktop { flex-direction: column !important; height: auto !important; }
+          .wasp-ig-desktop-image {
+            width: 100% !important;
+            height: 260px !important;
+            border-right: none !important;
+            border-bottom: 1px solid #dbdbdb !important;
           }
+          .wasp-ig-desktop-panel { height: 400px !important; }
+        }
+        @media (max-width: 380px) {
+          .wasp-hero-h1 { font-size: 1.5rem !important; }
+        }
+      `}</style>
 
-          /* Very narrow (iPhone SE territory) */
-          @media (max-width: 380px) {
-            .wasp-hero-h1 {
-              font-size: 1.5rem !important;
-            }
-            .wasp-ig-window {
-              max-width: 100% !important;
-            }
-          }
-        `}
-      </style>
+      {/* Centered headline + CTA */}
+      <div className="wasp-hero-center">
+        <div
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#999",
+            marginBottom: 20,
+          }}
+        >
+          AI engagement agent for Instagram
+        </div>
 
-      <div className="wasp-hero-split">
-        {/* LEFT — content */}
-        <div className="wasp-hero-left">
-          <div
+        <h1
+          className="wasp-hero-h1"
+          style={{
+            fontFamily:
+              "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+            fontWeight: 800,
+            fontSize: "clamp(2.75rem, 5vw, 4.25rem)",
+            lineHeight: 1.05,
+            letterSpacing: "-0.025em",
+            color: "#0A0A0A",
+            marginBottom: 20,
+          }}
+        >
+          Your Instagram, on{" "}
+          <mark
             style={{
-              fontSize: "0.75rem",
-              fontWeight: 500,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#999",
-              marginBottom: 20,
+              background: "rgba(255, 210, 55, 0.45)",
+              color: "inherit",
+              borderRadius: 5,
+              padding: "2px 8px",
             }}
           >
-            AI engagement agent for Instagram
-          </div>
-
-          <h1
-            className="wasp-hero-h1"
+            autopilot.
+          </mark>
+          <br />
+          <em
             style={{
+              fontStyle: "italic",
               fontFamily:
-                "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
-              fontWeight: 800,
-              fontSize: "clamp(2.75rem, 5vw, 4.25rem)",
-              lineHeight: 1.05,
-              letterSpacing: "-0.025em",
-              color: "#0A0A0A",
-              marginBottom: 20,
+                "var(--font-playfair), 'Playfair Display', Georgia, serif",
+              fontWeight: 700,
             }}
           >
-            <span className="wasp-hero-h1-line1" style={{ whiteSpace: "nowrap" }}>
-              Your Instagram, on autopilot.
-            </span>
-            <br />
-            <em
-              style={{
-                fontStyle: "italic",
-                fontFamily:
-                  "var(--font-playfair), 'Playfair Display', Georgia, serif",
-                fontWeight: 700,
-              }}
-            >
-              Without sounding like a bot.
-            </em>
-          </h1>
+            Without sounding like a bot.
+          </em>
+        </h1>
 
-          <p
-            className="wasp-hero-sub"
-            style={{
-              fontSize: "1rem",
-              color: "#777",
-              lineHeight: 1.65,
-              maxWidth: 380,
-              marginBottom: 34,
-            }}
-          >
-            WASP learns your brand voice from 30 posts and replies to comments,
-            DMs, and story replies. Automatically. On time. Every time.
-          </p>
+        <p
+          className="wasp-hero-sub"
+          style={{
+            fontSize: "1rem",
+            color: "#777",
+            lineHeight: 1.65,
+            maxWidth: 480,
+            margin: "0 auto 34px",
+          }}
+        >
+          WASP learns your brand voice from 30 posts and replies to comments,
+          DMs, and story replies. Automatically. On time. Every time.
+        </p>
 
-          <Link
-            href="/signup"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: "0.9375rem",
-              fontWeight: 500,
-              color: "#fff",
-              background: "#5B2B8C",
-              padding: "13px 26px",
-              borderRadius: 8,
-              cursor: "pointer",
-              alignSelf: "flex-start",
-              textDecoration: "none",
-            }}
-          >
-            Start for free
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M3 7h8M8 4l3 3-3 3"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-          <p
-            style={{
-              marginTop: 12,
-              fontSize: "0.8125rem",
-              color: "#999",
-            }}
-          >
-            50 replies/month. No card required.
-          </p>
-        </div>
+        <Link
+          href="/signup"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: "0.9375rem",
+            fontWeight: 500,
+            color: "#fff",
+            background: "#5B2B8C",
+            padding: "13px 26px",
+            borderRadius: 8,
+            cursor: "pointer",
+            textDecoration: "none",
+          }}
+        >
+          Start for free
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path
+              d="M3 7h8M8 4l3 3-3 3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Link>
+        <p style={{ marginTop: 12, fontSize: "0.8125rem", color: "#999" }}>
+          50 replies/month. No card required.
+        </p>
+      </div>
 
-        {/* RIGHT — animated IG window */}
-        <div className="wasp-hero-right">
-          <IGPostWindow />
-        </div>
+      {/* Desktop IG window */}
+      <div className="wasp-hero-window-wrap">
+        <IGDesktopWindow />
       </div>
     </section>
   );
