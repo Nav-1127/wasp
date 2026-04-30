@@ -723,7 +723,7 @@ export default function HeroLight() {
             fontFamily:
               "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
             fontWeight: 800,
-            fontSize: "clamp(2.75rem, 4.5vw, 3.75rem)",
+            fontSize: "clamp(2.375rem, 5.5vw, 4.125rem)",
             lineHeight: 1.05,
             letterSpacing: "-0.025em",
             color: "#0A0A0A",

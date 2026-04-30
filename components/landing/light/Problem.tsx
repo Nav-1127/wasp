@@ -169,6 +169,66 @@ export default function ProblemLight() {
           </div>
 
         </div>
+
+        {/* Revenue bottom card */}
+        <div
+          style={{
+            marginTop: 16,
+            background: "#F0EDE8",
+            borderRadius: 18,
+            padding: "52px 56px",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-syne), 'Syne', sans-serif",
+              fontWeight: 800,
+              fontSize: 10,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              opacity: 0.38,
+              marginBottom: 20,
+              color: "#0A0A0A",
+            }}
+          >
+            The bottom line
+          </p>
+          <p
+            className="wasp-closer-headline"
+            style={{
+              fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+              fontWeight: 800,
+              lineHeight: 1.08,
+              letterSpacing: "-0.02em",
+              color: "#0A0A0A",
+            }}
+          >
+            Stop leaving{" "}
+            <span
+              style={{
+                background: "rgba(240, 210, 80, 0.42)",
+                borderRadius: 5,
+                padding: "0 6px",
+              }}
+            >
+              revenue
+            </span>{" "}
+            in your comments and DMs.
+          </p>
+          <p
+            style={{
+              fontSize: 16,
+              lineHeight: 1.6,
+              opacity: 0.55,
+              marginTop: 16,
+              maxWidth: 520,
+              color: "#0A0A0A",
+            }}
+          >
+            Every unanswered question is a buyer you lost. WASP catches them all, replies instantly, and never takes a day off.
+          </p>
+        </div>
+
       </div>
 
       <style>{`
@@ -188,6 +248,9 @@ export default function ProblemLight() {
         }
         .wasp-trap-headline {
           font-size: clamp(26px, 3vw, 36px);
+        }
+        .wasp-closer-headline {
+          font-size: clamp(28px, 3.5vw, 44px);
         }
         .wasp-th {
           font-family: var(--font-syne), 'Syne', sans-serif;
@@ -225,6 +288,9 @@ export default function ProblemLight() {
           }
           .wasp-problem-wrap {
             padding: 80px 24px 100px;
+          }
+          .wasp-closer-card {
+            padding: 40px 32px !important;
           }
         }
         @media (max-width: 600px) {
