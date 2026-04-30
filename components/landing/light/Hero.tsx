@@ -675,13 +675,12 @@ export default function HeroLight() {
           .wasp-hero-window-wrap { padding: 0 32px 60px; }
         }
         @media (max-width: 768px) {
-          .wasp-hero-center { padding: 52px 16px 36px; }
+          .wasp-hero-center { padding: 52px 20px 36px; }
           .wasp-hero-window-wrap { padding: 0 12px 48px; }
           .wasp-hero-h1 {
-            font-size: clamp(1.3rem, 5.5vw, 1.875rem) !important;
-            line-height: 1.1 !important;
+            font-size: clamp(2.25rem, 8vw, 3rem) !important;
+            line-height: 1.06 !important;
           }
-          .wasp-hero-h1 mark { padding: 1px 4px !important; }
           .wasp-hero-sub { font-size: 0.9375rem !important; }
           .wasp-ig-desktop { flex-direction: column !important; height: auto !important; }
           .wasp-ig-desktop-image {
@@ -691,14 +690,13 @@ export default function HeroLight() {
             border-bottom: 1px solid #dbdbdb !important;
           }
           .wasp-ig-desktop-panel {
-            height: 480px !important;
+            height: 520px !important;
             display: flex !important;
             flex-direction: column !important;
           }
-          .wasp-ig-action-meta { display: none !important; }
         }
         @media (max-width: 380px) {
-          .wasp-hero-h1 { font-size: clamp(1.1rem, 5.5vw, 1.4rem) !important; }
+          .wasp-hero-h1 { font-size: clamp(2rem, 8vw, 2.5rem) !important; }
         }
       `}</style>
 
@@ -714,7 +712,7 @@ export default function HeroLight() {
             marginBottom: 20,
           }}
         >
-          AI engagement agent for Instagram
+          Instagram Engagement agent for creators &amp; brands
         </div>
 
         <h1
@@ -760,7 +758,7 @@ export default function HeroLight() {
             fontSize: "1rem",
             color: "#777",
             lineHeight: 1.65,
-            maxWidth: 480,
+            maxWidth: 620,
             margin: "0 auto 34px",
           }}
         >
