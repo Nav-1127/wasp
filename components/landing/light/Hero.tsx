@@ -438,7 +438,7 @@ function IGPostWindow() {
     <div
       className="wasp-ig-window"
       style={{
-        width: 380,
+        width: 360,
         background: "#fff",
         borderRadius: 16,
         overflow: "hidden",
@@ -535,7 +535,7 @@ function IGPostWindow() {
       <div
         style={{
           width: "100%",
-          height: 220,
+          height: 185,
           background: "#DDD5C8",
           flexShrink: 0,
           position: "relative",
@@ -719,7 +719,7 @@ export default function HeroLight() {
               padding: 24px 12px 36px;
             }
             .wasp-hero-h1 {
-              font-size: clamp(1.875rem, 8vw, 2.5rem) !important;
+              font-size: clamp(1.5rem, 6vw, 2.25rem) !important;
               line-height: 1.1 !important;
             }
             .wasp-hero-sub {
@@ -728,14 +728,14 @@ export default function HeroLight() {
             }
             .wasp-ig-window {
               width: 100% !important;
-              max-width: 380px !important;
+              max-width: 360px !important;
             }
           }
 
           /* Very narrow (iPhone SE territory) */
           @media (max-width: 380px) {
             .wasp-hero-h1 {
-              font-size: 1.75rem !important;
+              font-size: 1.375rem !important;
             }
             .wasp-ig-window {
               max-width: 100% !important;

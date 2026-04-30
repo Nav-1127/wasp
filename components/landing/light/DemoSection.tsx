@@ -645,8 +645,8 @@ export default function DemoSectionLight() {
           letterSpacing: "-0.025em",
           margin: 0,
         }}>
-          See WASP work.{" "}
-          <em style={{ color: "rgba(10,10,10,0.42)" }}>Scene by scene.</em>
+          See WASP work.
+          <em style={{ color: "rgba(10,10,10,0.42)", display: "block" }}>Scene by scene.</em>
         </h2>
       </div>
 
