@@ -459,12 +459,11 @@ function IGDesktopWindow() {
         }}
       >
         <Image
-          src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=696&h=380&fit=crop&q=80&auto=format"
+          src="/hoodie-brand.jpg"
           alt="northform drop 06 hoodie"
           fill
           sizes="528px"
           style={{ objectFit: "cover" }}
-          unoptimized
           priority
         />
       </div>
