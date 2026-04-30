@@ -220,7 +220,7 @@ export default function ProblemLight() {
         .wasp-problem-wrap {
           max-width: 1120px;
           margin: 0 auto;
-          padding: 64px 40px 140px;
+          padding: 64px 40px 64px;
         }
         .wasp-problem-headline {
           font-size: clamp(38px, 5.5vw, 66px);
@@ -272,7 +272,7 @@ export default function ProblemLight() {
             grid-template-columns: 1fr;
           }
           .wasp-problem-wrap {
-            padding: 40px 24px 80px;
+            padding: 40px 24px 40px;
           }
           .wasp-closer-card {
             padding: 40px 32px !important;

@@ -576,7 +576,7 @@ export default function DemoSectionLight() {
         }
       `}</style>
 
-      <div className="wasp-demo-wrap" style={{ maxWidth: 1060, margin: "0 auto", padding: "64px 40px 80px" }}>
+      <div className="wasp-demo-wrap" style={{ maxWidth: 1060, margin: "0 auto", padding: "40px 40px 80px" }}>
 
         {/* Headline */}
         <h2 style={{
@@ -595,13 +595,15 @@ export default function DemoSectionLight() {
         {/* Scene caption above window */}
         <SceneCaption scene={scene} progress={progress} />
 
-        {/* Desktop IG window */}
-        <IGDesktopShell>
-          <WindowContent scene={scene} progress={progress} />
-        </IGDesktopShell>
-
         {/* 7-segment progress bar */}
         <ProgressBar scene={scene} progress={progress} onJump={jumpTo} />
+
+        {/* Desktop IG window */}
+        <div style={{ marginTop: 16 }}>
+          <IGDesktopShell>
+            <WindowContent scene={scene} progress={progress} />
+          </IGDesktopShell>
+        </div>
 
         {/* Outcome CTA — appears on scene 6 */}
         <div style={{
