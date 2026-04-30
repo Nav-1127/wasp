@@ -671,14 +671,17 @@ export default function HeroLight() {
           box-sizing: border-box;
         }
 
+        .wasp-mobile-break { display: none; }
+
         @media (max-width: 1024px) {
           .wasp-hero-window-wrap { padding: 0 32px 60px; }
         }
         @media (max-width: 768px) {
           .wasp-hero-center { padding: 52px 20px 36px; }
           .wasp-hero-window-wrap { padding: 0 12px 48px; }
+          .wasp-mobile-break { display: block; }
           .wasp-hero-h1 {
-            font-size: clamp(2.25rem, 8vw, 3rem) !important;
+            font-size: clamp(2.625rem, 9vw, 3.5rem) !important;
             line-height: 1.06 !important;
           }
           .wasp-hero-sub { font-size: 0.9375rem !important; }
@@ -696,7 +699,7 @@ export default function HeroLight() {
           }
         }
         @media (max-width: 380px) {
-          .wasp-hero-h1 { font-size: clamp(2rem, 8vw, 2.5rem) !important; }
+          .wasp-hero-h1 { font-size: clamp(2.25rem, 8.5vw, 2.75rem) !important; }
         }
       `}</style>
 
@@ -728,7 +731,9 @@ export default function HeroLight() {
             marginBottom: 20,
           }}
         >
-          Your Instagram, on{" "}
+          Your Instagram,
+          <br className="wasp-mobile-break" />
+          {" "}on{" "}
           <mark
             style={{
               background: "rgba(255, 210, 55, 0.45)",
@@ -748,7 +753,9 @@ export default function HeroLight() {
               fontWeight: 700,
             }}
           >
-            Without sounding like a bot.
+            Without sounding
+            <br className="wasp-mobile-break" />
+            {" "}like a bot.
           </em>
         </h1>
 
@@ -763,7 +770,9 @@ export default function HeroLight() {
           }}
         >
           WASP learns your brand voice from 30 posts and replies to comments,
-          DMs, and story replies. Automatically. On time. Every time.
+          DMs, and story replies.{" "}
+          <br className="wasp-mobile-break" />
+          Automatically. On time. Every time.
         </p>
 
         <Link
