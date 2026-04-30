@@ -194,9 +194,9 @@ export default function ProblemLight() {
                 padding: "0 6px",
               }}
             >
-              Stop leaving
+              Stop leaving revenue
             </span>{" "}
-            revenue in your comments and DMs.
+            in your comments and DMs.
           </p>
           <p
             style={{
