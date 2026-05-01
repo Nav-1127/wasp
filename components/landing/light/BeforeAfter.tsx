@@ -31,7 +31,7 @@ export default function BeforeAfterLight() {
           >
             like you.
           </span>
-          <br />
+          <br className="wasp-ba-break" />
           Every time.
         </h2>
 
@@ -207,6 +207,7 @@ export default function BeforeAfterLight() {
         @media (max-width: 680px) {
           .wasp-ba-wrap { padding: 60px 24px 64px; }
           .wasp-ba-grid { grid-template-columns: 1fr; }
+          .wasp-ba-break { display: none; }
         }
       `}</style>
     </section>

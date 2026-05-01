@@ -679,6 +679,7 @@ export default function HeroLight() {
           .wasp-hero-center { padding: 52px 20px 36px; }
           .wasp-hero-window-wrap { padding: 0 12px 48px; }
           .wasp-mobile-break { display: block; }
+          .wasp-hero-eyebrow { font-size: 0.625rem !important; letter-spacing: 0.07em !important; }
           .wasp-hero-h1 {
             font-size: clamp(2.625rem, 9vw, 3.5rem) !important;
             line-height: 1.06 !important;
@@ -708,6 +709,7 @@ export default function HeroLight() {
           Built by a Meta-verified Tech Provider.
         </p>
         <div
+          className="wasp-hero-eyebrow"
           style={{
             fontSize: "0.75rem",
             fontWeight: 500,
