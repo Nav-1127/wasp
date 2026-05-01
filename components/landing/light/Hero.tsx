@@ -704,6 +704,9 @@ export default function HeroLight() {
 
       {/* Centered headline + CTA */}
       <div className="wasp-hero-center">
+        <p style={{ marginBottom: 12, fontSize: "0.75rem", color: "#888888", fontWeight: 500 }}>
+          Built by a Meta-verified Tech Provider.
+        </p>
         <div
           style={{
             fontSize: "0.75rem",
@@ -803,9 +806,6 @@ export default function HeroLight() {
         </Link>
         <p style={{ marginTop: 12, fontSize: "0.8125rem", color: "#999" }}>
           50 replies/month. No card required.
-        </p>
-        <p style={{ marginTop: 8, fontSize: "0.75rem", color: "#888888", fontWeight: 500 }}>
-          Built by a Meta-verified Tech Provider.
         </p>
       </div>
 

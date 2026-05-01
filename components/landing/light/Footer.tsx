@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function FooterLight() {
   return (
     <footer
-      className="border-t border-[#EBE5DC] py-16 px-6"
+      className="border-t border-[#EBE5DC] pt-10 pb-16 px-6"
       style={{ backgroundColor: "#FAF8F5" }}
     >
       <div className="max-w-5xl mx-auto">
