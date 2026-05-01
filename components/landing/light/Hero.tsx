@@ -685,6 +685,7 @@ export default function HeroLight() {
             line-height: 1.06 !important;
           }
           .wasp-hero-sub { font-size: 0.9375rem !important; }
+          .wasp-hero-eyebrow { font-size: 0.625rem !important; letter-spacing: 0.07em !important; }
           .wasp-ig-desktop { flex-direction: column !important; height: auto !important; }
           .wasp-ig-desktop-image {
             width: 100% !important;
