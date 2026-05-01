@@ -61,8 +61,8 @@ export default function NavLight() {
         >
           How it works
         </a>
-        <Link
-          href="/pricing"
+        <a
+          href="#pricing"
           style={{
             fontSize: "0.875rem",
             color: "#777",
@@ -71,7 +71,7 @@ export default function NavLight() {
           }}
         >
           Pricing
-        </Link>
+        </a>
         <Link
           href="/signup"
           style={{
@@ -135,13 +135,13 @@ export default function NavLight() {
           >
             How it works
           </a>
-          <Link
-            href="/pricing"
+          <a
+            href="#pricing"
             onClick={() => setMenuOpen(false)}
             style={{ fontSize: "0.875rem", color: "#0A0A0A", textDecoration: "none" }}
           >
             Pricing
-          </Link>
+          </a>
           <Link
             href="/signup"
             onClick={() => setMenuOpen(false)}
