@@ -188,11 +188,11 @@ export default function PricingPreviewLight() {
           <h2
             className="text-[#1A1A1A] mb-8"
             style={{
-              fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
-              fontWeight: 500,
-              fontSize: "clamp(1.75rem, 4vw, 3rem)",
-              lineHeight: 1.1,
-              letterSpacing: "-0.02em",
+              fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+              fontWeight: 800,
+              fontSize: "clamp(1.75rem, 4vw, 3.75rem)",
+              lineHeight: 1.05,
+              letterSpacing: "-0.025em",
             }}
           >
             Start free.{" "}
