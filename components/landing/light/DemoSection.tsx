@@ -549,7 +549,7 @@ export default function DemoSectionLight() {
         }
       `}</style>
 
-      <div className="wasp-demo-wrap" style={{ maxWidth: 1060, margin: "0 auto", padding: "40px 40px 80px" }}>
+      <div className="wasp-demo-wrap" style={{ maxWidth: 1060, margin: "0 auto", padding: "40px 40px 64px" }}>
 
         <h2 style={{ fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: "clamp(2.5rem, 5vw, 4rem)", lineHeight: 1.05, letterSpacing: "-0.025em", color: "#0A0A0A", textAlign: "center", marginBottom: 40 }}>
           Watch it work.

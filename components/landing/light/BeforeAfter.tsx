@@ -46,6 +46,7 @@ export default function BeforeAfterLight() {
           }}
         >
           Same comment. Two replies. One sounds like a chatbot.
+          <br />
           The other sounds like the brand your followers actually follow.
         </p>
 
@@ -191,7 +192,7 @@ export default function BeforeAfterLight() {
         .wasp-ba-wrap {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 80px 40px 100px;
+          padding: 40px 40px 100px;
         }
         .wasp-ba-headline {
           font-size: clamp(2.25rem, 4.5vw, 3.75rem);
