@@ -8,8 +8,8 @@ const faqs = [
     a: "Yes. WASP is built by a Meta-verified Tech Provider and uses Instagram's official Business Login API, the same API ManyChat and Sprout use. No password sharing, no scraping, no automation that violates Meta's terms. You can disconnect anytime from settings.",
   },
   {
-    q: "How is this different from ManyChat?",
-    a: "ManyChat is a flow builder. You draw if/then trees by hand. WASP is an agent. It reads your posts and replies in your voice. No flows to build, no keywords to map.",
+    q: "Do I need to set up any flows or keywords?",
+    a: "No. WASP reads your existing posts to learn your brand voice and handles replies from day one. Nothing to configure, no rules to write.",
   },
   {
     q: "What happens if I don't like a reply?",
@@ -20,8 +20,8 @@ const faqs = [
     a: "Yes. One click in settings. You keep access until the end of your billing period.",
   },
   {
-    q: "Does the AI learn from my edits?",
-    a: "Yes. Every approved edit feeds back into your brand voice profile. The longer you use WASP, the closer it sounds to you.",
+    q: "Does WASP improve over time using my data?",
+    a: "Yes. WASP learns from your past posts, comments, DMs, and edits you make to its drafts. Everything it learns stays within your account and only improves your own brand voice profile. Your data is never used to train a shared model or improve responses for other users.",
   },
 ];
 
