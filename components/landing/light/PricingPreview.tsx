@@ -195,7 +195,9 @@ export default function PricingPreviewLight() {
               letterSpacing: "-0.02em",
             }}
           >
-            Pick a plan. Change it later.
+            Start free.{" "}
+            <br />
+            Upgrade when it&apos;s obvious.
           </h2>
 
           <div
