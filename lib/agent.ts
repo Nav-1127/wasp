@@ -16,6 +16,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createAdminClient } from "@/lib/supabase";
 import {
   buildAgentSystemPrompt,
+  sensitivityPrompt,
   type InteractionType,
   type PromptProduct,
   type PromptAsset,
@@ -60,6 +61,12 @@ type CommentCategory =
   | "friend_tag"
   | "spam"
   | "other";
+
+interface SensitivityResult {
+  routing: "public" | "both";
+  sensitivity_reason: string | null;
+  public_acknowledgement: string | null;
+}
 
 // ── Claude client ──────────────────────────────────────────────────────────────
 
@@ -182,6 +189,54 @@ function shouldRespondByEngagementLevel(
       return true; // respond to everything, but force pending regardless of mode
     default:
       return true;
+  }
+}
+
+// ── Step B.5 — Sensitivity classification ─────────────────────────────────────
+
+/**
+ * Classify whether a comment/DM is sensitive and how it should be routed.
+ * Fails safe to 'public' on any error — never unexpectedly withholds a reply.
+ */
+async function classifySensitivity(
+  text: string,
+  brandContext: string,
+  customKeywords: string[] = []
+): Promise<SensitivityResult> {
+  const safe: SensitivityResult = {
+    routing: "public",
+    sensitivity_reason: null,
+    public_acknowledgement: null,
+  };
+
+  try {
+    const prompt = sensitivityPrompt(text, brandContext, customKeywords);
+    const response = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 150,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const raw = response.content.find((b) => b.type === "text")?.text ?? "";
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return safe;
+    const parsed = JSON.parse(jsonMatch[0]);
+    const routing = (["public", "both"] as const).includes(parsed.routing)
+      ? (parsed.routing as SensitivityResult["routing"])
+      : "public";
+    return {
+      routing,
+      sensitivity_reason:
+        typeof parsed.sensitivity_reason === "string"
+          ? parsed.sensitivity_reason
+          : null,
+      public_acknowledgement:
+        routing === "both" && typeof parsed.public_acknowledgement === "string"
+          ? parsed.public_acknowledgement
+          : null,
+    };
+  } catch (err) {
+    console.error("Sensitivity classification error:", err);
+    return safe;
   }
 }
 
@@ -376,6 +431,25 @@ export async function processComment(
     return null;
   }
 
+  // ── Step B.5: Sensitivity classification ───────────────────────────────────
+  let sensitivity: SensitivityResult = {
+    routing: "public",
+    sensitivity_reason: null,
+    public_acknowledgement: null,
+  };
+
+  if (account.sensitivity_routing_enabled !== false) {
+    const brandContext = account.personality_prompt ?? account.primary_objective ?? "";
+    const customKeywords: string[] = Array.isArray(account.sensitivity_keywords)
+      ? account.sensitivity_keywords
+      : [];
+    sensitivity = await classifySensitivity(
+      comment.comment_text,
+      brandContext,
+      customKeywords
+    );
+  }
+
   // ── Step C: Build context ───────────────────────────────────────────────────
   const [productsRes, assetsRes, postInfo] = await Promise.all([
     admin
@@ -427,6 +501,9 @@ export async function processComment(
       message_text: comment.comment_text,
       drafted_response: draftResponse,
       comment_category: category,
+      routing_decision: sensitivity.routing,
+      sensitivity_reason: sensitivity.sensitivity_reason,
+      public_acknowledgement: sensitivity.public_acknowledgement,
       status: "pending",
       error_message: draftResponse
         ? null
@@ -446,8 +523,13 @@ export async function processComment(
       ? "draft"
       : (account.comment_mode ?? account.agent_mode ?? "draft");
 
+  const isSensitive = sensitivity.routing === "both";
+  const holdForReview =
+    isSensitive && effectiveMode === "auto" && !account.auto_reply_sensitive;
+
   if (
     effectiveMode === "auto" &&
+    !holdForReview &&
     draftResponse &&
     !isMockMode &&
     account.instagram_access_token_encrypted
@@ -463,7 +545,15 @@ export async function processComment(
 
     const token = decryptToken(account.instagram_access_token_encrypted);
     try {
-      await replyToComment(comment.comment_id, draftResponse, token);
+      if (sensitivity.routing === "both") {
+        // Post short public acknowledgement, then send full info as DM
+        const ack = sensitivity.public_acknowledgement ?? "I've sent you a DM with the details!";
+        await replyToComment(comment.comment_id, ack, token);
+        await sendDirectMessage(comment.commenter_id, draftResponse, token);
+      } else {
+        // Public: normal comment reply
+        await replyToComment(comment.comment_id, draftResponse, token);
+      }
       await admin
         .from("interactions")
         .update({
@@ -480,7 +570,7 @@ export async function processComment(
         .eq("id", interaction.id);
     }
   }
-  // Draft mode: keep status as 'pending' for human approval in the dashboard
+  // Draft / hold-for-review: keep status as 'pending' for human approval
 
   return interaction.id;
 }
@@ -520,6 +610,26 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
     } catch {
       // Non-fatal
     }
+  }
+
+  // ── Step B.5: Sensitivity classification ───────────────────────────────────
+  // For DMs, routing is always 'public' (replies go back as DMs anyway).
+  // Sensitivity classification only determines whether to hold for review.
+  let dmIsSensitive = false;
+  let dmSensitivityReason: string | null = null;
+
+  if (account.sensitivity_routing_enabled !== false) {
+    const brandContext = account.personality_prompt ?? account.primary_objective ?? "";
+    const customKeywords: string[] = Array.isArray(account.sensitivity_keywords)
+      ? account.sensitivity_keywords
+      : [];
+    const result = await classifySensitivity(
+      dm.message_text,
+      brandContext,
+      customKeywords
+    );
+    dmIsSensitive = result.routing === "both";
+    dmSensitivityReason = result.sensitivity_reason;
   }
 
   // ── Step C: Build context ───────────────────────────────────────────────────
@@ -591,6 +701,9 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
       drafted_response: draftResponse,
       story_context: storyContext,
       instagram_message_id: dm.message_id ?? null,
+      routing_decision: "public", // DMs always reply via DM — routing only matters for comments
+      sensitivity_reason: dmSensitivityReason,
+      public_acknowledgement: null,
       status: "pending",
       error_message: draftResponse
         ? null
@@ -610,8 +723,12 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
       ? (account.story_mode ?? account.agent_mode ?? "draft")
       : (account.dm_mode ?? account.agent_mode ?? "draft");
 
+  const dmHoldForReview =
+    dmIsSensitive && effectiveMode === "auto" && !account.auto_reply_sensitive;
+
   if (
     effectiveMode === "auto" &&
+    !dmHoldForReview &&
     draftResponse &&
     !isMockMode &&
     account.instagram_access_token_encrypted

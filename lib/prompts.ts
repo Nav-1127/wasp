@@ -51,6 +51,47 @@ const OBJECTIVE_INSTRUCTIONS: Record<string, string> = {
     "Use your judgment on every conversation. Sometimes engage and build connection, sometimes recommend a product, sometimes share a link — based entirely on what the person actually needs.",
 };
 
+/**
+ * Builds the prompt for Step B.5 sensitivity classification.
+ * Returns a Claude prompt that outputs JSON with routing, sensitivity_reason,
+ * and public_acknowledgement.
+ */
+export function sensitivityPrompt(
+  commentText: string,
+  brandContext: string,
+  customKeywords: string[] = []
+): string {
+  const keywordsSection =
+    customKeywords.length > 0
+      ? `\nAdditional keywords the brand wants flagged: ${customKeywords.join(", ")}.`
+      : "";
+
+  return (
+    `You are a content moderation assistant for an Instagram brand account.\n\n` +
+    `Classify whether this comment requires a private response.\n\n` +
+    `Return JSON only — no explanation, no markdown, no code block. Example:\n` +
+    `{"routing":"public","sensitivity_reason":null,"public_acknowledgement":null}\n\n` +
+    `Routing options:\n` +
+    `- "public": safe to reply publicly in the comments, nothing sensitive\n` +
+    `- "both": post a short public acknowledgement in the comments AND send full details via DM\n\n` +
+    `Use "both" when the comment involves:\n` +
+    `- Discount requests or promo codes\n` +
+    `- Order problems, shipping issues, wrong items received\n` +
+    `- Complaints or strong negative feedback\n` +
+    `- Requests for personal information (address, phone, invoice)\n` +
+    `- Competitor mentions\n` +
+    `- Medical or health questions\n` +
+    `- Anything that would be embarrassing or harmful to handle publicly` +
+    `${keywordsSection}\n\n` +
+    `The "both" route always posts a short visible reply so the commenter and other viewers know they were heard. ` +
+    `The full sensitive details are then handled privately via DM.\n\n` +
+    `public_acknowledgement: if routing is "both", write one short friendly sentence for the public comment (e.g. "Hey! Sent you a DM with all the details"). Otherwise null.\n` +
+    `sensitivity_reason: a 2–5 word label if sensitive (e.g. "discount request", "order complaint", "negative feedback"). Otherwise null.\n\n` +
+    `Brand context: ${brandContext}\n\n` +
+    `Comment: "${commentText}"`
+  );
+}
+
 export function buildAgentSystemPrompt(opts: BuildPromptOptions): string {
   const {
     personalityPrompt,

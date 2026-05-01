@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
   }
 
   const finalText = edited_text.trim();
+  const routing: string = interaction.routing_decision ?? "public";
 
   if (isMockMode) {
     await admin
@@ -82,6 +83,16 @@ export async function POST(request: NextRequest) {
 
   try {
     if (
+      routing === "both" &&
+      interaction.interaction_type === "comment" &&
+      interaction.source_comment_id
+    ) {
+      const ack =
+        interaction.public_acknowledgement ??
+        "I've sent you a DM with the details!";
+      await replyToComment(interaction.source_comment_id, ack, token);
+      await sendDirectMessage(interaction.instagram_user_id, finalText, token);
+    } else if (
       interaction.interaction_type === "comment" &&
       interaction.source_comment_id
     ) {

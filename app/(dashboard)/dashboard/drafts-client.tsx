@@ -15,6 +15,9 @@ interface Interaction {
   source_post_thumbnail: string | null;
   message_text: string;
   drafted_response: string | null;
+  routing_decision: "public" | "both" | null;
+  sensitivity_reason: string | null;
+  public_acknowledgement: string | null;
   status: string;
   created_at: string;
 }
@@ -39,6 +42,11 @@ const TYPE_LABELS: Record<string, { label: string; color: string; bg: string }> 
   comment: { label: "Comment", color: "#5C6B00", bg: "#D4FF00" },
   dm: { label: "DM", color: "#1A4B8B", bg: "#DDEEFF" },
   story_reply: { label: "Story Reply", color: "#7B3F00", bg: "#FFE8CC" },
+};
+
+const ROUTING_LABELS: Record<string, { label: string; icon: string; color: string; bg: string }> = {
+  public: { label: "Public reply", icon: "💬", color: "#4A5500", bg: "#F0FFB0" },
+  both:   { label: "Public + DM",  icon: "📩", color: "#5A2E00", bg: "#FFE0CC" },
 };
 
 // ── Main Component ─────────────────────────────────────────────────────────────
@@ -356,6 +364,11 @@ export default function DraftsClient({
           const editText =
             editTexts[item.id] ?? item.drafted_response ?? "";
 
+          const routingInfo = item.routing_decision
+            ? ROUTING_LABELS[item.routing_decision]
+            : null;
+          const isBothRouting = item.routing_decision === "both";
+
           return (
             <div
               key={item.id}
@@ -372,7 +385,7 @@ export default function DraftsClient({
                 boxShadow: isNew ? "0 0 0 2px #D4FF00" : "none",
               }}
             >
-              {/* Top row: username + type badge + timestamp */}
+              {/* Top row: username + badges + timestamp */}
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2.5 min-w-0">
                   {/* Avatar placeholder */}
@@ -386,7 +399,7 @@ export default function DraftsClient({
                     <p className="font-semibold text-sm text-[#1A1A1A] truncate">
                       @{item.instagram_username ?? "unknown"}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span
                         className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                         style={{
@@ -396,6 +409,25 @@ export default function DraftsClient({
                       >
                         {typeInfo.label}
                       </span>
+                      {/* Routing badge — shown when non-public */}
+                      {routingInfo && item.routing_decision !== "public" && (
+                        <span
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: routingInfo.bg,
+                            color: routingInfo.color,
+                          }}
+                          title={item.sensitivity_reason ?? undefined}
+                        >
+                          {routingInfo.icon} {routingInfo.label}
+                        </span>
+                      )}
+                      {/* Sensitivity reason pill */}
+                      {item.sensitivity_reason && (
+                        <span className="text-[10px] text-[#9A9080] italic">
+                          {item.sensitivity_reason}
+                        </span>
+                      )}
                       {/* Post thumbnail for comments */}
                       {item.interaction_type === "comment" &&
                         item.source_post_thumbnail && (
@@ -421,6 +453,24 @@ export default function DraftsClient({
               >
                 {item.message_text}
               </div>
+
+              {/* Dual preview for 'both' routing: public acknowledgement + DM draft */}
+              {isBothRouting && (
+                <div className="mb-2">
+                  <p className="text-[10px] font-bold text-[#9A9080] uppercase tracking-widest mb-1">
+                    💬 Public reply
+                  </p>
+                  <div
+                    className="text-sm text-[#6B6058] p-3 rounded-xl mb-3"
+                    style={{ backgroundColor: "#F0FFB0", border: "1px solid #D4E800" }}
+                  >
+                    {item.public_acknowledgement ?? "I've sent you a DM with the details!"}
+                  </div>
+                  <p className="text-[10px] font-bold text-[#9A9080] uppercase tracking-widest mb-1">
+                    📩 DM draft
+                  </p>
+                </div>
+              )}
 
               {/* WASP's drafted response — editable */}
               <textarea

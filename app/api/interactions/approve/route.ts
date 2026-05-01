@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
   }
 
   const isDemo = interaction.instagram_user_id?.startsWith("demo_");
+  const routing: string = interaction.routing_decision ?? "public";
 
   if (isMockMode || isDemo) {
     // In mock mode or demo data — skip real Instagram call
@@ -89,11 +90,24 @@ export async function POST(request: NextRequest) {
 
   try {
     if (
+      routing === "both" &&
       interaction.interaction_type === "comment" &&
       interaction.source_comment_id
     ) {
+      // Post short public acknowledgement, then send full details via DM
+      const ack =
+        interaction.public_acknowledgement ??
+        "I've sent you a DM with the details!";
+      await replyToComment(interaction.source_comment_id, ack, token);
+      await sendDirectMessage(interaction.instagram_user_id, response, token);
+    } else if (
+      interaction.interaction_type === "comment" &&
+      interaction.source_comment_id
+    ) {
+      // Public: normal comment reply
       await replyToComment(interaction.source_comment_id, response, token);
     } else {
+      // DM / story reply — send directly
       await sendDirectMessage(interaction.instagram_user_id, response, token);
     }
 

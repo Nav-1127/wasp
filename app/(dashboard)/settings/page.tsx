@@ -19,6 +19,9 @@ interface AccountData {
   personality_profile: Record<string, unknown> | null;
   personality_prompt: string | null;
   account_type: string;
+  sensitivity_routing_enabled: boolean;
+  auto_reply_sensitive: boolean;
+  sensitivity_keywords: string[];
 }
 
 interface Product {
@@ -140,6 +143,51 @@ function ModeRow({
   );
 }
 
+// ── Toggle Row ────────────────────────────────────────────────────────────────
+
+function ToggleRow({
+  label,
+  description,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  description: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between gap-4 py-3 border-b last:border-b-0"
+      style={{ borderColor: "#D5CFC3" }}
+    >
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A]">{label}</p>
+        <p className="text-xs text-[#9A9080] mt-0.5">{description}</p>
+      </div>
+      <button
+        role="switch"
+        aria-checked={value}
+        onClick={() => onChange(!value)}
+        disabled={disabled}
+        className="relative flex-shrink-0 w-10 h-5.5 rounded-full transition-colors disabled:opacity-40"
+        style={{ backgroundColor: value ? "#5C6B00" : "#D5CFC3", height: "22px", minWidth: "40px" }}
+      >
+        <span
+          className="absolute top-0.5 rounded-full bg-white shadow transition-transform"
+          style={{
+            width: "18px",
+            height: "18px",
+            transform: value ? "translateX(20px)" : "translateX(2px)",
+          }}
+        />
+      </button>
+    </div>
+  );
+}
+
 // ── Main Settings Page ─────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -152,7 +200,9 @@ export default function SettingsPage() {
   const [savingMode, setSavingMode] = useState(false);
   const [savingEngagement, setSavingEngagement] = useState(false);
   const [savingObjective, setSavingObjective] = useState(false);
+  const [savingRouting, setSavingRouting] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  const [keywordsInput, setKeywordsInput] = useState("");
 
   // Confirm dialogs
   const [showAutoConfirm, setShowAutoConfirm] = useState<string | null>(null); // field name
@@ -184,6 +234,9 @@ export default function SettingsPage() {
       .then((json) => {
         if (json.account) {
           const a = json.account;
+          const keywords: string[] = Array.isArray(a.sensitivity_keywords)
+            ? a.sensitivity_keywords
+            : [];
           setAccount({
             instagram_handle:  a.instagram_handle ?? null,
             profile_pic_url:   a.profile_pic_url ?? null,
@@ -198,7 +251,11 @@ export default function SettingsPage() {
             personality_profile: a.personality_profile ?? null,
             personality_prompt:  a.personality_prompt ?? null,
             account_type:      a.account_type ?? "brand",
+            sensitivity_routing_enabled: a.sensitivity_routing_enabled !== false,
+            auto_reply_sensitive:        a.auto_reply_sensitive === true,
+            sensitivity_keywords:        keywords,
           });
+          setKeywordsInput(keywords.join(", "));
           setProducts(
             (a.products ?? []).map((p: Record<string, string>) => ({
               id:          p.id,
@@ -302,6 +359,30 @@ export default function SettingsPage() {
       flash("Objective saved");
     } finally {
       setSavingObjective(false);
+    }
+  }
+
+  async function saveRoutingSettings() {
+    if (!account) return;
+    setSavingRouting(true);
+    const keywords = keywordsInput
+      .split(",")
+      .map((k) => k.trim())
+      .filter(Boolean);
+    setAccount((a) => a ? { ...a, sensitivity_keywords: keywords } : a);
+    try {
+      await fetch("/api/settings/agent-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sensitivity_routing_enabled: account.sensitivity_routing_enabled,
+          auto_reply_sensitive: account.auto_reply_sensitive,
+          sensitivity_keywords: keywords,
+        }),
+      });
+      flash("Routing settings saved");
+    } finally {
+      setSavingRouting(false);
     }
   }
 
@@ -444,7 +525,62 @@ export default function SettingsPage() {
               </button>
             </Section>
 
-            {/* ── 2. Comment Engagement Level ───────────────────────────────── */}
+            {/* ── 2. Smart DM Routing ───────────────────────────────────────── */}
+            <Section title="Smart DM Routing">
+              <p className="text-xs text-[#9A9080] mb-4">
+                WASP automatically detects sensitive comments (complaints, discount requests, order issues) and routes replies to DM instead of posting publicly. Sensitive drafts are always held for your review unless you turn on the override below.
+              </p>
+              <ToggleRow
+                label="Smart DM routing"
+                description="Classify comments as sensitive and route to DM when needed."
+                value={account.sensitivity_routing_enabled}
+                onChange={(v) =>
+                  setAccount((a) => a ? { ...a, sensitivity_routing_enabled: v } : a)
+                }
+              />
+              <ToggleRow
+                label="Auto-reply to sensitive comments"
+                description="When on, auto mode fires even for sensitive replies. Off by default — sensitive drafts are held for review."
+                value={account.auto_reply_sensitive}
+                onChange={(v) =>
+                  setAccount((a) => a ? { ...a, auto_reply_sensitive: v } : a)
+                }
+                disabled={!account.sensitivity_routing_enabled}
+              />
+              {account.sensitivity_routing_enabled && (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-[#9A9080] uppercase tracking-widest mb-2">
+                    Custom sensitivity keywords (optional)
+                  </p>
+                  <p className="text-xs text-[#9A9080] mb-2">
+                    Comma-separated words WASP should always route to DM. E.g. "refund, promo, broken"
+                  </p>
+                  <input
+                    type="text"
+                    value={keywordsInput}
+                    onChange={(e) => setKeywordsInput(e.target.value)}
+                    placeholder="refund, promo, broken"
+                    className="w-full text-sm border rounded-xl px-3 py-2.5 outline-none transition-colors"
+                    style={{
+                      borderColor: "#D5CFC3",
+                      backgroundColor: "#F5F0E8",
+                      color: "#1A1A1A",
+                    }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "#5C6B00"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "#D5CFC3"; }}
+                  />
+                </div>
+              )}
+              <button
+                onClick={saveRoutingSettings}
+                disabled={savingRouting}
+                className="mt-4 w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold text-sm px-5 py-3 rounded-xl hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+              >
+                {savingRouting ? "Saving…" : "Save routing settings"}
+              </button>
+            </Section>
+
+            {/* ── 3. Comment Engagement Level ───────────────────────────────── */}
             <Section title="Comment Engagement Level">
               <p className="text-xs text-[#9A9080] mb-4">
                 For DMs and story replies, WASP always responds — those are
@@ -506,7 +642,7 @@ export default function SettingsPage() {
               </button>
             </Section>
 
-            {/* ── 3. Content Personality ────────────────────────────────────── */}
+            {/* ── 4. Content Personality ────────────────────────────────────── */}
             <Section title="Content Personality">
               {account.personality_profile ? (
                 <div className="flex flex-col gap-3">
@@ -538,7 +674,7 @@ export default function SettingsPage() {
               )}
             </Section>
 
-            {/* ── 4. Products & Links ───────────────────────────────────────── */}
+            {/* ── 5. Products & Links ───────────────────────────────────────── */}
             <Section title="Products & Links">
               {products.length === 0 ? (
                 <p className="text-sm text-[#9A9080] mb-3">No products added.</p>
@@ -580,7 +716,7 @@ export default function SettingsPage() {
               </a>
             </Section>
 
-            {/* ── 5. Engagement Goals ───────────────────────────────────────── */}
+            {/* ── 6. Engagement Goals ───────────────────────────────────────── */}
             <Section title="Engagement Goals">
               <div className="mb-4">
                 <p className="text-xs font-semibold text-[#9A9080] uppercase tracking-widest mb-2">
@@ -657,7 +793,7 @@ export default function SettingsPage() {
               </a>
             </Section>
 
-            {/* ── 6. Connected Account ──────────────────────────────────────── */}
+            {/* ── 7. Connected Account ──────────────────────────────────────── */}
             <Section title="Connected Account">
               {account.instagram_handle ? (
                 <div className="flex items-center justify-between gap-4">
@@ -733,7 +869,7 @@ export default function SettingsPage() {
               )}
             </Section>
 
-            {/* ── 7. Account ────────────────────────────────────────────────── */}
+            {/* ── 8. Account ────────────────────────────────────────────────── */}
             <Section title="Account">
               <div
                 className="flex items-center justify-between py-2 border-b"
