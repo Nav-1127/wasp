@@ -31,8 +31,8 @@ const plans: Plan[] = [
         text: "Brand voice analysis",
         tooltip: "WASP analyzes your existing posts and captions to learn your tone, vocabulary, and style. Every reply sounds like you wrote it.",
       },
-      { text: "Up to 3 sting triggers",
-        tooltip: "Sting triggers fire automatically on keyword matches, no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
+      { text: "Up to 3 smart sting triggers",
+        tooltip: "Smart sting triggers detect a keyword in a comment, figure out which product the person is asking about, and send them a tailored DM automatically. No approval needed. Use them to keep pricing and availability out of your public comments.",
       },
       {
         text: "Comment sensitivity routing",
@@ -54,8 +54,8 @@ const plans: Plan[] = [
       { text: "1 Instagram account" },
       { text: "Auto-reply mode (comments + DMs)" },
       { text: "1,000 interactions/month" },
-      { text: "Unlimited sting triggers",
-        tooltip: "Sting triggers fire automatically on keyword matches, no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
+      { text: "Unlimited smart sting triggers",
+        tooltip: "Smart sting triggers detect a keyword in a comment, figure out which product the person is asking about, and send them a tailored DM automatically. No approval needed. Use them to keep pricing and availability out of your public comments.",
       },
       {
         text: "Comment sensitivity routing",
@@ -179,7 +179,7 @@ export default function PricingPreviewLight() {
   return (
     <section
       id="pricing"
-      className="px-6 pt-10 pb-24 sm:pt-10 sm:pb-40"
+      className="px-6 pt-10 pb-16 sm:pt-10 sm:pb-16"
       style={{ borderTop: "1px solid #EBE5DC" }}
     >
       <div className="max-w-5xl mx-auto">
