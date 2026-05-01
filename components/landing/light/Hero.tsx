@@ -711,10 +711,45 @@ export default function HeroLight() {
             letterSpacing: "0.1em",
             textTransform: "uppercase",
             color: "#999",
-            marginBottom: 20,
+            marginBottom: 14,
           }}
         >
           Instagram Engagement agent for creators &amp; brands
+        </div>
+
+        {/* Meta tech partner badge */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 7,
+            background: "#FFFFFF",
+            border: "1px solid rgba(0, 130, 251, 0.22)",
+            borderRadius: 100,
+            padding: "5px 13px 5px 9px",
+            marginBottom: 22,
+          }}
+        >
+          <svg width="26" height="13" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M2 7C2 4 4 1.5 7 1.5C10 1.5 12 4.5 14 7C16 9.5 18 12.5 21 12.5C24 12.5 26 10 26 7C26 4 24 1.5 21 1.5C18 1.5 16 4.5 14 7C12 9.5 10 12.5 7 12.5C4 12.5 2 10 2 7Z"
+              stroke="#0082FB"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span
+            style={{
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              letterSpacing: "0.07em",
+              textTransform: "uppercase",
+              color: "#444",
+            }}
+          >
+            Official Meta Tech Partner
+          </span>
         </div>
 
         <h1
