@@ -704,41 +704,6 @@ export default function HeroLight() {
 
       {/* Centered headline + CTA */}
       <div className="wasp-hero-center">
-        {/* Meta tech partner badge */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 7,
-            background: "#FFFFFF",
-            border: "1px solid rgba(0, 130, 251, 0.22)",
-            borderRadius: 100,
-            padding: "5px 13px 5px 9px",
-            marginBottom: 14,
-          }}
-        >
-          <svg width="26" height="13" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M2 7C2 4 4 1.5 7 1.5C10 1.5 12 4.5 14 7C16 9.5 18 12.5 21 12.5C24 12.5 26 10 26 7C26 4 24 1.5 21 1.5C18 1.5 16 4.5 14 7C12 9.5 10 12.5 7 12.5C4 12.5 2 10 2 7Z"
-              stroke="#0082FB"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span
-            style={{
-              fontSize: "0.7rem",
-              fontWeight: 600,
-              letterSpacing: "0.07em",
-              textTransform: "uppercase",
-              color: "#444",
-            }}
-          >
-            Official Meta Tech Provider
-          </span>
-        </div>
-
         <div
           style={{
             fontSize: "0.75rem",
@@ -838,6 +803,9 @@ export default function HeroLight() {
         </Link>
         <p style={{ marginTop: 12, fontSize: "0.8125rem", color: "#999" }}>
           50 replies/month. No card required.
+        </p>
+        <p style={{ marginTop: 8, fontSize: "0.75rem", color: "#BBBBBB" }}>
+          Built by a Meta-verified Tech Provider.
         </p>
       </div>
 

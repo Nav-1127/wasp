@@ -34,6 +34,12 @@ export default function FooterLight() {
             >
               An AI engagement agent for Instagram.
             </p>
+            <p
+              className="text-[#999999]"
+              style={{ fontSize: "0.75rem", marginTop: 10, maxWidth: 320, lineHeight: 1.6 }}
+            >
+              WASP is built by AMAAR, a Meta-verified Tech Provider. Your Instagram account stays safe and your data stays yours.
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-x-10 gap-y-6 text-sm">
