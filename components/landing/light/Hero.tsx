@@ -735,7 +735,7 @@ export default function HeroLight() {
               color: "#444",
             }}
           >
-            Official Meta Tech Partner
+            Official Meta Tech Provider
           </span>
         </div>
 
