@@ -32,7 +32,7 @@ const plans: Plan[] = [
         tooltip: "WASP analyzes your existing posts and captions to learn your tone, vocabulary, and style. Every reply sounds like you wrote it.",
       },
       { text: "Up to 3 smart sting triggers",
-        tooltip: "Smart sting triggers read the intent behind a comment and send a tailored DM automatically. No approval needed. Set one for pricing questions, stock availability, or any topic you want handled privately. Keywords are optional.",
+        tooltip: "Some things should never play out in public comments. Smart sting triggers read the intent behind a comment and privately DM the person instead, automatically. Set one for pricing, stock availability, discount requests, or anything you want kept out of your public feed. Keywords are optional.",
       },
       {
         text: "Comment sensitivity routing",
@@ -55,7 +55,7 @@ const plans: Plan[] = [
       { text: "Auto-reply mode (comments + DMs)" },
       { text: "1,000 interactions/month" },
       { text: "Unlimited smart sting triggers",
-        tooltip: "Smart sting triggers read the intent behind a comment and send a tailored DM automatically. No approval needed. Set one for pricing questions, stock availability, or any topic you want handled privately. Keywords are optional.",
+        tooltip: "Some things should never play out in public comments. Smart sting triggers read the intent behind a comment and privately DM the person instead, automatically. Set one for pricing, stock availability, discount requests, or anything you want kept out of your public feed. Keywords are optional.",
       },
       {
         text: "Comment sensitivity routing",
