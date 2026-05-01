@@ -3,12 +3,17 @@
 import Link from "next/link";
 import { useState } from "react";
 
+type Feature = {
+  text: string;
+  tooltip?: string;
+};
+
 type Plan = {
   name: string;
   monthly: number;
   yearly: number;
   description: string;
-  features: string[];
+  features: Feature[];
   cta: string;
 };
 
@@ -19,11 +24,24 @@ const plans: Plan[] = [
     yearly: 0,
     description: "Try WASP before committing. See exactly how it sounds like you.",
     features: [
-      "1 Instagram account",
-      "Draft mode — you approve every reply",
-      "50 interactions/month",
-      "Brand voice analysis",
-      "Up to 3 sting triggers",
+      { text: "1 Instagram account" },
+      { text: "Draft mode — you approve every reply" },
+      { text: "50 interactions/month" },
+      {
+        text: "Brand voice analysis",
+        tooltip: "WASP analyzes your existing posts and captions to learn your tone, vocabulary, and style — so every reply sounds like you wrote it.",
+      },
+      { text: "Up to 3 sting triggers",
+        tooltip: "Sting triggers fire automatically on keyword matches — no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
+      },
+      {
+        text: "Comment sensitivity routing",
+        tooltip: "WASP detects comments that could be risky to auto-reply to — complaints, confrontational messages, or sensitive topics — and holds them for your review even when auto-reply is on.",
+      },
+      {
+        text: "Human reply delay",
+        tooltip: "Replies are sent with a randomized delay so responses feel like they came from a real person, not an instant bot. In draft mode, the delay starts after you approve.",
+      },
     ],
     cta: "Start free",
   },
@@ -33,13 +51,25 @@ const plans: Plan[] = [
     yearly: 16,
     description: "For solo creators and small brands ready to run on autopilot.",
     features: [
-      "1 Instagram account",
-      "Auto-reply mode (comments + DMs)",
-      "1,000 interactions/month",
-      "Unlimited sting triggers",
-      "Comment sensitivity routing",
-      "Human reply delay",
-      "Basic analytics",
+      { text: "1 Instagram account" },
+      { text: "Auto-reply mode (comments + DMs)" },
+      { text: "1,000 interactions/month" },
+      { text: "Unlimited sting triggers",
+        tooltip: "Sting triggers fire automatically on keyword matches — no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
+      },
+      {
+        text: "Comment sensitivity routing",
+        tooltip: "WASP detects comments that could be risky to auto-reply to — complaints, confrontational messages, or sensitive topics — and holds them for your review even when auto-reply is on.",
+      },
+      {
+        text: "Comment priority queue",
+        tooltip: "During high-volume periods, comments with buying intent are processed and replied to first — before general engagement or questions.",
+      },
+      {
+        text: "Human reply delay",
+        tooltip: "Replies are sent with a randomized delay so responses feel like they came from a real person, not an instant bot.",
+      },
+      { text: "Analytics" },
     ],
     cta: "Get started",
   },
@@ -49,17 +79,99 @@ const plans: Plan[] = [
     yearly: 39,
     description: "For growing brands managing multiple accounts at scale.",
     features: [
-      "3 Instagram accounts",
-      "5,000 interactions/month",
-      "Everything in Creator",
-      "Comment-to-DM automation",
-      "Comment priority queue",
-      "Full analytics",
-      "Priority support",
+      { text: "3 Instagram accounts" },
+      { text: "5,000 interactions/month" },
+      { text: "Everything in Creator" },
+      { text: "Priority support" },
     ],
     cta: "Get started",
   },
 ];
+
+function FeatureItem({ feature }: { feature: Feature }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <li className="flex items-start gap-2.5 text-sm text-[#1A1A1A]">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 16 16"
+        fill="none"
+        className="mt-1 flex-shrink-0"
+        style={{ color: "#5B2B8C" }}
+      >
+        <path
+          d="M3 8.5l3 3 7-7"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span style={{ lineHeight: 1.45, flex: 1 }}>{feature.text}</span>
+      {feature.tooltip && (
+        <span
+          className="relative flex-shrink-0"
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 15,
+              height: 15,
+              borderRadius: "50%",
+              border: "1px solid rgba(10,10,10,0.2)",
+              fontSize: 9,
+              fontWeight: 600,
+              color: "rgba(10,10,10,0.4)",
+              cursor: "default",
+              lineHeight: 1,
+              marginTop: 2,
+            }}
+          >
+            ?
+          </span>
+          {open && (
+            <span
+              style={{
+                position: "absolute",
+                bottom: "calc(100% + 6px)",
+                right: "-8px",
+                width: 220,
+                background: "#1A1A1A",
+                color: "#F5F0E8",
+                fontSize: 11.5,
+                lineHeight: 1.55,
+                padding: "10px 13px",
+                borderRadius: 10,
+                zIndex: 10,
+                pointerEvents: "none",
+              }}
+            >
+              {feature.tooltip}
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: -5,
+                  right: 13,
+                  width: 10,
+                  height: 10,
+                  background: "#1A1A1A",
+                  transform: "rotate(45deg)",
+                  borderRadius: 2,
+                }}
+              />
+            </span>
+          )}
+        </span>
+      )}
+    </li>
+  );
+}
 
 export default function PricingPreviewLight() {
   const [annual, setAnnual] = useState(false);
@@ -157,28 +269,7 @@ export default function PricingPreviewLight() {
 
                 <ul className="space-y-2.5 mb-8 flex-1">
                   {plan.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-2.5 text-sm text-[#1A1A1A]"
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        className="mt-1 flex-shrink-0"
-                        style={{ color: "#5B2B8C" }}
-                      >
-                        <path
-                          d="M3 8.5l3 3 7-7"
-                          stroke="currentColor"
-                          strokeWidth="1.75"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span style={{ lineHeight: 1.45 }}>{f}</span>
-                    </li>
+                    <FeatureItem key={f.text} feature={f} />
                   ))}
                 </ul>
 
