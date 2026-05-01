@@ -25,18 +25,18 @@ const plans: Plan[] = [
     description: "Try WASP before committing. See exactly how it sounds like you.",
     features: [
       { text: "1 Instagram account" },
-      { text: "Draft mode — you approve every reply" },
+      { text: "Draft mode. You approve every reply." },
       { text: "50 interactions/month" },
       {
         text: "Brand voice analysis",
-        tooltip: "WASP analyzes your existing posts and captions to learn your tone, vocabulary, and style — so every reply sounds like you wrote it.",
+        tooltip: "WASP analyzes your existing posts and captions to learn your tone, vocabulary, and style. Every reply sounds like you wrote it.",
       },
       { text: "Up to 3 sting triggers",
-        tooltip: "Sting triggers fire automatically on keyword matches — no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
+        tooltip: "Sting triggers fire automatically on keyword matches, no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
       },
       {
         text: "Comment sensitivity routing",
-        tooltip: "WASP detects comments that could be risky to auto-reply to — complaints, confrontational messages, or sensitive topics — and holds them for your review even when auto-reply is on.",
+        tooltip: "WASP detects comments that are risky to auto-reply to (complaints, confrontational messages, sensitive topics) and holds them for your review, even when auto-reply is on.",
       },
       {
         text: "Human reply delay",
@@ -55,15 +55,15 @@ const plans: Plan[] = [
       { text: "Auto-reply mode (comments + DMs)" },
       { text: "1,000 interactions/month" },
       { text: "Unlimited sting triggers",
-        tooltip: "Sting triggers fire automatically on keyword matches — no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
+        tooltip: "Sting triggers fire automatically on keyword matches, no approval needed. Use them to intercept sensitive topics like pricing or availability and move those conversations to DMs privately.",
       },
       {
         text: "Comment sensitivity routing",
-        tooltip: "WASP detects comments that could be risky to auto-reply to — complaints, confrontational messages, or sensitive topics — and holds them for your review even when auto-reply is on.",
+        tooltip: "WASP detects comments that are risky to auto-reply to (complaints, confrontational messages, sensitive topics) and holds them for your review, even when auto-reply is on.",
       },
       {
         text: "Comment priority queue",
-        tooltip: "During high-volume periods, comments with buying intent are processed and replied to first — before general engagement or questions.",
+        tooltip: "During high-volume periods, comments with buying intent are processed and replied to first, before general engagement or questions.",
       },
       {
         text: "Human reply delay",
