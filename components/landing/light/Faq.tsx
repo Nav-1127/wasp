@@ -5,7 +5,7 @@ import { useState } from "react";
 const faqs = [
   {
     q: "Is this safe for my Instagram account?",
-    a: "Yes. WASP uses Instagram's official Business Login API, the same API ManyChat and Sprout use. No password sharing, no scraping, no automation that violates Meta's terms. You can disconnect anytime from settings.",
+    a: "Yes. WASP is built by a Meta-verified Tech Provider and uses Instagram's official Business Login API, the same API ManyChat and Sprout use. No password sharing, no scraping, no automation that violates Meta's terms. You can disconnect anytime from settings.",
   },
   {
     q: "How is this different from ManyChat?",
@@ -38,11 +38,11 @@ export default function FaqLight() {
         <h2
           className="text-[#1A1A1A] mb-12 sm:mb-16"
           style={{
-            fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif",
-            fontWeight: 500,
-            fontSize: "clamp(1.75rem, 4vw, 3rem)",
-            lineHeight: 1.1,
-            letterSpacing: "-0.02em",
+            fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+            fontWeight: 800,
+            fontSize: "clamp(1.75rem, 4vw, 3.75rem)",
+            lineHeight: 1.05,
+            letterSpacing: "-0.025em",
           }}
         >
           Frequently asked.
