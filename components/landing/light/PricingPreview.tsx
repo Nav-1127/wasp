@@ -17,12 +17,13 @@ const plans: Plan[] = [
     name: "Free",
     monthly: 0,
     yearly: 0,
-    description: "1 IG account. Draft mode only. 50 replies/month.",
+    description: "Try WASP before committing. See exactly how it sounds like you.",
     features: [
       "1 Instagram account",
-      "Draft mode only",
-      "50 replies/month",
+      "Draft mode — you approve every reply",
+      "50 interactions/month",
       "Brand voice analysis",
+      "Up to 3 sting triggers",
     ],
     cta: "Start free",
   },
@@ -30,12 +31,14 @@ const plans: Plan[] = [
     name: "Creator",
     monthly: 19,
     yearly: 16,
-    description: "1 IG account. Auto-reply mode. 1,000 interactions/month.",
+    description: "For solo creators and small brands ready to run on autopilot.",
     features: [
       "1 Instagram account",
-      "Auto-reply mode",
+      "Auto-reply mode (comments + DMs)",
       "1,000 interactions/month",
-      "Brand voice",
+      "Unlimited sting triggers",
+      "Comment sensitivity routing",
+      "Human reply delay",
       "Basic analytics",
     ],
     cta: "Get started",
@@ -43,13 +46,15 @@ const plans: Plan[] = [
   {
     name: "Pro",
     monthly: 49,
-    yearly: 41,
-    description: "3 IG accounts. 5,000 interactions. Story replies + comment-to-DM.",
+    yearly: 39,
+    description: "For growing brands managing multiple accounts at scale.",
     features: [
       "3 Instagram accounts",
       "5,000 interactions/month",
-      "Story replies",
-      "Comment-to-DM",
+      "Everything in Creator",
+      "Comment-to-DM automation",
+      "Comment priority queue",
+      "Full analytics",
       "Priority support",
     ],
     cta: "Get started",
@@ -111,7 +116,7 @@ export default function PricingPreviewLight() {
                   color: annual ? "#FFFFFF" : "#666666",
                 }}
               >
-                17% off
+                20% off
               </span>
             </button>
           </div>
