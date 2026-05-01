@@ -192,7 +192,7 @@ export default function BeforeAfterLight() {
         .wasp-ba-wrap {
           max-width: 1060px;
           margin: 0 auto;
-          padding: 40px 40px 100px;
+          padding: 40px 40px 64px;
         }
         .wasp-ba-headline {
           font-size: clamp(2.25rem, 4.5vw, 3.75rem);
@@ -205,7 +205,7 @@ export default function BeforeAfterLight() {
           margin: 0 auto;
         }
         @media (max-width: 680px) {
-          .wasp-ba-wrap { padding: 60px 24px 80px; }
+          .wasp-ba-wrap { padding: 60px 24px 64px; }
           .wasp-ba-grid { grid-template-columns: 1fr; }
         }
       `}</style>

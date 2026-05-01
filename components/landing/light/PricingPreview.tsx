@@ -62,7 +62,7 @@ export default function PricingPreviewLight() {
   return (
     <section
       id="pricing"
-      className="px-6 py-24 sm:py-40"
+      className="px-6 pt-10 pb-24 sm:pt-10 sm:pb-40"
       style={{ borderTop: "1px solid #EBE5DC" }}
     >
       <div className="max-w-5xl mx-auto">
