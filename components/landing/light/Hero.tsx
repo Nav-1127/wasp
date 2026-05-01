@@ -704,19 +704,6 @@ export default function HeroLight() {
 
       {/* Centered headline + CTA */}
       <div className="wasp-hero-center">
-        <div
-          style={{
-            fontSize: "0.75rem",
-            fontWeight: 500,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "#999",
-            marginBottom: 14,
-          }}
-        >
-          Instagram Engagement agent for creators &amp; brands
-        </div>
-
         {/* Meta tech partner badge */}
         <div
           style={{
@@ -727,7 +714,7 @@ export default function HeroLight() {
             border: "1px solid rgba(0, 130, 251, 0.22)",
             borderRadius: 100,
             padding: "5px 13px 5px 9px",
-            marginBottom: 22,
+            marginBottom: 14,
           }}
         >
           <svg width="26" height="13" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -750,6 +737,19 @@ export default function HeroLight() {
           >
             Official Meta Tech Partner
           </span>
+        </div>
+
+        <div
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#999",
+            marginBottom: 20,
+          }}
+        >
+          Instagram Engagement agent for creators &amp; brands
         </div>
 
         <h1
