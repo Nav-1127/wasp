@@ -631,8 +631,9 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
       .eq("brand_account_id", account.id),
   ]);
 
-  // Story context — fetch the story caption if this is a story reply
+  // Story context — fetch the story caption + thumbnail if this is a story reply
   let storyContext: string | null = null;
+  let storyImageUrl: string | null = null;
   if (
     dm.is_story_reply &&
     dm.story_id &&
@@ -642,6 +643,7 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
     const token = decryptToken(account.instagram_access_token_encrypted);
     const storyInfo = await getPostInfo(dm.story_id, token).catch(() => null);
     storyContext = storyInfo?.caption ?? null;
+    storyImageUrl = storyInfo?.thumbnail_url ?? null;
   }
 
   const systemPrompt = buildAgentSystemPrompt({
@@ -657,7 +659,8 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
   const draftResponse = await generateResponse(
     systemPrompt,
     dm.message_text,
-    conversationHistory
+    conversationHistory,
+    storyImageUrl
   );
 
   // ── Save interaction ────────────────────────────────────────────────────────
