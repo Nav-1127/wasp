@@ -634,7 +634,7 @@ export default function SettingsPage() {
                 WASP classifies every comment and DM into one of these categories. Toggle <strong>Respond</strong> to control whether WASP replies at all. When responding, choose between a public comment reply only, or a public acknowledgement <strong>and</strong> a DM.
               </p>
               <p className="text-xs text-[#9A9080] mb-4">
-                For anything that doesn&apos;t fit neatly — a complaint buried in a compliment, an edge case the category misses — WASP runs an automatic sensitivity check and routes it to Comment + DM. These are always held for your review in auto mode unless you turn on the override at the bottom.
+                For anything that doesn&apos;t fit neatly (a complaint buried in a compliment, an edge case the category misses), WASP runs an automatic sensitivity check and routes it to Comment + DM. These are always held for your review in auto mode unless you turn on the override at the bottom.
               </p>
               <div>
                 {CATEGORY_ORDER.map((cat) => {
