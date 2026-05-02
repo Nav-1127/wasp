@@ -657,7 +657,7 @@ export default function SettingsPage() {
             {/* ── 2. Reply Delay ────────────────────────────────────────────── */}
             <Section title="Reply Delay">
               <p className="text-xs text-[#9A9080] mb-4">
-                Add a natural pause before WASP sends replies. Instant responses are a clear bot signal — a short delay costs nothing in engagement but dramatically reduces that perception. Applies to all comments and DMs.
+                Add a natural pause before WASP sends replies. Instant responses are a clear bot signal. A short delay costs nothing in engagement but dramatically reduces that perception. Applies to all comments and DMs.
               </p>
               <div className="flex flex-col gap-3">
                 {(["off", "short", "medium", "custom"] as const).map((opt) => {
