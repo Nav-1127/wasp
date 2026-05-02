@@ -5,7 +5,9 @@ import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase";
 export async function GET() {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const admin = createAdminClient();
@@ -16,7 +18,36 @@ export async function GET() {
       .order("created_at", { ascending: false });
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
-    return Response.json({ triggers: triggers ?? [] });
+
+    const triggerList = triggers ?? [];
+    if (triggerList.length === 0) return Response.json({ triggers: [] });
+
+    // Fetch last fired date per trigger from interactions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const triggerIds = triggerList.map((t: any) => t.id as string);
+    const { data: firings } = await admin
+      .from("interactions")
+      .select("*")
+      .in("sting_trigger_id", triggerIds)
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    const lastFiredMap: Record<string, string> = {};
+    for (const firing of firings ?? []) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const r = firing as any;
+      if (r.sting_trigger_id && !lastFiredMap[r.sting_trigger_id]) {
+        lastFiredMap[r.sting_trigger_id] = r.created_at;
+      }
+    }
+
+    return Response.json({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      triggers: triggerList.map((t: any) => ({
+        ...t,
+        last_fired_at: lastFiredMap[t.id] ?? null,
+      })),
+    });
   } catch {
     return Response.json({ error: "Something went wrong" }, { status: 500 });
   }
@@ -26,12 +57,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const admin = createAdminClient();
 
-    // Get brand_account_id
     const { data: account, error: accountError } = await admin
       .from("brand_accounts")
       .select("id")
@@ -43,7 +75,6 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-
     const {
       name,
       trigger_type,
@@ -57,7 +88,6 @@ export async function POST(request: NextRequest) {
       is_active,
     } = body;
 
-    // Validate required fields
     if (!name || !comment_reply || !dm_message) {
       return Response.json(
         { error: "name, comment_reply and dm_message are required" },
