@@ -14,6 +14,25 @@ import {
   decryptToken,
 } from "@/lib/instagram";
 
+// Process up to this many comments/DMs simultaneously.
+// Keeps Anthropic API calls at a safe rate while being 5× faster than serial.
+const CONCURRENT_LIMIT = 5;
+
+/**
+ * Process items in parallel with a concurrency cap.
+ * Runs `limit` items at a time, waits for each batch before starting the next.
+ * Uses allSettled so one failure doesn't cancel the rest of the batch.
+ */
+async function runConcurrent<T>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<void>
+): Promise<void> {
+  for (let i = 0; i < items.length; i += limit) {
+    await Promise.allSettled(items.slice(i, i + limit).map(fn));
+  }
+}
+
 export async function POST() {
   const supabase = await createServerSupabaseClient();
   const {
@@ -63,23 +82,23 @@ export async function POST() {
         continue;
       }
 
-      for (const comment of comments) {
-        // Skip own replies — username match since from.id isn't available without OAuth
-        if (comment.username === account.instagram_handle) continue;
+      // Batch dedup: one query for the whole post instead of one query per comment
+      const commentIds = comments.map((c) => c.id);
+      const { data: seenRows } = await admin
+        .from("interactions")
+        .select("source_comment_id")
+        .eq("brand_account_id", account.id)
+        .in("source_comment_id", commentIds);
 
-        // Dedup: source_comment_id stores the Instagram comment ID for all comment rows
-        const { data: existing } = await admin
-          .from("interactions")
-          .select("id")
-          .eq("brand_account_id", account.id)
-          .eq("source_comment_id", comment.id)
-          .maybeSingle();
+      const seenIds = new Set((seenRows ?? []).map((r) => r.source_comment_id));
 
-        if (existing) {
-          console.log(`[poll-comments] Comment ${comment.id} already in DB, skipping`);
-          continue;
-        }
+      const unseen = comments.filter(
+        (c) => c.username !== account.instagram_handle && !seenIds.has(c.id)
+      );
 
+      console.log(`[poll-comments] Post ${postId}: ${unseen.length} new comments to process`);
+
+      await runConcurrent(unseen, CONCURRENT_LIMIT, async (comment) => {
         const webhookComment: WebhookComment = {
           instagram_user_id: account.instagram_user_id,
           comment_id: comment.id,
@@ -93,7 +112,7 @@ export async function POST() {
         console.log(`[poll-comments] Processing new comment: "${comment.text.slice(0, 50)}"`);
         const interactionId = await processComment(webhookComment);
         if (interactionId) newComments++;
-      }
+      });
     }
   } catch (err) {
     console.error("[poll-comments] Comment polling failed:", err);
@@ -106,35 +125,48 @@ export async function POST() {
   try {
     const conversations = await getConversations(account.instagram_user_id, token, 10);
 
+    // Collect all inbound messages across conversations, skipping outbound
+    const inboundMessages: Array<{
+      id: string;
+      from: { id: string; username?: string; name?: string } | undefined;
+      message: string;
+      created_time: string;
+    }> = [];
+
     for (const conv of conversations) {
       for (const msg of conv.messages?.data ?? []) {
-        // Skip messages sent by the brand account (outbound)
         if (msg.from?.id === account.instagram_user_id) continue;
         if (!msg.message?.trim()) continue;
-
-        // Dedup: instagram_message_id stores the unique message ID for DM rows
-        const { data: existing } = await admin
-          .from("interactions")
-          .select("id")
-          .eq("brand_account_id", account.id)
-          .eq("instagram_message_id", msg.id)
-          .maybeSingle();
-
-        if (existing) continue;
-
-        const webhookDM: WebhookDM = {
-          instagram_user_id: account.instagram_user_id,
-          sender_id: msg.from?.id ?? "",
-          sender_username: msg.from?.username ?? msg.from?.name ?? "",
-          message_text: msg.message,
-          timestamp: msg.created_time,
-          message_id: msg.id,
-        };
-
-        const interactionId = await processDM(webhookDM);
-        if (interactionId) newDMs++;
+        inboundMessages.push(msg);
       }
     }
+
+    // Batch dedup: one query for all DMs instead of one query per message
+    const messageIds = inboundMessages.map((m) => m.id);
+    const { data: seenDmRows } = messageIds.length
+      ? await admin
+          .from("interactions")
+          .select("instagram_message_id")
+          .eq("brand_account_id", account.id)
+          .in("instagram_message_id", messageIds)
+      : { data: [] };
+
+    const seenDmIds = new Set((seenDmRows ?? []).map((r) => r.instagram_message_id));
+    const unseenDMs = inboundMessages.filter((m) => !seenDmIds.has(m.id));
+
+    await runConcurrent(unseenDMs, CONCURRENT_LIMIT, async (msg) => {
+      const webhookDM: WebhookDM = {
+        instagram_user_id: account.instagram_user_id,
+        sender_id: msg.from?.id ?? "",
+        sender_username: msg.from?.username ?? msg.from?.name ?? "",
+        message_text: msg.message,
+        timestamp: msg.created_time,
+        message_id: msg.id,
+      };
+
+      const interactionId = await processDM(webhookDM);
+      if (interactionId) newDMs++;
+    });
   } catch (err) {
     // DM polling is expected to fail in development mode — not an error worth surfacing
     console.log("[poll-comments] DM polling skipped:", (err as Error).message);
