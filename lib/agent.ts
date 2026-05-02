@@ -415,16 +415,9 @@ export async function processComment(
       : null,
   };
 
-  if (catSettings.routing === "public" && account.sensitivity_routing_enabled !== false) {
+  if (catSettings.routing === "public") {
     const brandContext = account.personality_prompt ?? account.primary_objective ?? "";
-    const customKeywords: string[] = Array.isArray(account.sensitivity_keywords)
-      ? account.sensitivity_keywords
-      : [];
-    const detected = await classifySensitivity(
-      comment.comment_text,
-      brandContext,
-      customKeywords
-    );
+    const detected = await classifySensitivity(comment.comment_text, brandContext, []);
     if (detected.routing === "both") {
       sensitivity = detected;
     }
@@ -604,16 +597,9 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
   let dmIsSensitive = false;
   let dmSensitivityReason: string | null = null;
 
-  if (account.sensitivity_routing_enabled !== false) {
+  {
     const brandContext = account.personality_prompt ?? account.primary_objective ?? "";
-    const customKeywords: string[] = Array.isArray(account.sensitivity_keywords)
-      ? account.sensitivity_keywords
-      : [];
-    const result = await classifySensitivity(
-      dm.message_text,
-      brandContext,
-      customKeywords
-    );
+    const result = await classifySensitivity(dm.message_text, brandContext, []);
     dmIsSensitive = result.routing === "both";
     dmSensitivityReason = result.sensitivity_reason;
   }

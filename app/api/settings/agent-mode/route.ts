@@ -30,17 +30,8 @@ export async function POST(request: NextRequest) {
     if (isValidMode(body.dm_mode)) updates.dm_mode = body.dm_mode;
     if (isValidMode(body.story_mode)) updates.story_mode = body.story_mode;
 
-    // Sensitivity routing settings
-    if (typeof body.sensitivity_routing_enabled === "boolean") {
-      updates.sensitivity_routing_enabled = body.sensitivity_routing_enabled;
-    }
     if (typeof body.auto_reply_sensitive === "boolean") {
       updates.auto_reply_sensitive = body.auto_reply_sensitive;
-    }
-    if (Array.isArray(body.sensitivity_keywords)) {
-      updates.sensitivity_keywords = body.sensitivity_keywords.filter(
-        (k: unknown) => typeof k === "string" && k.trim()
-      );
     }
 
     // Per-category settings
