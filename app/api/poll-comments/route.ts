@@ -95,11 +95,12 @@ export async function POST() {
       const commentIds = comments.map((c) => c.id);
       const { data: seenRows } = await admin
         .from("interactions")
-        .select("source_comment_id")
+        .select("*")
         .eq("brand_account_id", account.id)
         .in("source_comment_id", commentIds);
 
-      const seenIds = new Set((seenRows ?? []).map((r) => r.source_comment_id));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const seenIds = new Set((seenRows ?? []).map((r: any) => r.source_comment_id as string));
 
       const unseen = comments.filter(
         (c) => c.username !== account.instagram_handle && !seenIds.has(c.id)
@@ -155,12 +156,13 @@ export async function POST() {
     const { data: seenDmRows } = messageIds.length
       ? await admin
           .from("interactions")
-          .select("instagram_message_id")
+          .select("*")
           .eq("brand_account_id", account.id)
           .in("instagram_message_id", messageIds)
       : { data: [] };
 
-    const seenDmIds = new Set((seenDmRows ?? []).map((r) => r.instagram_message_id));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const seenDmIds = new Set((seenDmRows ?? []).map((r: any) => r.instagram_message_id as string));
     const unseenDMs = inboundMessages.filter((m) => !seenDmIds.has(m.id));
 
     await runConcurrent(unseenDMs, CONCURRENT_LIMIT, async (msg) => {
