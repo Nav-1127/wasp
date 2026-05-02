@@ -19,7 +19,7 @@ export default async function DashboardPage() {
     .from("interactions")
     .select("*")
     .eq("user_id", user.id)
-    .eq("status", "pending")
+    .in("status", ["pending", "scheduled"])
     .order("created_at", { ascending: false });
 
   return (

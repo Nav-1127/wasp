@@ -27,6 +27,9 @@ interface AccountData {
   account_type: string;
   category_settings: CategorySettings;
   auto_reply_sensitive: boolean;
+  reply_delay_mode: "off" | "short" | "medium" | "custom";
+  reply_delay_min_seconds: number;
+  reply_delay_max_seconds: number;
 }
 
 interface Product {
@@ -279,6 +282,7 @@ export default function SettingsPage() {
 
   // Saving states per section
   const [savingMode, setSavingMode] = useState(false);
+  const [savingDelay, setSavingDelay] = useState(false);
   const [savingCategories, setSavingCategories] = useState(false);
   const [savingObjective, setSavingObjective] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
@@ -331,6 +335,9 @@ export default function SettingsPage() {
               ? { ...DEFAULT_CATEGORY_SETTINGS, ...a.category_settings }
               : { ...DEFAULT_CATEGORY_SETTINGS },
             auto_reply_sensitive: a.auto_reply_sensitive === true,
+            reply_delay_mode: (["off", "short", "medium", "custom"].includes(a.reply_delay_mode) ? a.reply_delay_mode : "short") as AccountData["reply_delay_mode"],
+            reply_delay_min_seconds: typeof a.reply_delay_min_seconds === "number" ? a.reply_delay_min_seconds : 30,
+            reply_delay_max_seconds: typeof a.reply_delay_max_seconds === "number" ? a.reply_delay_max_seconds : 120,
           });
           setProducts(
             (a.products ?? []).map((p: Record<string, string>) => ({
@@ -403,6 +410,25 @@ export default function SettingsPage() {
       window.dispatchEvent(new Event("wasp:interaction-update"));
     } finally {
       setSavingMode(false);
+    }
+  }
+
+  async function saveDelay() {
+    if (!account) return;
+    setSavingDelay(true);
+    try {
+      await fetch("/api/settings/agent-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reply_delay_mode:        account.reply_delay_mode,
+          reply_delay_min_seconds: account.reply_delay_min_seconds,
+          reply_delay_max_seconds: account.reply_delay_max_seconds,
+        }),
+      });
+      flash("Reply delay saved");
+    } finally {
+      setSavingDelay(false);
     }
   }
 
@@ -628,7 +654,80 @@ export default function SettingsPage() {
               </button>
             </Section>
 
-            {/* ── 2. Comment & DM Handling ──────────────────────────────────── */}
+            {/* ── 2. Reply Delay ────────────────────────────────────────────── */}
+            <Section title="Reply Delay">
+              <p className="text-xs text-[#9A9080] mb-4">
+                Add a natural pause before WASP sends replies. Instant responses are a clear bot signal — a short delay costs nothing in engagement but dramatically reduces that perception. Applies to all comments and DMs.
+              </p>
+              <div className="flex flex-col gap-3">
+                {(["off", "short", "medium", "custom"] as const).map((opt) => {
+                  const labels: Record<string, { label: string; desc: string }> = {
+                    off:    { label: "Off",    desc: "Send immediately" },
+                    short:  { label: "Short",  desc: "30 sec – 2 min, randomised (recommended)" },
+                    medium: { label: "Medium", desc: "2 – 5 min, randomised" },
+                    custom: { label: "Custom", desc: "Set your own range" },
+                  };
+                  const { label, desc } = labels[opt];
+                  return (
+                    <label key={opt} className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="reply_delay_mode"
+                        value={opt}
+                        checked={account.reply_delay_mode === opt}
+                        onChange={() => setAccount((a) => a ? { ...a, reply_delay_mode: opt } : a)}
+                        className="mt-0.5 accent-[#5C6B00]"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-[#1A1A1A]">{label}</p>
+                        <p className="text-xs text-[#9A9080]">{desc}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+                {account.reply_delay_mode === "custom" && (
+                  <div className="flex gap-4 mt-1 ml-6">
+                    <label className="flex flex-col gap-1">
+                      <span className="text-xs text-[#6B6058]">Min (seconds)</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={600}
+                        value={account.reply_delay_min_seconds}
+                        onChange={(e) =>
+                          setAccount((a) => a ? { ...a, reply_delay_min_seconds: parseInt(e.target.value) || 0 } : a)
+                        }
+                        className="w-24 px-3 py-1.5 text-sm border rounded-lg outline-none focus:border-[#5C6B00] transition-colors"
+                        style={{ borderColor: "#D5CFC3", backgroundColor: "#F5F0E8", color: "#1A1A1A" }}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-xs text-[#6B6058]">Max (seconds)</span>
+                      <input
+                        type="number"
+                        min={30}
+                        max={600}
+                        value={account.reply_delay_max_seconds}
+                        onChange={(e) =>
+                          setAccount((a) => a ? { ...a, reply_delay_max_seconds: parseInt(e.target.value) || 120 } : a)
+                        }
+                        className="w-24 px-3 py-1.5 text-sm border rounded-lg outline-none focus:border-[#5C6B00] transition-colors"
+                        style={{ borderColor: "#D5CFC3", backgroundColor: "#F5F0E8", color: "#1A1A1A" }}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={saveDelay}
+                disabled={savingDelay}
+                className="mt-4 w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold text-sm px-5 py-3 rounded-xl hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
+              >
+                {savingDelay ? "Saving…" : "Save reply delay"}
+              </button>
+            </Section>
+
+            {/* ── 3. Comment & DM Handling ──────────────────────────────────── */}
             <Section title="Comment & DM Handling">
               <p className="text-xs text-[#9A9080] mb-1">
                 WASP classifies every comment and DM into one of these categories. Toggle <strong>Respond</strong> to control whether WASP replies at all. When responding, choose between a public comment reply only, or a public acknowledgement <strong>and</strong> a DM.

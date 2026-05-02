@@ -1,6 +1,14 @@
 // app/api/interactions/edit/route.ts
-// Edit the drafted response text and send the updated version via Instagram API.
-// Updates status to 'edited' and stores the edited text in final_response.
+// Edit the drafted response text.
+//
+// Two behaviours depending on current status:
+//   'scheduled' — the reply was approved and is waiting in the delay queue.
+//                 Editing cancels the scheduled send, resets to 'pending', and
+//                 requires the user to re-approve. Does NOT send anything.
+//                 Returns { ok: true, unscheduled: true }.
+//
+//   'pending' / 'failed' — normal edit: send the updated version immediately
+//                 via Instagram API and mark as 'edited'.
 
 import { NextRequest } from "next/server";
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase";
@@ -46,7 +54,8 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Interaction not found" }, { status: 404 });
   }
 
-  if (interaction.status !== "pending" && interaction.status !== "failed") {
+  const allowedStatuses = ["pending", "failed", "scheduled"];
+  if (!allowedStatuses.includes(interaction.status)) {
     return Response.json(
       { error: `Cannot edit an interaction with status '${interaction.status}'` },
       { status: 409 }
@@ -54,6 +63,22 @@ export async function POST(request: NextRequest) {
   }
 
   const finalText = edited_text.trim();
+
+  // ── Scheduled: cancel the queued send, reset to pending for re-approval ──────
+  if (interaction.status === "scheduled") {
+    await admin
+      .from("interactions")
+      .update({
+        status: "pending",
+        drafted_response: finalText,
+        scheduled_send_at: null,
+      })
+      .eq("id", interaction_id);
+
+    return Response.json({ ok: true, unscheduled: true });
+  }
+
+  // ── Pending / failed: edit and send immediately ───────────────────────────────
   const routing: string = interaction.routing_decision ?? "public";
 
   if (isMockMode) {
@@ -87,9 +112,7 @@ export async function POST(request: NextRequest) {
       interaction.interaction_type === "comment" &&
       interaction.source_comment_id
     ) {
-      const ack =
-        interaction.public_acknowledgement ??
-        "I've sent you a DM with the details!";
+      const ack = interaction.public_acknowledgement ?? "I've sent you a DM with the details!";
       await replyToComment(interaction.source_comment_id, ack, token);
       await sendDirectMessage(interaction.instagram_user_id, finalText, token);
     } else if (

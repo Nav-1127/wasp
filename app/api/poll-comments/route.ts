@@ -13,6 +13,7 @@ import {
   getConversations,
   decryptToken,
 } from "@/lib/instagram";
+import { processScheduled } from "@/lib/queue";
 
 // Process up to this many comments/DMs simultaneously.
 // Keeps Anthropic API calls at a safe rate while being 5× faster than serial.
@@ -58,6 +59,14 @@ export async function POST() {
   }
 
   const token = decryptToken(account.instagram_access_token_encrypted);
+
+  // Fire any scheduled replies whose delay has elapsed before fetching new activity
+  try {
+    await processScheduled(account.id, token);
+  } catch (err) {
+    console.error("[poll-comments] processScheduled failed:", err);
+  }
+
   let newComments = 0;
   let newDMs = 0;
   let postsChecked = 0;

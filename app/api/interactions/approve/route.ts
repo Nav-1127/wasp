@@ -1,10 +1,12 @@
 // app/api/interactions/approve/route.ts
-// Approve a pending interaction — send the drafted_response via Instagram API
-// (or mock it in dev mode) and mark the interaction as 'approved'.
+// Approve a pending interaction. In real mode with delay > 0, schedules the
+// reply for dispatch after the account's configured delay window. In mock/demo
+// mode or when delay is off, sends immediately.
 
 import { NextRequest } from "next/server";
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase";
 import { replyToComment, sendDirectMessage, decryptToken } from "@/lib/instagram";
+import { calcDelaySecs } from "@/lib/agent";
 
 const isMockMode =
   !process.env.META_APP_ID || process.env.USE_MOCK_AUTH === "true";
@@ -31,12 +33,11 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "interaction_id is required" }, { status: 400 });
   }
 
-  // Fetch the interaction — RLS ensures the user owns it, but we double-check with user_id
   const { data: interaction } = await admin
     .from("interactions")
     .select("*")
     .eq("id", interaction_id)
-    .eq("user_id", user.id) // ownership check
+    .eq("user_id", user.id)
     .single();
 
   if (!interaction) {
@@ -52,17 +53,13 @@ export async function POST(request: NextRequest) {
 
   const response = interaction.drafted_response;
   if (!response) {
-    return Response.json(
-      { error: "No drafted response to send" },
-      { status: 422 }
-    );
+    return Response.json({ error: "No drafted response to send" }, { status: 422 });
   }
 
   const isDemo = interaction.instagram_user_id?.startsWith("demo_");
   const routing: string = interaction.routing_decision ?? "public";
 
   if (isMockMode || isDemo) {
-    // In mock mode or demo data — skip real Instagram call
     await admin
       .from("interactions")
       .update({
@@ -75,7 +72,6 @@ export async function POST(request: NextRequest) {
     return Response.json({ ok: true, mock: true });
   }
 
-  // Fetch the brand account to get the access token
   const { data: account } = await admin
     .from("brand_accounts")
     .select("*")
@@ -86,6 +82,20 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "No access token found" }, { status: 500 });
   }
 
+  // In manual mode, delay starts from the moment the user approves — not from
+  // when the pipeline ran. This simulates "I just noticed this and am replying."
+  const delaySecs = calcDelaySecs(account);
+  if (delaySecs > 0) {
+    const scheduledAt = new Date(Date.now() + delaySecs * 1000).toISOString();
+    await admin
+      .from("interactions")
+      .update({ status: "scheduled", scheduled_send_at: scheduledAt })
+      .eq("id", interaction_id);
+
+    return Response.json({ ok: true, scheduled: true, sendingAt: scheduledAt });
+  }
+
+  // Delay is off — send immediately
   const token = decryptToken(account.instagram_access_token_encrypted);
 
   try {
@@ -94,20 +104,15 @@ export async function POST(request: NextRequest) {
       interaction.interaction_type === "comment" &&
       interaction.source_comment_id
     ) {
-      // Post short public acknowledgement, then send full details via DM
-      const ack =
-        interaction.public_acknowledgement ??
-        "I've sent you a DM with the details!";
+      const ack = interaction.public_acknowledgement ?? "I've sent you a DM with the details!";
       await replyToComment(interaction.source_comment_id, ack, token);
       await sendDirectMessage(interaction.instagram_user_id, response, token);
     } else if (
       interaction.interaction_type === "comment" &&
       interaction.source_comment_id
     ) {
-      // Public: normal comment reply
       await replyToComment(interaction.source_comment_id, response, token);
     } else {
-      // DM / story reply — send directly
       await sendDirectMessage(interaction.instagram_user_id, response, token);
     }
 

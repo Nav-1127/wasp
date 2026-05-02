@@ -20,6 +20,7 @@ interface Interaction {
   public_acknowledgement: string | null;
   status: string;
   created_at: string;
+  scheduled_send_at: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -36,6 +37,14 @@ function timeAgo(dateStr: string): string {
   const days = Math.floor(hrs / 24);
   if (days === 1) return "1 day ago";
   return `${days} days ago`;
+}
+
+function sendingInLabel(scheduledAt: string): string {
+  const secsLeft = Math.max(0, Math.round((new Date(scheduledAt).getTime() - Date.now()) / 1000));
+  if (secsLeft <= 0) return "Sending now…";
+  if (secsLeft < 60) return `Sending in ${secsLeft}s`;
+  const mins = Math.ceil(secsLeft / 60);
+  return `Sending in ${mins} min`;
 }
 
 const TYPE_LABELS: Record<string, { label: string; color: string; bg: string }> = {
@@ -95,7 +104,7 @@ export default function DraftsClient({
         },
         (payload) => {
           const row = payload.new as Interaction;
-          if (row.status !== "pending") return;
+          if (row.status !== "pending" && row.status !== "scheduled") return;
           setItems((prev) => {
             if (prev.find((i) => i.id === row.id)) return prev;
             return [row, ...prev];
@@ -120,8 +129,13 @@ export default function DraftsClient({
         },
         (payload) => {
           const row = payload.new as Interaction;
-          // Remove non-pending from drafts list
-          if (row.status !== "pending") {
+          if (row.status === "pending" || row.status === "scheduled") {
+            // Update in place (e.g. scheduled → pending after a cancel-edit)
+            setItems((prev) =>
+              prev.map((i) => (i.id === row.id ? { ...i, ...row } : i))
+            );
+          } else {
+            // Sent, rejected, failed — remove from drafts list
             setItems((prev) => prev.filter((i) => i.id !== row.id));
           }
         }
@@ -236,9 +250,21 @@ export default function DraftsClient({
       });
 
       if (r.ok) {
-        setItems((prev) => prev.filter((i) => i.id !== item.id));
-        setSelectedIndex((idx) => Math.max(0, Math.min(idx, items.length - 2)));
-        notifyShell();
+        const data = await r.json().catch(() => ({}));
+        if (data.unscheduled) {
+          // Edit on a scheduled item: keep in list but reset to pending state
+          setItems((prev) =>
+            prev.map((i) =>
+              i.id === item.id
+                ? { ...i, status: "pending", scheduled_send_at: null, drafted_response: editTexts[item.id] ?? i.drafted_response }
+                : i
+            )
+          );
+        } else {
+          setItems((prev) => prev.filter((i) => i.id !== item.id));
+          setSelectedIndex((idx) => Math.max(0, Math.min(idx, items.length - 2)));
+          notifyShell();
+        }
       }
     } finally {
       setActionLoading((l) => ({ ...l, [item.id]: false }));
@@ -304,7 +330,14 @@ export default function DraftsClient({
             Drafts
           </h1>
           <p className="text-xs text-[#9A9080] mt-0.5">
-            {items.length} pending · Use A / R / S / ↑↓ to navigate
+            {(() => {
+              const pending = items.filter(i => i.status === "pending").length;
+              const scheduled = items.filter(i => i.status === "scheduled").length;
+              const parts = [];
+              if (pending > 0) parts.push(`${pending} pending`);
+              if (scheduled > 0) parts.push(`${scheduled} scheduled`);
+              return (parts.join(" · ") || "0 pending") + " · Use A / R / S / ↑↓ to navigate";
+            })()}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -361,6 +394,7 @@ export default function DraftsClient({
           const isSelected = idx === selectedIndex;
           const isLoading = actionLoading[item.id];
           const isNew = newIds.has(item.id);
+          const isScheduled = item.status === "scheduled";
           const editText =
             editTexts[item.id] ?? item.drafted_response ?? "";
 
@@ -426,6 +460,15 @@ export default function DraftsClient({
                       {item.sensitivity_reason && (
                         <span className="text-[10px] text-[#9A9080] italic">
                           {item.sensitivity_reason}
+                        </span>
+                      )}
+                      {/* Scheduled send countdown */}
+                      {isScheduled && item.scheduled_send_at && (
+                        <span
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: "#FFF3CC", color: "#7A5C00" }}
+                        >
+                          ⏱ {sendingInLabel(item.scheduled_send_at)}
                         </span>
                       )}
                       {/* Post thumbnail for comments */}
@@ -497,45 +540,67 @@ export default function DraftsClient({
 
               {/* Action buttons */}
               <div className="flex flex-wrap gap-2">
-                <ActionBtn
-                  onClick={() => handleAction("approve", item)}
-                  disabled={isLoading}
-                  color="#5C6B00"
-                  bg="#D4FF00"
-                  label="Approve"
-                  shortcut="A"
-                  icon="✓"
-                />
-                <ActionBtn
-                  onClick={() => handleAction("edit", item)}
-                  disabled={isLoading || !editText.trim()}
-                  color="#7B4F00"
-                  bg="#FFE8B0"
-                  label="Edit & Send"
-                  icon="✏️"
-                />
-                <ActionBtn
-                  onClick={() => handleAction("reject", item)}
-                  disabled={isLoading}
-                  color="#8B1A1A"
-                  bg="#FFD5D5"
-                  label="Reject"
-                  shortcut="R"
-                  icon="✕"
-                />
-                <ActionBtn
-                  onClick={() => handleAction("skip", item)}
-                  disabled={isLoading}
-                  color="#6B6058"
-                  bg="#D5CFC3"
-                  label="Skip"
-                  shortcut="S"
-                  icon="→"
-                />
-                {isLoading && (
-                  <span className="text-xs text-[#9A9080] self-center ml-1">
-                    Sending…
-                  </span>
+                {isScheduled ? (
+                  // Scheduled: only allow cancelling the send (edit resets to pending)
+                  <>
+                    <ActionBtn
+                      onClick={() => handleAction("edit", item)}
+                      disabled={isLoading}
+                      color="#7B4F00"
+                      bg="#FFE8B0"
+                      label="Cancel & Edit"
+                      icon="✏️"
+                    />
+                    {isLoading && (
+                      <span className="text-xs text-[#9A9080] self-center ml-1">
+                        Cancelling…
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  // Pending: full set of actions
+                  <>
+                    <ActionBtn
+                      onClick={() => handleAction("approve", item)}
+                      disabled={isLoading}
+                      color="#5C6B00"
+                      bg="#D4FF00"
+                      label="Approve"
+                      shortcut="A"
+                      icon="✓"
+                    />
+                    <ActionBtn
+                      onClick={() => handleAction("edit", item)}
+                      disabled={isLoading || !editText.trim()}
+                      color="#7B4F00"
+                      bg="#FFE8B0"
+                      label="Edit & Send"
+                      icon="✏️"
+                    />
+                    <ActionBtn
+                      onClick={() => handleAction("reject", item)}
+                      disabled={isLoading}
+                      color="#8B1A1A"
+                      bg="#FFD5D5"
+                      label="Reject"
+                      shortcut="R"
+                      icon="✕"
+                    />
+                    <ActionBtn
+                      onClick={() => handleAction("skip", item)}
+                      disabled={isLoading}
+                      color="#6B6058"
+                      bg="#D5CFC3"
+                      label="Skip"
+                      shortcut="S"
+                      icon="→"
+                    />
+                    {isLoading && (
+                      <span className="text-xs text-[#9A9080] self-center ml-1">
+                        Sending…
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -55,6 +55,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Reply delay settings
+    const VALID_DELAY_MODES = ["off", "short", "medium", "custom"] as const;
+    if (typeof body.reply_delay_mode === "string" && VALID_DELAY_MODES.includes(body.reply_delay_mode)) {
+      updates.reply_delay_mode = body.reply_delay_mode;
+    }
+    if (typeof body.reply_delay_min_seconds === "number" && body.reply_delay_min_seconds >= 0) {
+      updates.reply_delay_min_seconds = Math.min(600, Math.floor(body.reply_delay_min_seconds));
+    }
+    if (typeof body.reply_delay_max_seconds === "number" && body.reply_delay_max_seconds >= 30) {
+      updates.reply_delay_max_seconds = Math.min(600, Math.floor(body.reply_delay_max_seconds));
+    }
+
     if (Object.keys(updates).length === 0) {
       return Response.json({ error: "Nothing to update" }, { status: 400 });
     }

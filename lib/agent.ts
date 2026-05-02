@@ -108,6 +108,31 @@ interface SensitivityResult {
   public_acknowledgement: string | null;
 }
 
+// ── Delay helper ───────────────────────────────────────────────────────────────
+
+/**
+ * Calculate a randomised delay in seconds based on the account's reply_delay_mode.
+ * Returns 0 when delay is off. Exported so approve routes can use the same logic.
+ */
+export function calcDelaySecs(account: {
+  reply_delay_mode?: string | null;
+  reply_delay_min_seconds?: number | null;
+  reply_delay_max_seconds?: number | null;
+}): number {
+  const rand = (min: number, max: number) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+  switch (account.reply_delay_mode ?? "short") {
+    case "off":    return 0;
+    case "short":  return rand(30, 120);
+    case "medium": return rand(120, 300);
+    case "custom": return rand(
+      Math.max(0,  account.reply_delay_min_seconds  ?? 30),
+      Math.max(30, account.reply_delay_max_seconds ?? 120)
+    );
+    default:       return rand(30, 120);
+  }
+}
+
 // ── Claude client ──────────────────────────────────────────────────────────────
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -504,6 +529,17 @@ export async function processComment(
     !isMockMode &&
     account.instagram_access_token_encrypted
   ) {
+    // Apply human reply delay — schedule instead of sending immediately
+    const delaySecs = calcDelaySecs(account);
+    if (delaySecs > 0) {
+      const scheduledAt = new Date(Date.now() + delaySecs * 1000).toISOString();
+      await admin
+        .from("interactions")
+        .update({ status: "scheduled", scheduled_send_at: scheduledAt })
+        .eq("id", interaction.id);
+      return interaction.id;
+    }
+
     const underLimit = await checkRateLimit(account.id);
     if (!underLimit) {
       await admin
@@ -709,30 +745,40 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
     !isMockMode &&
     account.instagram_access_token_encrypted
   ) {
-    const underLimit = await checkRateLimit(account.id);
-    if (!underLimit) {
+    // Apply human reply delay — schedule instead of sending immediately
+    const dmDelaySecs = calcDelaySecs(account);
+    if (dmDelaySecs > 0) {
+      const scheduledAt = new Date(Date.now() + dmDelaySecs * 1000).toISOString();
       await admin
         .from("interactions")
-        .update({ status: "queued" })
+        .update({ status: "scheduled", scheduled_send_at: scheduledAt })
         .eq("id", interaction.id);
     } else {
-      const token = decryptToken(account.instagram_access_token_encrypted);
-      try {
-        await sendDirectMessage(dm.sender_id, draftResponse, token);
+      const underLimit = await checkRateLimit(account.id);
+      if (!underLimit) {
         await admin
           .from("interactions")
-          .update({
-            status: "auto_sent",
-            final_response: draftResponse,
-            responded_at: new Date().toISOString(),
-          })
+          .update({ status: "queued" })
           .eq("id", interaction.id);
-      } catch (err) {
-        console.error("Auto DM send failed:", err);
-        await admin
-          .from("interactions")
-          .update({ status: "failed", error_message: String(err) })
-          .eq("id", interaction.id);
+      } else {
+        const token = decryptToken(account.instagram_access_token_encrypted);
+        try {
+          await sendDirectMessage(dm.sender_id, draftResponse, token);
+          await admin
+            .from("interactions")
+            .update({
+              status: "auto_sent",
+              final_response: draftResponse,
+              responded_at: new Date().toISOString(),
+            })
+            .eq("id", interaction.id);
+        } catch (err) {
+          console.error("Auto DM send failed:", err);
+          await admin
+            .from("interactions")
+            .update({ status: "failed", error_message: String(err) })
+            .eq("id", interaction.id);
+        }
       }
     }
   }

@@ -35,6 +35,72 @@ export async function checkRateLimit(brandAccountId: string): Promise<boolean> {
 }
 
 /**
+ * Send any scheduled interactions whose delay has elapsed.
+ * Called at the start of each poll run so scheduled sends fire within ~2 minutes
+ * of their scheduled_send_at time. Once QStash (Layer 2) ships, this is replaced
+ * by native delayed jobs and this function can be removed.
+ */
+export async function processScheduled(
+  brandAccountId: string,
+  accessToken: string
+): Promise<void> {
+  const admin = createAdminClient();
+
+  const { data: ready } = await admin
+    .from("interactions")
+    .select("*")
+    .eq("brand_account_id", brandAccountId)
+    .eq("status", "scheduled")
+    .lte("scheduled_send_at", new Date().toISOString())
+    .order("scheduled_send_at", { ascending: true })
+    .limit(50);
+
+  if (!ready || ready.length === 0) return;
+
+  for (const interaction of ready) {
+    const response = interaction.drafted_response;
+    if (!response) continue;
+
+    try {
+      const routing: string = interaction.routing_decision ?? "public";
+
+      if (
+        routing === "both" &&
+        interaction.interaction_type === "comment" &&
+        interaction.source_comment_id
+      ) {
+        const ack = interaction.public_acknowledgement ?? "I've sent you a DM with the details!";
+        await replyToComment(interaction.source_comment_id, ack, accessToken);
+        await sendDirectMessage(interaction.instagram_user_id, response, accessToken);
+      } else if (
+        interaction.interaction_type === "comment" &&
+        interaction.source_comment_id
+      ) {
+        await replyToComment(interaction.source_comment_id, response, accessToken);
+      } else {
+        await sendDirectMessage(interaction.instagram_user_id, response, accessToken);
+      }
+
+      await admin
+        .from("interactions")
+        .update({
+          status: "auto_sent",
+          final_response: response,
+          responded_at: new Date().toISOString(),
+          scheduled_send_at: null,
+        })
+        .eq("id", interaction.id);
+    } catch (err) {
+      console.error(`Failed to send scheduled interaction ${interaction.id}:`, err);
+      await admin
+        .from("interactions")
+        .update({ status: "failed", error_message: String(err) })
+        .eq("id", interaction.id);
+    }
+  }
+}
+
+/**
  * Drain queued messages for a brand account, up to the remaining hourly capacity.
  * Called at the start of each webhook processing run so old queued messages
  * get sent as soon as capacity opens up.
