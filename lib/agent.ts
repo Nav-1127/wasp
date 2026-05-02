@@ -115,40 +115,6 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const isMockMode =
   !process.env.META_APP_ID || process.env.USE_MOCK_AUTH === "true";
 
-// ── Step A helpers ─────────────────────────────────────────────────────────────
-
-/**
- * Classify whether a comment matches a smart_intent trigger description.
- * Uses Claude Haiku for speed. Returns true if the comment matches.
- */
-async function classifySmartIntent(
-  commentText: string,
-  triggerDescription: string
-): Promise<boolean> {
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 10,
-      messages: [
-        {
-          role: "user",
-          content:
-            `Does this Instagram comment match the following intent? Answer only YES or NO.\n\n` +
-            `Intent: ${triggerDescription}\n\n` +
-            `Comment: "${commentText}"`,
-        },
-      ],
-    });
-    const text =
-      response.content.find((b) => b.type === "text")?.text?.toUpperCase() ??
-      "";
-    return text.includes("YES");
-  } catch (err) {
-    console.error("Smart intent classification error:", err);
-    return false; // safe default: don't fire the trigger on error
-  }
-}
-
 // ── Step B helpers ─────────────────────────────────────────────────────────────
 
 /** Classify an Instagram comment using Claude Haiku. Falls back to heuristics on error. */
@@ -359,18 +325,10 @@ export async function processComment(
         continue;
       }
 
-      let matched = false;
-      if (trigger.trigger_type === "keyword") {
-        const keywords: string[] = trigger.trigger_keywords ?? [];
-        matched = keywords.some((kw: string) =>
-          lowerComment.includes(kw.toLowerCase())
-        );
-      } else if (trigger.trigger_type === "smart_intent") {
-        matched = await classifySmartIntent(
-          comment.comment_text,
-          trigger.trigger_description ?? ""
-        );
-      }
+      const keywords: string[] = trigger.trigger_keywords ?? [];
+      const matched = keywords.some((kw: string) =>
+        lowerComment.includes(kw.toLowerCase())
+      );
 
       if (matched) {
         const dmFull = trigger.dm_link
@@ -631,6 +589,15 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
     }
   }
 
+  // ── Step B: Category classification + respond filter ──────────────────────
+  const dmCategory = await classifyComment(dm.message_text);
+  const dmCatSettings = getCategorySettings(account, dmCategory);
+
+  if (!dmCatSettings.respond) {
+    console.log(`Skipping DM (${dmCategory}) — category set to no-respond`);
+    return null;
+  }
+
   // ── Step B.5: Sensitivity classification ───────────────────────────────────
   // For DMs, routing is always 'public' (replies go back as DMs anyway).
   // Sensitivity classification only determines whether to hold for review.
@@ -718,6 +685,7 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
       instagram_username: dm.sender_username ?? "",
       message_text: dm.message_text,
       drafted_response: draftResponse,
+      comment_category: dmCategory,
       story_context: storyContext,
       instagram_message_id: dm.message_id ?? null,
       routing_decision: "public", // DMs always reply via DM — routing only matters for comments
