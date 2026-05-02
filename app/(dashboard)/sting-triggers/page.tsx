@@ -46,7 +46,7 @@ const EMPTY_FORM: FormData = {
   comment_reply: "",
   dm_message: "",
   dm_link: "",
-  applies_to: "all_posts",
+  applies_to: "specific_posts",
   specific_post_ids: [],
   is_active: true,
 };
@@ -428,7 +428,6 @@ function StingTriggersContent() {
       trigger_keywords: t.trigger_keywords,
       comment_reply: t.comment_reply,
       dm_message: t.dm_message,
-      dm_link: t.dm_link,
     });
   }
 
@@ -437,6 +436,7 @@ function StingTriggersContent() {
     if (!form.comment_reply.trim()) { setError("Add a public comment reply."); return; }
     if (!form.dm_message.trim()) { setError("Add the DM message."); return; }
     if (form.trigger_keywords.length === 0) { setError("Add at least one keyword."); return; }
+    if (form.specific_post_ids.length === 0) { setError("Select at least one post for this trigger."); return; }
 
     setSaving(true);
     setError("");
@@ -444,7 +444,8 @@ function StingTriggersContent() {
     const payload = {
       ...form,
       trigger_type: "keyword",
-      dm_link: form.dm_link.trim() || null,
+      applies_to: "specific_posts",
+      dm_link: null,
     };
 
     try {
@@ -598,85 +599,51 @@ function StingTriggersContent() {
               {/* DM message */}
               <Field
                 label="DM message"
-                hint="Sent privately to the commenter."
+                hint="Sent privately to the commenter. Include any links or URLs for this post directly in your message."
               >
                 <textarea
                   rows={3}
-                  placeholder="Hey! Here's the link you asked for…"
+                  placeholder="Hey! Here's the link you asked for — [paste your URL here]"
                   value={form.dm_message}
                   onChange={(e) => setForm({ ...form, dm_message: e.target.value })}
                   className={INPUT_CLS + " resize-none"}
                 />
               </Field>
 
-              {/* DM link */}
-              <Field label="DM link (optional)" hint="A URL to include at the end of the DM.">
-                <input
-                  type="url"
-                  placeholder="https://yoursite.com/guide"
-                  value={form.dm_link ?? ""}
-                  onChange={(e) => setForm({ ...form, dm_link: e.target.value })}
-                  className={INPUT_CLS}
-                />
-              </Field>
-
-              {/* Apply to */}
-              <Field label="Apply to">
-                <div className="flex gap-2">
-                  {(["all_posts", "specific_posts"] as const).map((opt) => (
+              {/* Posts — required */}
+              <Field
+                label="Posts"
+                hint="Which posts should this trigger watch? Only comments on these posts will fire it."
+              >
+                <div className="flex items-center gap-3">
+                  {form.specific_post_ids.length === 0 ? (
                     <button
-                      key={opt}
-                      onClick={() =>
-                        setForm({ ...form, applies_to: opt, specific_post_ids: [] })
-                      }
-                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-colors"
-                      style={{
-                        borderColor:
-                          form.applies_to === opt ? "#5C6B00" : "#D5CFC3",
-                        backgroundColor:
-                          form.applies_to === opt
-                            ? "rgba(212,255,0,0.12)"
-                            : "#F5F0E8",
-                        color: form.applies_to === opt ? "#1A1A1A" : "#6B6058",
-                      }}
+                      onClick={() => setShowPostPicker(true)}
+                      className="text-xs font-semibold text-[#5C6B00] border border-[#5C6B00] px-4 py-2 rounded-xl hover:bg-[#5C6B00] hover:text-white transition-colors"
                     >
-                      {opt === "all_posts" ? "All posts" : "Specific posts"}
+                      Select posts
                     </button>
-                  ))}
-                </div>
-
-                {/* Post picker trigger (only when specific_posts selected) */}
-                {form.applies_to === "specific_posts" && (
-                  <div className="mt-3 flex items-center gap-3">
-                    {form.specific_post_ids.length === 0 ? (
+                  ) : (
+                    <>
+                      <span className="text-xs text-[#1A1A1A] font-semibold">
+                        {form.specific_post_ids.length} post
+                        {form.specific_post_ids.length === 1 ? "" : "s"} selected
+                      </span>
                       <button
                         onClick={() => setShowPostPicker(true)}
-                        className="text-xs font-semibold text-[#5C6B00] border border-[#5C6B00] px-4 py-2 rounded-xl hover:bg-[#5C6B00] hover:text-white transition-colors"
+                        className="text-xs text-[#5C6B00] hover:underline"
                       >
-                        Select posts
+                        Edit selection
                       </button>
-                    ) : (
-                      <>
-                        <span className="text-xs text-[#1A1A1A] font-semibold">
-                          {form.specific_post_ids.length} post
-                          {form.specific_post_ids.length === 1 ? "" : "s"} selected
-                        </span>
-                        <button
-                          onClick={() => setShowPostPicker(true)}
-                          className="text-xs text-[#5C6B00] hover:underline"
-                        >
-                          Edit selection
-                        </button>
-                        <button
-                          onClick={() => setForm({ ...form, specific_post_ids: [] })}
-                          className="text-xs text-[#9A9080] hover:text-red-500"
-                        >
-                          Clear
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
+                      <button
+                        onClick={() => setForm({ ...form, specific_post_ids: [] })}
+                        className="text-xs text-[#9A9080] hover:text-red-500"
+                      >
+                        Clear
+                      </button>
+                    </>
+                  )}
+                </div>
               </Field>
 
               {/* Active toggle */}
@@ -840,9 +807,9 @@ function StingTriggersContent() {
                 {/* Analytics row */}
                 <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-3">
                   <p className="text-xs text-[#9A9080]">
-                    {trigger.applies_to === "all_posts"
+                    {(trigger.specific_post_ids ?? []).length === 0
                       ? "All posts"
-                      : `${(trigger.specific_post_ids ?? []).length} specific post${
+                      : `${(trigger.specific_post_ids ?? []).length} post${
                           (trigger.specific_post_ids ?? []).length === 1 ? "" : "s"
                         }`}
                   </p>
