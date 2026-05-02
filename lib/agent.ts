@@ -53,14 +53,54 @@ export interface WebhookDM {
 }
 
 type CommentCategory =
-  | "question"
+  | "customer_support"
+  | "purchase_intent"
+  | "discount_promo"
   | "compliment"
   | "meaningful_feedback"
-  | "purchase_intent"
-  | "hype_emoji"
-  | "friend_tag"
-  | "spam"
+  | "spam_noise"
   | "other";
+
+interface CategorySetting {
+  respond: boolean;
+  routing: "public" | "both";
+}
+
+const DEFAULT_CATEGORY_SETTINGS: Record<CommentCategory, CategorySetting> = {
+  customer_support:    { respond: true,  routing: "both" },
+  purchase_intent:     { respond: true,  routing: "public" },
+  discount_promo:      { respond: true,  routing: "both" },
+  compliment:          { respond: true,  routing: "public" },
+  meaningful_feedback: { respond: true,  routing: "public" },
+  spam_noise:          { respond: false, routing: "public" },
+  other:               { respond: false, routing: "public" },
+};
+
+// Default public acknowledgements for categories that route to 'both' by default
+const CATEGORY_DEFAULT_ACK: Partial<Record<CommentCategory, string>> = {
+  customer_support: "Thanks for reaching out — I've sent you a DM to sort this out!",
+  discount_promo:   "I've sent you a DM with the details!",
+};
+
+const CATEGORY_SENSITIVITY_LABEL: Partial<Record<CommentCategory, string>> = {
+  customer_support: "customer support",
+  discount_promo:   "discount request",
+};
+
+function getCategorySettings(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  account: Record<string, any>,
+  category: CommentCategory
+): CategorySetting {
+  const stored = account.category_settings as Record<string, CategorySetting> | null;
+  if (stored?.[category]) {
+    return {
+      respond: stored[category].respond ?? DEFAULT_CATEGORY_SETTINGS[category].respond,
+      routing: stored[category].routing  ?? DEFAULT_CATEGORY_SETTINGS[category].routing,
+    };
+  }
+  return DEFAULT_CATEGORY_SETTINGS[category];
+}
 
 interface SensitivityResult {
   routing: "public" | "both";
@@ -122,7 +162,14 @@ async function classifyComment(text: string): Promise<CommentCategory> {
           role: "user",
           content:
             `Classify this Instagram comment into exactly one category. Reply with ONLY the category name, nothing else.\n\n` +
-            `Categories: question, compliment, meaningful_feedback, purchase_intent, hype_emoji, friend_tag, spam, other\n\n` +
+            `Categories:\n` +
+            `- customer_support: complaints, order issues, shipping problems, wrong items, returns\n` +
+            `- purchase_intent: asking about price, availability, product details, how to buy, shipping info\n` +
+            `- discount_promo: asking for discount codes, promo deals, special offers\n` +
+            `- compliment: praise, positive reactions, love it, amazing, fire\n` +
+            `- meaningful_feedback: suggestions, constructive criticism, improvement ideas\n` +
+            `- spam_noise: spam accounts, friend tags (@mentions only), emoji-only reactions, follow-for-follow\n` +
+            `- other: anything that doesn't clearly fit above\n\n` +
             `Comment: "${text}"\n\n` +
             `Category:`,
         },
@@ -134,13 +181,12 @@ async function classifyComment(text: string): Promise<CommentCategory> {
         ?.text?.toLowerCase()
         .trim() ?? "other";
     const valid: CommentCategory[] = [
-      "question",
+      "customer_support",
+      "purchase_intent",
+      "discount_promo",
       "compliment",
       "meaningful_feedback",
-      "purchase_intent",
-      "hype_emoji",
-      "friend_tag",
-      "spam",
+      "spam_noise",
     ];
     return valid.find((c) => result.includes(c)) ?? "other";
   } catch {
@@ -150,46 +196,21 @@ async function classifyComment(text: string): Promise<CommentCategory> {
 
 function heuristicClassify(text: string): CommentCategory {
   const lower = text.toLowerCase().trim();
-  if (lower.length <= 3) return "hype_emoji";
-  if (/^@\w+(\s+@\w+)*\s*[!?]*$/.test(lower)) return "friend_tag";
-  if (/\?/.test(lower)) return "question";
-  if (
-    /(buy|purchase|price|cost|how much|order|get this|link|shop|where can i|available)/i.test(
-      text
-    )
-  )
+  if (lower.length <= 3) return "spam_noise";
+  if (/^@\w+(\s+@\w+)*\s*[!?]*$/.test(lower)) return "spam_noise";
+  if (/(order|package|arrived|deliver|wrong|missing|broken|refund|return|complaint)/i.test(text))
+    return "customer_support";
+  if (/(discount|promo|code|coupon|deal|% off|offer)/i.test(text))
+    return "discount_promo";
+  if (/(buy|purchase|price|cost|how much|available|stock|ship|where can i)/i.test(text))
     return "purchase_intent";
-  if (
-    /(love|amazing|beautiful|gorgeous|awesome|great|excellent|wonderful|perfect|obsessed|incredible)/i.test(
-      text
-    )
-  )
+  if (/(love|amazing|beautiful|gorgeous|awesome|great|perfect|obsessed|incredible)/i.test(text))
     return "compliment";
-  if (/(follow back|check my page|dm me|promo|collab|free followers)/i.test(text))
-    return "spam";
-  if (/(suggest|recommend|should|could|would be better|improve|feedback)/i.test(text))
+  if (/(suggest|recommend|should|could|improve|feedback|better)/i.test(text))
     return "meaningful_feedback";
+  if (/(follow back|check my page|free followers|collab)/i.test(text))
+    return "spam_noise";
   return "other";
-}
-
-function shouldRespondByEngagementLevel(
-  level: string,
-  category: CommentCategory
-): boolean {
-  switch (level) {
-    case "reply_all":
-      return true;
-    case "smart_select":
-      return ["question", "compliment", "meaningful_feedback", "purchase_intent"].includes(
-        category
-      );
-    case "questions_only":
-      return category === "question";
-    case "manual_pick":
-      return true; // respond to everything, but force pending regardless of mode
-    default:
-      return true;
-  }
 }
 
 // ── Step B.5 — Sensitivity classification ─────────────────────────────────────
@@ -270,7 +291,7 @@ async function generateResponse(
     ];
 
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: "claude-sonnet-4-6",
       max_tokens: 150,
       system: systemPrompt,
       messages,
@@ -413,41 +434,42 @@ export async function processComment(
     }
   }
 
-  // ── Step B: Engagement level filter ────────────────────────────────────────
-  const engagementLevel = account.engagement_level ?? "smart_select";
-  const forcePending = engagementLevel === "manual_pick";
+  // ── Step B: Category classification + respond filter ───────────────────────
+  const category = await classifyComment(comment.comment_text);
+  const catSettings = getCategorySettings(account, category);
 
-  let category: CommentCategory = "other";
-
-  if (engagementLevel === "smart_select" || engagementLevel === "questions_only") {
-    category = await classifyComment(comment.comment_text);
-  }
-
-  const shouldProceed = shouldRespondByEngagementLevel(engagementLevel, category);
-  if (!shouldProceed) {
-    console.log(
-      `Skipping comment (${category}) — engagement_level: ${engagementLevel}`
-    );
+  if (!catSettings.respond) {
+    console.log(`Skipping comment (${category}) — category set to no-respond`);
     return null;
   }
 
-  // ── Step B.5: Sensitivity classification ───────────────────────────────────
+  // ── Step B.5: Routing decision ──────────────────────────────────────────────
+  // Primary source: the category's configured routing (set by the user in Settings).
+  // Safety net: if the category routes public, still run the sensitivity classifier
+  // so custom keywords and edge-case detection can upgrade to 'both' when needed.
   let sensitivity: SensitivityResult = {
-    routing: "public",
-    sensitivity_reason: null,
-    public_acknowledgement: null,
+    routing: catSettings.routing,
+    sensitivity_reason: catSettings.routing === "both"
+      ? (CATEGORY_SENSITIVITY_LABEL[category] ?? null)
+      : null,
+    public_acknowledgement: catSettings.routing === "both"
+      ? (CATEGORY_DEFAULT_ACK[category] ?? "I've sent you a DM with the details!")
+      : null,
   };
 
-  if (account.sensitivity_routing_enabled !== false) {
+  if (catSettings.routing === "public" && account.sensitivity_routing_enabled !== false) {
     const brandContext = account.personality_prompt ?? account.primary_objective ?? "";
     const customKeywords: string[] = Array.isArray(account.sensitivity_keywords)
       ? account.sensitivity_keywords
       : [];
-    sensitivity = await classifySensitivity(
+    const detected = await classifySensitivity(
       comment.comment_text,
       brandContext,
       customKeywords
     );
+    if (detected.routing === "both") {
+      sensitivity = detected;
+    }
   }
 
   // ── Step C: Build context ───────────────────────────────────────────────────
@@ -518,10 +540,7 @@ export async function processComment(
   }
 
   // ── Step E: Route based on mode ─────────────────────────────────────────────
-  const effectiveMode =
-    forcePending
-      ? "draft"
-      : (account.comment_mode ?? account.agent_mode ?? "draft");
+  const effectiveMode = account.comment_mode ?? account.agent_mode ?? "draft";
 
   const isSensitive = sensitivity.routing === "both";
   const holdForReview =

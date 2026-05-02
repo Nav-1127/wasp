@@ -43,6 +43,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Per-category settings
+    if (body.category_settings && typeof body.category_settings === "object") {
+      const VALID_CATEGORIES = [
+        "customer_support", "purchase_intent", "discount_promo",
+        "compliment", "meaningful_feedback", "spam_noise", "other",
+      ];
+      const sanitised: Record<string, { respond: boolean; routing: string }> = {};
+      for (const cat of VALID_CATEGORIES) {
+        const entry = body.category_settings[cat];
+        if (entry && typeof entry === "object") {
+          sanitised[cat] = {
+            respond: typeof entry.respond === "boolean" ? entry.respond : true,
+            routing: entry.routing === "both" ? "both" : "public",
+          };
+        }
+      }
+      if (Object.keys(sanitised).length > 0) {
+        updates.category_settings = sanitised;
+      }
+    }
+
     if (Object.keys(updates).length === 0) {
       return Response.json({ error: "Nothing to update" }, { status: 400 });
     }

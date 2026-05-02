@@ -5,6 +5,13 @@ import DashboardShell from "@/components/dashboard-shell";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+interface CategorySetting {
+  respond: boolean;
+  routing: "public" | "both";
+}
+
+type CategorySettings = Record<string, CategorySetting>;
+
 interface AccountData {
   instagram_handle: string | null;
   profile_pic_url: string | null;
@@ -14,11 +21,11 @@ interface AccountData {
   comment_mode: "draft" | "auto";
   dm_mode: "draft" | "auto";
   story_mode: "draft" | "auto";
-  engagement_level: string;
   primary_objective: string | null;
   personality_profile: Record<string, unknown> | null;
   personality_prompt: string | null;
   account_type: string;
+  category_settings: CategorySettings;
   sensitivity_routing_enabled: boolean;
   auto_reply_sensitive: boolean;
   sensitivity_keywords: string[];
@@ -41,31 +48,29 @@ interface Asset {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const ENGAGEMENT_LEVELS = [
-  {
-    id: "smart_select",
-    label: "Smart select",
-    description: "Replies to questions, compliments, meaningful feedback, and purchase intent.",
-    recommended: true,
-  },
-  {
-    id: "reply_all",
-    label: "Reply to all",
-    description: "Respond to every comment, no exceptions.",
-    recommended: false,
-  },
-  {
-    id: "questions_only",
-    label: "Questions only",
-    description: "Only reply when someone asks a question or requests information.",
-    recommended: false,
-  },
-  {
-    id: "manual_pick",
-    label: "Manual pick",
-    description: "WASP drafts replies for all comments, but you choose which ones to send.",
-    recommended: false,
-  },
+const CATEGORY_META: Record<string, { label: string; description: string }> = {
+  customer_support:    { label: "Customer Support",     description: "Complaints, order issues, shipping problems, requests for help." },
+  purchase_intent:     { label: "Purchase Intent",      description: "Pricing questions, 'where to buy', product availability." },
+  discount_promo:      { label: "Discount & Promo",     description: "Promo code requests, discount asks, special offer queries." },
+  compliment:          { label: "Compliments",          description: "Praise, positive reactions, enthusiasm." },
+  meaningful_feedback: { label: "Meaningful Feedback",  description: "Suggestions, constructive criticism, thoughtful opinions." },
+  spam_noise:          { label: "Spam & Noise",         description: "Emojis-only, gibberish, follow-for-follow, irrelevant tags." },
+  other:               { label: "Other",                description: "Everything that doesn't fit the above categories." },
+};
+
+const DEFAULT_CATEGORY_SETTINGS: Record<string, CategorySetting> = {
+  customer_support:    { respond: true,  routing: "both" },
+  purchase_intent:     { respond: true,  routing: "public" },
+  discount_promo:      { respond: true,  routing: "both" },
+  compliment:          { respond: true,  routing: "public" },
+  meaningful_feedback: { respond: true,  routing: "public" },
+  spam_noise:          { respond: false, routing: "public" },
+  other:               { respond: false, routing: "public" },
+};
+
+const CATEGORY_ORDER = [
+  "customer_support", "purchase_intent", "discount_promo",
+  "compliment", "meaningful_feedback", "spam_noise", "other",
 ];
 
 const OBJECTIVES: { id: string; label: string }[] = [
@@ -188,6 +193,84 @@ function ToggleRow({
   );
 }
 
+// ── Category Row ──────────────────────────────────────────────────────────────
+
+function CategoryRow({
+  category,
+  setting,
+  onChange,
+  onDisableAttempt,
+}: {
+  category: string;
+  setting: CategorySetting;
+  onChange: (updated: CategorySetting) => void;
+  onDisableAttempt?: () => void;
+}) {
+  const meta = CATEGORY_META[category];
+  if (!meta) return null;
+
+  function handleRespondToggle(next: boolean) {
+    if (!next && onDisableAttempt) {
+      onDisableAttempt();
+      return;
+    }
+    onChange({ ...setting, respond: next });
+  }
+
+  return (
+    <div className="flex flex-col gap-2 py-3.5 border-b last:border-b-0" style={{ borderColor: "#D5CFC3" }}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-[#1A1A1A]">{meta.label}</p>
+          <p className="text-xs text-[#9A9080] mt-0.5">{meta.description}</p>
+        </div>
+        <button
+          role="switch"
+          aria-checked={setting.respond}
+          onClick={() => handleRespondToggle(!setting.respond)}
+          className="relative flex-shrink-0 rounded-full transition-colors"
+          style={{
+            backgroundColor: setting.respond ? "#5C6B00" : "#D5CFC3",
+            height: "22px",
+            width: "40px",
+            minWidth: "40px",
+          }}
+        >
+          <span
+            className="absolute top-0.5 rounded-full bg-white shadow transition-transform"
+            style={{
+              width: "18px",
+              height: "18px",
+              transform: setting.respond ? "translateX(20px)" : "translateX(2px)",
+            }}
+          />
+        </button>
+      </div>
+
+      {setting.respond && (
+        <div className="flex items-center gap-3 pt-0.5">
+          <p className="text-xs text-[#9A9080]">Reply via:</p>
+          <div className="flex items-center gap-0.5 border rounded-xl p-0.5" style={{ borderColor: "#D5CFC3", backgroundColor: "#F5F0E8" }}>
+            {(["public", "both"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => onChange({ ...setting, routing: r })}
+                className="text-xs font-semibold px-3 py-1 rounded-lg transition-all"
+                style={{
+                  backgroundColor: setting.routing === r ? "#1A1A1A" : "transparent",
+                  color: setting.routing === r ? "#F5F0E8" : "#9A9080",
+                }}
+              >
+                {r === "public" ? "Comment" : "Comment + DM"}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Settings Page ─────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -198,7 +281,7 @@ export default function SettingsPage() {
 
   // Saving states per section
   const [savingMode, setSavingMode] = useState(false);
-  const [savingEngagement, setSavingEngagement] = useState(false);
+  const [savingCategories, setSavingCategories] = useState(false);
   const [savingObjective, setSavingObjective] = useState(false);
   const [savingRouting, setSavingRouting] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
@@ -207,6 +290,7 @@ export default function SettingsPage() {
   // Confirm dialogs
   const [showAutoConfirm, setShowAutoConfirm] = useState<string | null>(null); // field name
   const [pendingAutoValue, setPendingAutoValue] = useState<string | null>(null);
+  const [showCsWarning, setShowCsWarning] = useState(false);
 
   // Delete account
   const [deleteInput, setDeleteInput] = useState("");
@@ -246,11 +330,13 @@ export default function SettingsPage() {
             comment_mode:      a.comment_mode ?? "draft",
             dm_mode:           a.dm_mode ?? "draft",
             story_mode:        a.story_mode ?? "draft",
-            engagement_level:  a.engagement_level ?? "smart_select",
             primary_objective: a.primary_objective ?? null,
             personality_profile: a.personality_profile ?? null,
             personality_prompt:  a.personality_prompt ?? null,
             account_type:      a.account_type ?? "brand",
+            category_settings: a.category_settings && typeof a.category_settings === "object"
+              ? { ...DEFAULT_CATEGORY_SETTINGS, ...a.category_settings }
+              : { ...DEFAULT_CATEGORY_SETTINGS },
             sensitivity_routing_enabled: a.sensitivity_routing_enabled !== false,
             auto_reply_sensitive:        a.auto_reply_sensitive === true,
             sensitivity_keywords:        keywords,
@@ -330,18 +416,18 @@ export default function SettingsPage() {
     }
   }
 
-  async function saveEngagementLevel() {
+  async function saveCategorySettings() {
     if (!account) return;
-    setSavingEngagement(true);
+    setSavingCategories(true);
     try {
-      await fetch("/api/settings", {
+      await fetch("/api/settings/agent-mode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ engagement_level: account.engagement_level }),
+        body: JSON.stringify({ category_settings: account.category_settings }),
       });
-      flash("Engagement level saved");
+      flash("Category settings saved");
     } finally {
-      setSavingEngagement(false);
+      setSavingCategories(false);
     }
   }
 
@@ -429,6 +515,54 @@ export default function SettingsPage() {
             style={{ backgroundColor: "#D4FF00", color: "#1A1A1A" }}
           >
             ✓ {savedMsg}
+          </div>
+        )}
+
+        {/* Customer Support disable warning */}
+        {showCsWarning && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div
+              className="w-full max-w-sm border rounded-2xl p-6 shadow-2xl"
+              style={{ backgroundColor: "#EDE8DE", borderColor: "#D5CFC3" }}
+            >
+              <p
+                className="font-black text-[#1A1A1A] text-lg mb-2"
+                style={{ fontFamily: "var(--font-syne, Syne, sans-serif)" }}
+              >
+                Disable Customer Support replies?
+              </p>
+              <p className="text-sm text-[#6B6058] mb-5">
+                WASP won&apos;t respond to complaints, order issues, or help requests. Customers who need support will go unanswered. You can re-enable this anytime.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setAccount((a) =>
+                      a
+                        ? {
+                            ...a,
+                            category_settings: {
+                              ...a.category_settings,
+                              customer_support: { ...a.category_settings.customer_support, respond: false },
+                            },
+                          }
+                        : a
+                    );
+                    setShowCsWarning(false);
+                  }}
+                  className="flex-1 bg-[#8B1A1A] text-white font-semibold text-sm px-4 py-2.5 rounded-xl hover:opacity-80 transition-opacity"
+                >
+                  Disable anyway
+                </button>
+                <button
+                  onClick={() => setShowCsWarning(false)}
+                  className="flex-1 border font-semibold text-sm px-4 py-2.5 rounded-xl hover:bg-[#D5CFC3] transition-colors"
+                  style={{ borderColor: "#D5CFC3", color: "#6B6058" }}
+                >
+                  Keep enabled
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -580,65 +714,43 @@ export default function SettingsPage() {
               </button>
             </Section>
 
-            {/* ── 3. Comment Engagement Level ───────────────────────────────── */}
-            <Section title="Comment Engagement Level">
-              <p className="text-xs text-[#9A9080] mb-4">
-                For DMs and story replies, WASP always responds — those are
-                high-intent signals.
+            {/* ── 3. Comment Categories ─────────────────────────────────────── */}
+            <Section title="Comment Categories">
+              <p className="text-xs text-[#9A9080] mb-1">
+                WASP classifies every incoming comment into one of these categories. Toggle <strong>Respond</strong> to control whether WASP replies at all. When responding, choose between replying in the <strong>comments</strong> only, or posting a public comment acknowledgement <strong>and</strong> sending a DM.
               </p>
-              <div className="flex flex-col gap-2">
-                {ENGAGEMENT_LEVELS.map((level) => {
-                  const active = account.engagement_level === level.id;
+              <p className="text-xs text-[#9A9080] mb-4">
+                DMs and story replies always get a response — they&apos;re high-intent signals.
+              </p>
+              <div>
+                {CATEGORY_ORDER.map((cat) => {
+                  const setting = account.category_settings[cat] ?? DEFAULT_CATEGORY_SETTINGS[cat];
                   return (
-                    <button
-                      key={level.id}
-                      onClick={() =>
+                    <CategoryRow
+                      key={cat}
+                      category={cat}
+                      setting={setting}
+                      onChange={(updated) =>
                         setAccount((a) =>
-                          a ? { ...a, engagement_level: level.id } : a
+                          a
+                            ? {
+                                ...a,
+                                category_settings: { ...a.category_settings, [cat]: updated },
+                              }
+                            : a
                         )
                       }
-                      className="flex items-start gap-3 text-left border-2 rounded-xl p-3.5 transition-all"
-                      style={{
-                        borderColor: active ? "#5C6B00" : "#D5CFC3",
-                        backgroundColor: active ? "rgba(212,255,0,0.08)" : "#F5F0E8",
-                      }}
-                    >
-                      <div
-                        className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-0.5"
-                        style={{
-                          borderColor: active ? "#5C6B00" : "#D5CFC3",
-                          backgroundColor: active ? "#5C6B00" : "transparent",
-                        }}
-                      >
-                        {active && (
-                          <span className="text-white text-[8px]">✓</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-sm text-[#1A1A1A]">
-                            {level.label}
-                          </p>
-                          {level.recommended && (
-                            <span className="text-[9px] bg-[#D4FF00]/40 text-[#5C6B00] font-bold px-1.5 py-0.5 rounded-full">
-                              Recommended
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-[#9A9080] mt-0.5">
-                          {level.description}
-                        </p>
-                      </div>
-                    </button>
+                      onDisableAttempt={cat === "customer_support" ? () => setShowCsWarning(true) : undefined}
+                    />
                   );
                 })}
               </div>
               <button
-                onClick={saveEngagementLevel}
-                disabled={savingEngagement}
+                onClick={saveCategorySettings}
+                disabled={savingCategories}
                 className="mt-4 w-full bg-[#1A1A1A] text-[#F5F0E8] font-bold text-sm px-5 py-3 rounded-xl hover:bg-[#D4FF00] hover:text-[#1A1A1A] transition-colors disabled:opacity-40"
               >
-                {savingEngagement ? "Saving…" : "Save engagement level"}
+                {savingCategories ? "Saving…" : "Save category settings"}
               </button>
             </Section>
 
