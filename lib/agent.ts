@@ -28,6 +28,7 @@ import {
   decryptToken,
 } from "@/lib/instagram";
 import { checkRateLimit, drainQueue } from "@/lib/queue";
+import { publishJob, isQStashEnabled } from "@/lib/job-queue";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -529,7 +530,7 @@ export async function processComment(
     !isMockMode &&
     account.instagram_access_token_encrypted
   ) {
-    // Apply human reply delay — schedule instead of sending immediately
+    // Apply human reply delay
     const delaySecs = calcDelaySecs(account);
     if (delaySecs > 0) {
       const scheduledAt = new Date(Date.now() + delaySecs * 1000).toISOString();
@@ -537,6 +538,11 @@ export async function processComment(
         .from("interactions")
         .update({ status: "scheduled", scheduled_send_at: scheduledAt })
         .eq("id", interaction.id);
+      if (isQStashEnabled()) {
+        // QStash delivers the send job after the delay — no DB polling needed
+        await publishJob(account.id, { jobType: "send", interactionId: interaction.id }, delaySecs);
+      }
+      // When QStash is not configured (local dev), delayed sends stay as 'scheduled' in DB
       return interaction.id;
     }
 
@@ -745,7 +751,7 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
     !isMockMode &&
     account.instagram_access_token_encrypted
   ) {
-    // Apply human reply delay — schedule instead of sending immediately
+    // Apply human reply delay
     const dmDelaySecs = calcDelaySecs(account);
     if (dmDelaySecs > 0) {
       const scheduledAt = new Date(Date.now() + dmDelaySecs * 1000).toISOString();
@@ -753,6 +759,9 @@ export async function processDM(dm: WebhookDM): Promise<string | null> {
         .from("interactions")
         .update({ status: "scheduled", scheduled_send_at: scheduledAt })
         .eq("id", interaction.id);
+      if (isQStashEnabled()) {
+        await publishJob(account.id, { jobType: "send", interactionId: interaction.id }, dmDelaySecs);
+      }
     } else {
       const underLimit = await checkRateLimit(account.id);
       if (!underLimit) {

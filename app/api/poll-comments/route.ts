@@ -1,7 +1,10 @@
 // Polling fallback for Instagram comments and DMs.
-// Fetches recent activity directly from the Graph API and runs new items
-// through the same agent pipeline as the webhook handler.
-// Works alongside webhooks — deduplication prevents double-processing.
+// Fetches recent activity directly from the Graph API and routes new items
+// through QStash for async processing. Falls back to direct inline processing
+// when QStash is not configured (local dev).
+//
+// The batch deduplication queries are kept here — one DB query per post covers
+// all comments in that post, ~50× fewer queries than checking one at a time.
 
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase";
@@ -13,17 +16,11 @@ import {
   getConversations,
   decryptToken,
 } from "@/lib/instagram";
-import { processScheduled } from "@/lib/queue";
+import { publishJob, isQStashEnabled } from "@/lib/job-queue";
 
-// Process up to this many comments/DMs simultaneously.
-// Keeps Anthropic API calls at a safe rate while being 5× faster than serial.
+// Used only in the inline fallback path (when QStash is not configured).
 const CONCURRENT_LIMIT = 5;
 
-/**
- * Process items in parallel with a concurrency cap.
- * Runs `limit` items at a time, waits for each batch before starting the next.
- * Uses allSettled so one failure doesn't cancel the rest of the batch.
- */
 async function runConcurrent<T>(
   items: T[],
   limit: number,
@@ -59,13 +56,7 @@ export async function POST() {
   }
 
   const token = decryptToken(account.instagram_access_token_encrypted);
-
-  // Fire any scheduled replies whose delay has elapsed before fetching new activity
-  try {
-    await processScheduled(account.id, token);
-  } catch (err) {
-    console.error("[poll-comments] processScheduled failed:", err);
-  }
+  const useQueue = isQStashEnabled();
 
   let newComments = 0;
   let newDMs = 0;
@@ -73,7 +64,8 @@ export async function POST() {
   let commentsFound = 0;
   let commentsFetchError: string | null = null;
 
-  // ── Poll comments ──────────────────────────────────────────────────────────────
+  // ── Poll comments ──────────────────────────────────────────────────────────
+
   try {
     const mediaIds = await getRecentMediaIds(account.instagram_user_id, token, 10);
     console.log(`[poll-comments] Fetched ${mediaIds.length} media IDs`);
@@ -91,7 +83,7 @@ export async function POST() {
         continue;
       }
 
-      // Batch dedup: one query for the whole post instead of one query per comment
+      // Batch dedup: one query per post instead of one query per comment
       const commentIds = comments.map((c) => c.id);
       const { data: seenRows } = await admin
         .from("interactions")
@@ -108,34 +100,53 @@ export async function POST() {
 
       console.log(`[poll-comments] Post ${postId}: ${unseen.length} new comments to process`);
 
-      await runConcurrent(unseen, CONCURRENT_LIMIT, async (comment) => {
-        const webhookComment: WebhookComment = {
-          instagram_user_id: account.instagram_user_id,
-          comment_id: comment.id,
-          commenter_id: "",
-          commenter_username: comment.username ?? "",
-          comment_text: comment.text,
-          post_id: postId,
-          timestamp: comment.timestamp,
-        };
-
-        console.log(`[poll-comments] Processing new comment: "${comment.text.slice(0, 50)}"`);
-        const interactionId = await processComment(webhookComment);
-        if (interactionId) newComments++;
-      });
+      if (useQueue) {
+        // QStash path: publish each unseen comment as a job (priority-routed)
+        await Promise.allSettled(
+          unseen.map(async (comment) => {
+            const queued = await publishJob(account.id, {
+              jobType: "comment",
+              data: {
+                instagram_user_id:   account.instagram_user_id,
+                comment_id:         comment.id,
+                commenter_id:       "",
+                commenter_username: comment.username ?? "",
+                comment_text:       comment.text,
+                post_id:            postId,
+                timestamp:          comment.timestamp,
+              } satisfies WebhookComment,
+            });
+            if (queued) newComments++;
+          })
+        );
+      } else {
+        // Inline fallback: process directly with concurrency cap
+        await runConcurrent(unseen, CONCURRENT_LIMIT, async (comment) => {
+          const webhookComment: WebhookComment = {
+            instagram_user_id:   account.instagram_user_id,
+            comment_id:         comment.id,
+            commenter_id:       "",
+            commenter_username: comment.username ?? "",
+            comment_text:       comment.text,
+            post_id:            postId,
+            timestamp:          comment.timestamp,
+          };
+          console.log(`[poll-comments] Processing new comment: "${comment.text.slice(0, 50)}"`);
+          const interactionId = await processComment(webhookComment);
+          if (interactionId) newComments++;
+        });
+      }
     }
   } catch (err) {
     console.error("[poll-comments] Comment polling failed:", err);
     commentsFetchError = (err as Error).message;
   }
 
-  // ── Poll DMs ───────────────────────────────────────────────────────────────────
-  // The conversations endpoint requires the app to be in Live mode for full access.
-  // In development/testing mode this may return empty or throw — handled gracefully.
+  // ── Poll DMs ───────────────────────────────────────────────────────────────
+
   try {
     const conversations = await getConversations(account.instagram_user_id, token, 10);
 
-    // Collect all inbound messages across conversations, skipping outbound
     const inboundMessages: Array<{
       id: string;
       from: { id: string; username?: string; name?: string } | undefined;
@@ -151,7 +162,7 @@ export async function POST() {
       }
     }
 
-    // Batch dedup: one query for all DMs instead of one query per message
+    // Batch dedup: one query for all DMs
     const messageIds = inboundMessages.map((m) => m.id);
     const { data: seenDmRows } = messageIds.length
       ? await admin
@@ -165,31 +176,50 @@ export async function POST() {
     const seenDmIds = new Set((seenDmRows ?? []).map((r: any) => r.instagram_message_id as string));
     const unseenDMs = inboundMessages.filter((m) => !seenDmIds.has(m.id));
 
-    await runConcurrent(unseenDMs, CONCURRENT_LIMIT, async (msg) => {
-      const webhookDM: WebhookDM = {
-        instagram_user_id: account.instagram_user_id,
-        sender_id: msg.from?.id ?? "",
-        sender_username: msg.from?.username ?? msg.from?.name ?? "",
-        message_text: msg.message,
-        timestamp: msg.created_time,
-        message_id: msg.id,
-      };
-
-      const interactionId = await processDM(webhookDM);
-      if (interactionId) newDMs++;
-    });
+    if (useQueue) {
+      await Promise.allSettled(
+        unseenDMs.map(async (msg) => {
+          const queued = await publishJob(account.id, {
+            jobType: "dm",
+            data: {
+              instagram_user_id: account.instagram_user_id,
+              sender_id:        msg.from?.id ?? "",
+              sender_username:  msg.from?.username ?? msg.from?.name ?? "",
+              message_text:     msg.message,
+              timestamp:        msg.created_time,
+              message_id:       msg.id,
+            } satisfies WebhookDM,
+          });
+          if (queued) newDMs++;
+        })
+      );
+    } else {
+      await runConcurrent(unseenDMs, CONCURRENT_LIMIT, async (msg) => {
+        const webhookDM: WebhookDM = {
+          instagram_user_id: account.instagram_user_id,
+          sender_id:        msg.from?.id ?? "",
+          sender_username:  msg.from?.username ?? msg.from?.name ?? "",
+          message_text:     msg.message,
+          timestamp:        msg.created_time,
+          message_id:       msg.id,
+        };
+        const interactionId = await processDM(webhookDM);
+        if (interactionId) newDMs++;
+      });
+    }
   } catch (err) {
-    // DM polling is expected to fail in development mode — not an error worth surfacing
     console.log("[poll-comments] DM polling skipped:", (err as Error).message);
   }
 
   const total = newComments + newDMs;
-  console.log(`[poll-comments] Done — ${newComments} new comments, ${newDMs} new DMs (checked ${postsChecked} posts, found ${commentsFound} comments total)`);
+  const mode = useQueue ? "queued" : "processed";
+  console.log(`[poll-comments] Done — ${newComments} comments ${mode}, ${newDMs} DMs ${mode} (checked ${postsChecked} posts, found ${commentsFound} comments total)`);
 
   return NextResponse.json({
     newComments,
     newDMs,
     total,
+    mode,
     debug: { postsChecked, commentsFound, commentsFetchError },
   });
 }
