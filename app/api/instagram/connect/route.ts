@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { randomBytes } from "crypto";
 
-// All 6 permissions required for Meta app review.
-// instagram_basic and instagram_manage_comments are dependency permissions
-// required by Meta's permission chain for instagram_business_manage_comments.
-// Without them in the grant, the token cannot read comments via the Graph API.
+// Instagram Login for Business scopes.
+// instagram_basic and instagram_manage_comments are legacy permissions —
+// they are submitted for Meta app review as dependency chain requirements
+// but must NOT appear in the OAuth URL (causes "Invalid platform app" error).
 const SCOPES = [
   "instagram_business_basic",
   "instagram_business_manage_messages",
   "instagram_business_manage_comments",
-  "instagram_manage_comments",
-  "instagram_basic",
 ].join("%2C");
 
 export async function GET(request: NextRequest) {
