@@ -28,10 +28,9 @@ export async function GET() {
 
   const token = decryptToken(account.instagram_access_token_encrypted);
 
-  // Fetch 5 most recent post IDs
+  // ── Comments ───────────────────────────────────────────────────────────────
   const mediaIds = await getRecentMediaIds(account.instagram_user_id, token, 5);
 
-  // For each post, fetch raw comments response — no filtering, no dedup
   const posts = await Promise.all(
     mediaIds.map(async (postId) => {
       const res = await fetch(
@@ -48,10 +47,31 @@ export async function GET() {
     })
   );
 
+  // ── DMs ────────────────────────────────────────────────────────────────────
+  let dmsResult: { httpStatus: number; conversationCount: number; apiError: unknown; conversations: unknown[] } = {
+    httpStatus: 0,
+    conversationCount: 0,
+    apiError: null,
+    conversations: [],
+  };
+
+  const dmRes = await fetch(
+    `${INSTAGRAM_GRAPH}/${account.instagram_user_id}/conversations?platform=instagram` +
+    `&fields=id,messages.limit(5){id,message,from,created_time}` +
+    `&limit=10&access_token=${token}`
+  );
+  const dmRaw = await dmRes.json();
+  dmsResult = {
+    httpStatus: dmRes.status,
+    conversationCount: dmRaw.data?.length ?? 0,
+    apiError: dmRaw.error ?? null,
+    conversations: dmRaw.data ?? [],
+  };
+
   return NextResponse.json({
     handle: account.instagram_handle,
     instagramUserId: account.instagram_user_id,
-    postsChecked: mediaIds.length,
-    posts,
+    comments: { postsChecked: mediaIds.length, posts },
+    dms: dmsResult,
   });
 }
