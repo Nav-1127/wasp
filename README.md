@@ -141,6 +141,3 @@ Point `joinwasp.com` to Vercel via your DNS provider:
 
 ---
 
-## Contributing
-
-This is a private project. Not open for external contributions at this time.
